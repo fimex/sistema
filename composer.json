@@ -1,0 +1,50 @@
+{
+	"name": "kartik-v/yii2-app-practical",
+	"description": "Yii 2 Practical Application Template (based on advanced)",
+	"keywords": ["yii2", "framework", "practical", "application template"],
+	"homepage": "http://demos.krajee.com/app-practical",
+	"type": "project",
+	"license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Kartik Visweswaran",
+            "email": "kartikv2@gmail.com",
+            "homepage": "http://www.krajee.com/"
+        }
+    ],
+	"support": {
+		"issues": "https://github.com/kartik-v/yii2-app-practical/issues?state=open",
+		"source": "https://github.com/kartik-v/yii2-app-practical/"
+	},
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "*",
+        "yiisoft/yii2-bootstrap": "*",
+        "yiisoft/yii2-swiftmailer": "*",
+        "fxp/composer-asset-plugin": "1.0.*@dev",
+		"kartik-v/yii2-widgets": "*",
+		"kartik-v/yii2-grid": "*",
+		"yiisoft/yii2-gii": "*",
+		"kartik-v/yii2-tabs-x": "*",
+		"warrence/yii2-kartikgii": "dev-master",
+		"sheillendra/yii2-jeasyui": "dev-master",
+		"mdmsoft/yii2-admin": "*",
+		"letyii/yii2-rbac-cached": "dev-master",
+		"kartik-v/yii2-export": "*"
+    },
+    "require-dev": {
+        "yiisoft/yii2-codeception": "*",
+        "yiisoft/yii2-debug": "*",
+        "yiisoft/yii2-faker": "*"
+    },
+    "config": {
+        "process-timeout": 1800
+    },
+    "extra": {
+        "asset-installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    }
+}

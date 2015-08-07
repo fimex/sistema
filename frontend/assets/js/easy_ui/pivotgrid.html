@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Pivot Grid - jQuery EasyUI</title>
+	<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+	<script type="text/javascript" src="../../jquery.min.js"></script>
+	<script type="text/javascript" src="../../jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="jquery.pivotgrid.js"></script>
+	<script>
+		$(function(){
+			$('#pg').pivotgrid({
+				title:'PivotGrid',
+				toolbar:[{
+					text:'Layout',
+					handler:function(){
+						$('#pg').pivotgrid('layout');
+					}
+				}],
+				width:700,
+				height:300,
+				url:'data.json',
+				method:'get',
+				pivot:{
+					rows:['Country','Category'],
+					columns:['Color'],
+					values:[
+						{field:'Price',op:'sum'},
+						{field:'Discount',op:'sum'}
+					]
+				},
+				valueStyler:function(value,row,index){
+					if (/Discount$/.test(this.field) && value>100 && value<500){
+						return 'background:#D8FFD8'
+					}
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<h1>Pivot Grid</h1>
+	<table id="pg"></table>
+</body>
+</html>
