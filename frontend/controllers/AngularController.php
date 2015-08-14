@@ -243,6 +243,7 @@ class AngularController extends \yii\web\Controller
                     ->with('idMaquina')
                     ->with('idCentroTrabajo')
                     ->with('idEmpleado')
+                    ->with('idTurno')
                     ->with('produccionesDetalles')
                     ->with('almasProduccionDetalles')
                     ->orderBy('Fecha Asc, IdProduccion ASC, IdMaquina Asc')

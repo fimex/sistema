@@ -37,6 +37,7 @@ class AppAsset extends AssetBundle
         'js/angular/ui-bootstrap-tpls-0.13.0.min.js',
         'js/angular/i18n/angular-locale_es-mx.js',
         'js/angular/ng-table-master/dist/ng-table.js',
+        'js/angular/ngDraggable.js',
         'js/angular/angular-mocks.js',
         'js/jquery.stickytableheaders.js',
         'js/angular.modules.js',
@@ -50,7 +51,6 @@ class AppAsset extends AssetBundle
         'js/angular/Directives.js',
         'js/script.js',
         'js/angular/MediatorController.js',
-        
     ];
     public $depends = [
         'yii\web\YiiAsset',

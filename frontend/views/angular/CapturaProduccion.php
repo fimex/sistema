@@ -72,6 +72,7 @@ $this->title = $title;
 <h4 style="margin-top:0;"><?=$title?></h4>
 <div class="container-fluid" ng-controller="Produccion" ng-init="
     Fecha = '<?=date('Y-m-d G:i:s');?>';
+    IdTurno = 1;
     countProducciones(<?=$IdSubProceso?>,<?=$IdArea?>);
     IdSubProceso = <?=$IdSubProceso?>;
     IdArea = <?=$IdArea?>;
@@ -145,7 +146,7 @@ $this->title = $title;
                         <div class="input-group">
                             <span id="Turnos" class="input-group-addon">Turno:</span>
                             <select ng-show="!mostrar" aria-describedby="Turnos" class="form-control input-sm" ng-model="IdTurno" required>
-                                <option ng-selected="produccion.IdTurno == t.IdTurno" ng-repeat="t in turnos" ng-value="{{t.IdTurno}}">{{t.Descripcion}}</option>
+                                <option ng-selected="IdTurno == t.IdTurno" ng-repeat="t in turnos" ng-value="{{t.IdTurno}}">{{t.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
@@ -200,6 +201,7 @@ $this->title = $title;
                         <button class="btn btn-primary" ng-click="findProduccion();mostrar=true" ng-show="!mostrar">Generar</button>
                         <button class="btn btn-success" ng-click="loadProduccion();mostrar=true" ng-show="!mostrar">Cancelar</button>
                         <button class="btn btn-success" ng-click="updateProduccion();getChanges();saveChanges();" ng-show="mostrar">Guardar</button>
+                        <button class="btn btn-danger" ng-click="deleteProducciones();" ng-show="mostrar">Eliminar</button>
                         <button class="btn" ng-click="produccion.IdProduccionEstatus=2;saveProduccion();" ng-show="mostrar">Cerrar Captura</button>
                         <?php if($IdSubProceso == 10):?>
                         <button ng-click="buscar2();" class="btn btn-info">Mantenimiento de Hornos</button>

@@ -207,18 +207,22 @@ if($area == 4){
             </tr>
         </thead>
         <tbody style="font-size: 10pt">
-            <tr style="{{programacion.class}}" ng-repeat="programacion in programaciones | orderBy:arr | filter:{
-                Orden2:filtro.orden2,
-                OrdenCompra:filtro.orden,
-                Producto:filtro.producto,
-                ProductoCasting:filtro.casting,
-                Descripcion:filtro.descripcion,
-                FechaEmbarque:filtro.embarque,
-                FechaEnvio:filtro.envio,
-                Aleacion:filtro.aleacion,
-                Marca:filtro.cliente,
-                SemanaActual:filtro.SemanaActual
-        }" ng-click="setSelected(programacion);" ng-class="{warning:selected.IdProgramacion == programacion.IdProgramacion}">
+            <tr style="{{programacion.class}}"
+                ng-click="aleacion = programacion.Aleacion;"
+                ng-repeat="programacion in programaciones | orderBy:arr | filter:{
+                    Orden2:filtro.orden2,
+                    OrdenCompra:filtro.orden,
+                    Producto:filtro.producto,
+                    ProductoCasting:filtro.casting,
+                    Descripcion:filtro.descripcion,
+                    FechaEmbarque:filtro.embarque,
+                    FechaEnvio:filtro.envio,
+                    Aleacion:filtro.aleacion,
+                    Marca:filtro.cliente,
+                    SemanaActual:filtro.SemanaActual
+                }"
+                ng-click="setSelected(programacion);"
+                ng-class="{warning:selected.IdProgramacion == programacion.IdProgramacion}">
             <?php if($area == 3){ ?>
                 <th ng-show="mostrar" > <input type="checkbox" class="form-control" name="Cerrado[]" value="{{programacion.IdProgramacion}}"  /></th>
                 <th ng-show="mostrar" >{{programacion.OrdenCompra}}</th>
@@ -233,12 +237,7 @@ if($area == 4){
             <?php } ?>
                 <th style="mix-width: 100px">{{programacion.Producto}}</th>
                 <th ng-show="mostrar" style="max-width: 100px">{{programacion.Aleacion}}</th>
-           <?php if($area == 2){ ?>
-                <th style="max-width: 50px">{{programacion.Cantidad}}</th>
-            <?php }else{ ?>
-                <td style="max-width: 50px">{{programacion.Ensamble == 2 ? programacion.Cantidad : programacion.SaldoCantidad}}</td>
-                <th style="max-width: 50px">{{programacion.SemanaActual}}</th>
-            <?php } if($area == 2){ ?>
+                <th style="max-width: 50px">{{programacion.SaldoCantidad}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PLA == 0 ? '' : programacion.PLA}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PLA2 == 0 ? '' : programacion.PLA2}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.CTA == 0 ? '' : programacion.CTA}}</th>
@@ -247,36 +246,10 @@ if($area == 4){
                 <th style="max-width: 50px" class="info">{{programacion.PMA2 == 0 ? '' : programacion.PMA2}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PTA == 0 ? '' : programacion.PTA}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.TRA == 0 ? '' : programacion.TRA}}</th>
-            <?php } ?>
-            <?php if($area == 3){ ?>
-                <th style="max-width: 50px" class="info">{{programacion.PLB == 0 ? '' : programacion.PLB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.CTB == 0 ? '' : programacion.CTB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.PCC  == 0 ? '' :  programacion.PCC}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.PMB == 0 ? '' : programacion.PMB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.PTB == 0 ? '' : programacion.PTB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.TRB == 0 ? '' : programacion.TRB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.ExitPTB == 0 ? '' : programacion.ExitPTB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.FaltaPTB == 0 ? '' : programacion.FaltaPTB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.ExitCast == 0 ? '' : programacion.ExitCast}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.FaltaCast == 0 ? '' : programacion.FaltaCast}}</th>
-            <?php } ?>
-            <?php if($area == 4){ ?>
-                <th style="max-width: 50px" class="info">{{programacion.GPT}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPCB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPM}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPT1}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPP}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPTA}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.GPC}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.ExitGPT}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.FaltaGPT}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.ExitGPT}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.FaltaGPT}}</th>
-            <?php } ?>
             <?php if($area == 2){ ?>
-                <th valign="middle">{{ programacion.Cantidad-programacion.PzasFalta <= 0 ? '' : programacion.Cantidad-programacion.PzasFalta }}</th>
-                <th>{{ programacion.Cantidad-programacion.PzasFalta <= 0 ? '' : (programacion.Cantidad-programacion.PzasFalta)/programacion.PiezasMoldeA | number : 0 }}</th>
-                <th>{{(1*programacion.Programadas1 + 1*programacion.Programadas2 + 1*programacion.Programadas3 + 1*programacion.Programadas4) | number : 1}}</th>
+                <th valign="middle">{{programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting }}</th>
+                <th>{{ programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting/programacion.PiezasMolde | number : 0 }}</th>
+                <th>{{((1 * programacion.Programadas1) + (1 * programacion.Programadas2) + (1 * programacion.Programadas3) + (1 * programacion.Programadas4)) | number : 1}}</th>
                 <th style="max-width: 100px">{{programacion.IdAreaAct == null ? programacion.CiclosMoldeA : ''}}</th>
                 <th style="max-width: 100px">{{programacion.IdAreaAct == 2 ? programacion.CiclosMoldeA : ''}}</th>
                 <th style="max-width: 100px">{{programacion.AreaAct}}</th>
@@ -291,57 +264,14 @@ if($area == 4){
                 <th class="<?=$class?>"><input style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-focus="setSelected(programacion);" ng-change="saveProgramacionSemanal(programacion,<?=$x?>);" ng-model="programacion.Prioridad<?=$x?>" value="{{programacion.Prioridad<?=$x?>}}"></th>
                 <th class="<?=$class?>"><input style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-focus="setSelected(programacion);" ng-change="saveProgramacionSemanal(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></th>
                 <th class="<?=$class?>2">{{programacion.Llenadas<?=$x?>}}</th>
-            <?php if($area == 2){ ?>
                 <th class="<?=$class?>2">{{(programacion.Programadas<?=$x?> - programacion.Llenadas<?=$x?>) | number : 1}}</th>
-            <?php }else{ ?>
-                <th class="<?=$class?>2">{{(programacion.Programadas<?=$x?> / programacion.Llenadas<?=$x?>) | number : 1}}</th>
-            <?php } ?>
             <?php endfor; ?>
             </tr>
         </tbody>
     </table>
     </div>
 </div>
-<?php if ($area == 3) { ?>
-<div id="encabezado" class="row">
-    <div ng-repeat="resumen in resumenes" class="col-md-3">
-        <table ng-class="{par:$index % 2 == 0, impar:$index % 2 != 0}" class="table table-bordered table-hover">
-            <tr>
-                <th rowspan="2">Resumen</th>
-                <th colspan="4">Semana {{resumen.Semana}},{{resumen.Anio}}</th>
-            </tr>
-            <tr>
-                <th>Mol</th>
-                <th>Ton</th>
-                <th>Ton P</th>
-                <th>Hrs</th>
-            </tr>
-            <tr>
-                <th>PRG</th>
-                <th>{{resumen.PrgMol}}</th>
-                <th>{{resumen.PrgTon | currency:'':2}}</th>
-                <th>{{resumen.PrgTonP | currency:'':2}}</th>
-                <th>{{resumen.PrgHrs | currency:'':1}}</th>
-            </tr>
-            <tr>
-                <th>PROD</th>
-                <th>{{resumen.HecMol}}</th>
-                <th>{{resumen.HecTon | currency:'':2}}</th>
-                <th>{{resumen.HecTonP | currency:'':2}}</th>
-                <th>{{resumen.HecHrs | currency:'':1}}</th>
-            </tr>
-            <tr>
-                <th>% PROD</th>
-                <th>{{((resumen.HecMol / resumen.PrgMol)*100)| currency:'':2}}%</th>
-                <th>{{((resumen.HecTon / resumen.PrgTon)*100)| currency:'':2}}%</th>
-                <th>{{((resumen.HecTonP / resumen.PrgTonP)*100)| currency:'':2}}%</th>
-                <th>{{((resumen.HecHrs / resumen.PrgHrs)*100)| currency:'':2}}%</th>
-            </tr>
-        </table>
-    </div>
-</div>
 <?php 
-}
 if($area == 2){
 ?>
 <div id="encabezado" class="row">
@@ -358,7 +288,7 @@ if($area == 2){
             </tr>
             <tr>
                 <th>TON PRG</th>
-                <th>{{ resumen.TonPrgK == 0 ? 0 : resumen.TonPrgK | currency:'':3}}</th>
+                <th>{{resumen.TonPrgK == 0 ? 0 : resumen.TonPrgK | currency:'':3}}</th>
                 <th>{{resumen.TonPrgV | currency:'':3}}</th>
                 <th>{{resumen.TonPrgE | currency:'':3}}</th>
             </tr>
@@ -379,6 +309,10 @@ if($area == 2){
                 <th>{{resumen.MolPrgK}}</th>
                 <th>{{resumen.MolPrgV}}</th>
                 <th>{{resumen.MolPrgE}}</th>
+            </tr>
+            <tr>
+                <th>Total {{aleacion}}</th>
+                <th colspan="3" ng-repeat="Aleacion in resumen.aleaciones" ng-if="Aleacion.Aleacion == aleacion">{{Aleacion.Total}}</th>
             </tr>
         </table>
     </div>

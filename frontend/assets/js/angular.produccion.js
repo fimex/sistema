@@ -131,12 +131,6 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         $timeout(function() {$scope.loadProgramacion();}, 1000);
         //$scope.countProducciones($scope.IdSubProceso,$scope.IdArea);
     };
-
-    $scope.DeleteProducciones = function(){
-        return $http.get('delete-producciones',{params:{
-            IdProduccion:$scope.produccion.IdProduccion
-        }}).success(function(data){});
-    };
     
     $scope.buscar = function(){
         $scope.showModal = !$scope.showModal;
@@ -294,6 +288,14 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         });
     };
 
+    $scope.deleteProducciones = function(){
+        return $http.get('delete-producciones',{params:{
+            IdProduccion:$scope.produccion.IdProduccion
+        }}).success(function(data){
+            $scope.Prev();
+        });
+    };
+    
     $scope.findProduccion = function(data){
         var guardar = true;
         $scope.countProducciones($scope.IdSubProceso,$scope.IdArea);

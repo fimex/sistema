@@ -6,6 +6,8 @@ use Yii;
 use frontend\models\programacion\Programacion;
 use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\programacion\ProgramacionesDia;
+use frontend\models\programacion\Tarimas;
+use frontend\models\programacion\VTarimas;
 use frontend\models\programacion\Pedidos;
 use common\models\catalogos\PedProg;
 use common\models\catalogos\VMaquinas;
@@ -93,7 +95,68 @@ class ProgramacionAngularAceroController extends Controller
         $area = $area['IdArea'];
         $programacion = new Programacion();
         $dataProvider = $programacion->getProgramacionSemanal($semanas);
+     
+        $Producto = '';
         
+        //var_dump($dataProvider->allModels);exit;
+        foreach ($dataProvider->allModels as &$value) {
+            $value['Orden2'] = $value['OrdenCompra'];
+            $value['FechaEnvio'] = $value['FechaEnvio'] == '' ? $value['FechaEnvio'] : date(DATE_ISO8601,  strtotime($value['FechaEnvio']));
+            
+            if($value['Producto'] == $value['ProductoCasting']){
+                $value['SemanaActual'] = date('W',  strtotime($value['FechaEnvio']));
+                $value['SemanaActual'] -= date('N',  strtotime($value['FechaEnvio'])) > 2 ? 1 : 2;
+            }
+            
+            $value['Cantidad']*=1;
+            $value['Prioridad1']*=1;
+            $value['Prioridad2']*=1;
+            $value['Prioridad3']*=1;
+            $value['Prioridad4']*=1;
+            $value['Programadas1']*=1;
+            $value['Programadas2']*=1;
+            $value['Programadas3']*=1;
+            $value['Programadas4']*=1;
+
+            $value['Moldes']= round($value['Moldes'],0,PHP_ROUND_HALF_UP);
+            
+            $value['SaldoCantidad']*=1;
+            
+            if($value['Producto'] != $Producto){
+                $Casting = $value['Cast'];
+                $Maquinado = $value['Maq'];
+                $FaltaCasting = 0;
+                $FaltaMaquinado = 0;
+            }
+            
+            $Maquinado = $Maquinado < 0 ? 0 : $Maquinado;
+            $Casting = $Casting < 0 ? 0 : $Casting;
+            
+            $value['ExitMaquinado'] = $Maquinado;
+            $value['ExitCasting'] = $Casting;
+            
+            if($Maquinado > 0){
+                $FaltaMaquinado = $Maquinado > $value['SaldoCantidad'] ? 0 : $value['SaldoCantidad'] - $Maquinado;
+                $Maquinado -= $value['SaldoCantidad'];
+            }else{
+                $FaltaMaquinado = $value['SaldoCantidad'];
+            }
+            
+            if($Casting > 0 && $Maquinado <= 0){
+                $FaltaCasting = $Casting > $FaltaMaquinado ? 0 : $FaltaMaquinado - $Casting;
+                $Casting -= $FaltaMaquinado;
+            }else{
+                $FaltaCasting = $FaltaMaquinado;
+            }
+            
+            $value['FaltaMaquinado'] = $FaltaMaquinado;
+            $value['FaltaCasting'] = $FaltaCasting;
+            $value['class'] = $value['FaltaCasting'] == 0 ? 'background-color: lightgreen;' : '';
+            
+            $Producto  = $value['Producto'];
+        }
+        
+        //print_r($dataProvider->allModels);
         if(count($dataProvider)==0){
             return json_encode([
                 'total'=>0,
@@ -102,164 +165,17 @@ class ProgramacionAngularAceroController extends Controller
             ]);
         }
         
-        $Producto = '';
-        $ban = 1;
-        $faltaPTB = 0; $RfaltaPTB = 0; $faltaCast = 0;
-        $existPTB = 0; $RexistPTB = 0; $existCast = 0;
-        $SaveFaltaPT = 0; $SaveExistPT = 0;
-        $SaveExistCast = 0; $SaveFaltaCast = 0;
-        $Save2 = 0; $faltaAnterior = 0; $id = '';
-        if($area == 2){
-            $id = "PTA";
-            $id2 = "TRA";
-        }elseif($area == 3) {
-            $id = "PTB";
-            $id2 = "TRB";
-        }else {
-            $id = "GPT";
-        }
-        //var_dump($dataProvider->allModels);exit;
-        //if(count($dataProvider) != 0){
-            foreach ($dataProvider->allModels as &$value) {
-                $value['Orden2'] = $value['OrdenCompra'];
-                $value['FechaEnvio'] = date(DATE_ISO8601,  strtotime($value['FechaEnvio']));
-                
-                
-                if($value['Producto'] == $value['ProductoCasting']){
-                    $value['SemanaActual'] = date('W',  strtotime($value['FechaEnvio']));
-                    $value['SemanaActual'] -= date('N',  strtotime($value['FechaEnvio'])) > 2 ? 1 : 2;
-                }
-                
-                $value['Cantidad']*=1;
-                $value['Prioridad1']*=1;
-                $value['Prioridad2']*=1;
-                $value['Prioridad3']*=1;
-                $value['Prioridad4']*=1;
-                $value['Programadas1']*=1;
-                $value['Programadas2']*=1;
-                $value['Programadas3']*=1;
-                $value['Programadas4']*=1;
-
-                $value['Moldes']= round($value['Moldes'],0,PHP_ROUND_HALF_UP);
-                
-                $value['SaldoCantidad']*=1;
-                $molsaldo = $value['PiezasMolde'] == 0 ? 0 : $value['SaldoCantidad'] / $value['PiezasMolde'];
-                $value['MoldesSaldo']= round($molsaldo,0,PHP_ROUND_HALF_UP);
-                
-                if($value['Producto'] != $Producto){
-                    
-                    //Aqui entra para los primeros registros 
-                    if($ban >= 1 && $value['Producto'] != $Producto ){
-                         
-                        $faltaPTB = ($value["{$id}"]+$value["{$id2}"]) - $value['Cantidad'];
-                        $faltaPTB2 = $value['Cantidad'] - ($value["{$id}"]+$value["{$id2}"]);
-                        
-                        if($value['Cantidad'] <= ($value["{$id}"]+$value["{$id2}"])){
-                            $faltaPTB = 0;
-                            $SaveExistPT =  ($value["{$id}"]+$value["{$id2}"]) - $value['Cantidad'];
-                            $existPTB =  ($value["{$id}"]+$value["{$id2}"]);
-                            
-                            if($faltaPTB <= $value['Cast']){
-                                $existCast = $value['Cast'];
-                                $faltaCast = 0;
-                                $SaveExistCast = $value['Cast'] - $faltaCast;
-                                 
-                            }  else {
-                                $existCast = $value['Cast'];
-                                $faltaCast = $faltaPTB - $SaveExistCast;
-                                $SaveExistCast = 0;
-                            }
-                            
-                        }else{
-                            $faltaPTB = $value['Cantidad'] - ($value["{$id}"]+$value["{$id2}"]);
-                            $existPTB = ($value["{$id}"]+$value["{$id2}"]);
-                            $SaveExistPT = ($value["{$id}"]+$value["{$id2}"]) - $value['Cantidad'];
-                            
-                            if($faltaPTB <= $value['Cast']){
-                                $existCast = $value['Cast'];
-                                $faltaCast = 0;
-                                $SaveExistCast = $value['Cast'] - $faltaCast;
-                            }  else {
-                                $existCast = $value['Cast'];
-                                $faltaCast = $faltaPTB - $value['Cast'];
-                                $SaveExistCast = 0;
-                            }
-                            
-                        }
-                    }
-               }else{
-                    
-                    $RfaltaPTB = ($value["{$id}"]+$value["{$id2}"]) - $value['Cantidad'];
-                    $RexistPTB = $value['Cantidad'] - ($value["{$id}"]+$value["{$id2}"]);
-
-                    if($value['Cantidad'] <= $SaveExistPT){
-                        $existPTB = $SaveExistPT - $value['Cantidad'];
-                        $faltaPTB = 0;
-                        $SaveExistPT = $existPTB;             
-                    }
-                    
-                    if($value['Cantidad'] >= $SaveExistPT){
-                        $faltaPTB = $value['Cantidad'] - $SaveExistPT;
-                        $existPTB = $SaveExistPT;
-                        $SaveExistPT = 0;
-                    }    
-                        
-                    if($faltaAnterior){
-                        $SaveExistPT = 0;
-                        $existPTB = 0;
-                        $faltaPTB = $value['Cantidad'];
-                    }
-                    
-                    if($faltaPTB >= $SaveExistCast){
-                        $faltaCast = $faltaPTB - $SaveExistCast;
-                        $existCast = 0;
-                        $SaveExistCast = 0;
-                    }  else {
-                        $faltaCast = 0;
-                        $existCast = 0;
-                        $SaveExistCast = $SaveExistCast;
-                    }
-                }
-                
-                $pzas_falt = $value['Cantidad'] - $value['Cast1'];
-                if($value['Moldes'] != 0){
-                    $mold_falt = $pzas_falt == '0' ? 0 : ($pzas_falt/$value['Moldes']);
-                }else{
-                    $mold_falt = 0;
-                }
-                if ($area == 2) {
-                    $faltaCast = $faltaPTB - $value['Cast1'] < 0 ? 0 : $faltaPTB - $value['Cast1'];
-                    $existCast =  $value['Cast1'];
-                }
-                $value['Pzas_falt'] = $pzas_falt;
-                $value['Mold_falt'] = number_format($mold_falt);
-                $value['Exit'.$id] = $existPTB;
-                $value['Falta'.$id] = $faltaPTB;
-                $value['SaveExistPT'] = $SaveExistPT;
-                $value['ExitCast'] = $existCast;
-                $value['FaltaCast'] = round($faltaCast,0);
-                $value['class'] = $value['FaltaCast'] == 0 ? 'background-color: lightgreen;' : '';
-                $value['SaveExistCast'] = $SaveExistCast;
-                $faltaAnterior =  $value['Falta'.$id];         
-                $value['PzasFalta'] = $value['PLA'] + $value['PLA2'] + $value['CTA'] + $value['CTA2'] + $value['PMA'] + $value['PMA2'] + $value['PTA'] + $value['TRA'];   
-
-                $ban++;
-                
-                $Producto  = $value['Producto'];
-            }
-      //  }
-        
         /*if($area == 2){
             $dataResumen = $this->resumenAcero($dataProvider->allModels,1);
         }else{
             $dataResumen = $this->DataResumen($dataProvider->allModels,1,$area);
         }*/
-        $dataResumen = $this->DataResumen($dataProvider->allModels,1,$area);
+        //$dataResumen = $this->DataResumen($dataProvider->allModels,1,$area);
         
         return json_encode([
                 'total'=>count($dataProvider->allModels),
                 'rows'=>$dataProvider->allModels,
-                'footer'=>$dataResumen[0],
+//                'footer'=>$dataResumen[0],
         ]);
     }
     
@@ -286,6 +202,7 @@ class ProgramacionAngularAceroController extends Controller
                     dbo.v_Programaciones.IdArea,
                     dbo.ProgramacionesSemana.Anio,
                     dbo.ProgramacionesSemana.Semana,
+                    dbo.v_Programaciones.Aleacion,
                     sum(dbo.ProgramacionesSemana.Programadas) AS PrgMol,
                     ROUND(sum(dbo.v_Programaciones.PiezasMolde * dbo.ProgramacionesSemana.Programadas*  dbo.v_Programaciones.PesoCasting)/1000,2)  AS PrgTonP,
                     ROUND(sum(dbo.ProgramacionesSemana.Programadas * dbo.v_Programaciones.PesoArania)/1000,2)  AS PrgTon,
@@ -319,16 +236,13 @@ class ProgramacionAngularAceroController extends Controller
                 GROUP BY 
                     dbo.v_Programaciones.IdArea,
                     dbo.ProgramacionesSemana.Anio,
-                    dbo.ProgramacionesSemana.Semana
+                    dbo.ProgramacionesSemana.Semana,
+                    dbo.v_Programaciones.Aleacion
             ";
-            //echo $sql;
+            echo $sql;
             $command = \Yii::$app->db;
-            $res = $command->createCommand($sql)->queryOne();
-            /*$res = VResumen::find()->where([
-                'IdArea' => $area,
-                'Anio' => $semana['year'],
-                'Semana' => $semana['week'],
-            ])->asArray()->one();*/
+            $res = $command->createCommand($sql)->queryAll();
+            
             if($res == null){
                 $res = [
                     "IdArea" => $area,
@@ -344,7 +258,33 @@ class ProgramacionAngularAceroController extends Controller
                     "HecHrs" => 0
                 ];
             }
-            $resumen[] = $res;
+            $datos = [
+                "IdArea" => $area,
+                "Anio" => $semana['year'],
+                "Semana" => $semana['week'],
+                "PrgMol" => 0,
+                "PrgTonP" => 0,
+                "PrgTon" => 0,
+                "PrgHrs" => 0,
+                "HecMol" => 0,
+                "HecTonP" => 0,
+                "HecTon" => 0,
+                "HecHrs" => 0
+            ];
+            
+            foreach($res as $res2){
+                $datos['PrgMol'] += $res2['PrgMol'];
+                $datos['PrgTonP'] += $res2['PrgTonP'];
+                $datos['PrgTon'] += $res2['PrgTon'];
+                $datos['PrgHrs'] += $res2['PrgHrs'];
+                $datos['HecMol'] += $res2['HecMol'];
+                $datos['HecTonP'] += $res2['HecTonP'];
+                $datos['HecTon'] += $res2['HecTon'];
+                $datos['HecHrs'] += $res2['HecHrs'];
+                $datos['aleaciones'][$res2['Aleacion']] = isset($datos['aleaciones'][$res2['Aleacion']]) ? $res2['PrgTon'] : $datos['aleaciones'][$res2['Aleacion']];
+            }
+            
+            $resumen[] = $datos;
         }
         return json_encode($resumen);
     }
@@ -400,27 +340,51 @@ class ProgramacionAngularAceroController extends Controller
                 'IdArea' => $area,
                 'Anio' => $semana['year'],
                 'Semana' => $semana['week'],
-                ])->asArray()->one();
-            if($res == null){
-                $res = [
-                    "IdArea" => $area,
-                    "Anio" => $semana['year'],
-                    "Semana" => $semana['week'],
-                    'TonPrgK' => 0,
-                    'TonPrgV' => 0,
-                    'TonPrgE' => 0,
-                    'TonVacK' => 0,
-                    'TonVacV' => 0,
-                    'TonVacE' => 0,
-                    'CiclosK' => 0,
-                    'CiclosV' => 0,
-                    'CiclosE' => 0,
-                    'MolPrgK' => 0,
-                    'MolPrgV' => 0,
-                    'MolPrgE' => 0
-                ];
+                ])->asArray()->all();
+            
+            $datos = [
+                "IdArea" => $area,
+                "Anio" => $semana['year'],
+                "Semana" => $semana['week'],
+                "TonPrgK" => 0,
+                "TonPrgV" => 0,
+                "TonPrgE" => 0,
+                "TonVacK" => 0,
+                "TonVacV" => 0,
+                "TonVacE" => 0,
+                "CiclosK" => 0,
+                "CiclosV" => 0,
+                "CiclosE" => 0,
+                "MolPrgK" => 0,
+                "MolPrgV" => 0,
+                "MolPrgE" => 0,
+                "aleaciones" => []
+            ];
+
+            if(count($res)>0){
+                
+                foreach($res as $res2){
+                    $datos['TonPrgK'] += $res2['TonPrgK'];
+                    $datos['TonPrgV'] += $res2['TonPrgV'];
+                    $datos['TonPrgE'] += $res2['TonPrgE'];
+                    $datos['TonVacK'] += $res2['TonVacK'];
+                    $datos['TonVacV'] += $res2['TonVacV'];
+                    $datos['TonVacE'] += $res2['TonVacE'];
+                    $datos['CiclosK'] += $res2['CiclosK'];
+                    $datos['CiclosV'] += $res2['CiclosV'];
+                    $datos['CiclosE'] += $res2['CiclosE'];
+                    $datos['MolPrgK'] += $res2['MolPrgK'];
+                    $datos['MolPrgV'] += $res2['MolPrgV'];
+                    $datos['MolPrgE'] += $res2['MolPrgE'];
+
+                    $datos['aleaciones'][] = [
+                        'Aleacion' => $res2['Aleacion'],
+                        'Total' => ($res2['TonPrgK'] + $res2['TonPrgV'] + $res2['TonPrgE'])
+                    ];
+                }
             }
-            $resumen[] = $res;
+            
+            $resumen[] = $datos;
         }
         
         return json_encode($resumen);
@@ -448,6 +412,14 @@ class ProgramacionAngularAceroController extends Controller
         ]);
     }
     
+    public function actionTarimas($area = 2)
+    {
+        $this->layout = 'programacion';
+        
+        return $this->render('programacionTarimas',[
+            'area' => $area
+        ]);
+    }
     
     public function actionDiaria($AreaProceso,$subProceso=6,$semana = '')
     {
@@ -1720,6 +1692,31 @@ class ProgramacionAngularAceroController extends Controller
         $model->setDatosDux();
     }
     
+    public function actionDatosTarimas()
+    {
+        $tarimas = [];
+        
+        for($x=0;$x<131;$x++){
+            $tarimas[] = [
+                'Tarima1' => '',
+                'Tarima2' => '',
+                'Tarima3' => '',
+                'Tarima4' => '',
+                'Tarima5' => '',
+                'Tarima6' => '',
+                'Tarima7' => '',
+                'Tarima8' => ''
+            ];
+        }
+        $model = VTarimas::find()->where($_GET)->asArray()->all();
+        foreach($model as $mod){
+            //$mod['visible'] = true;
+            $tarimas[$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
+        }
+        //var_dump($model);
+        return json_encode($tarimas);
+    }
+    
     public function actionActualizacion()
     {
         $model = new Programacion();
@@ -1733,7 +1730,7 @@ class ProgramacionAngularAceroController extends Controller
         $dat = $_REQUEST;
         $AreaProceso = $_REQUEST['IdAreaProceso'];
         $guardado = false;
-
+        
         if(isset($dat['Programadas'])){
             $maquina = isset($dat['Maquina']) ? $dat['Maquina'] : 1;
             if(isset($dat['IdCentroTrabajo'])){
@@ -1744,6 +1741,10 @@ class ProgramacionAngularAceroController extends Controller
             }
             $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".$dat['Prioridad'].",".$dat['Programadas'].",".$AreaProceso.",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
             $model->setProgramacionDiaria($datosSemana);
+            if(isset($dat['Loop']) && isset($dat['Tarima'])){
+                $datosSemana .= ",".$dat['Loop'].",".$dat['Tarima'].",".(isset($dat['Delete'])?1:0);
+                $model->setProgramacionTarima($datosSemana);
+            }
             $guardado = true;
         }
         

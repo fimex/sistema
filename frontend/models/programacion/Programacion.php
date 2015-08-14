@@ -165,7 +165,6 @@ class Programacion extends \yii\db\ActiveRecord
             WHERE
             dbo.Pedidos.SaldoCantidad <= 0 AND
             dbo.Programaciones.IdProgramacionEstatus = 1";
-        
         $result =$command->createCommand($sql)->execute();
        
         $sql = "SELECT *, 
@@ -280,6 +279,13 @@ class Programacion extends \yii\db\ActiveRecord
         $command = \Yii::$app->db;
         //echo "EXECUTE p_SetProgramacionDia $data,NULL";
         $result =$command->createCommand("EXECUTE p_SetProgramacionDia $data,NULL")->execute();
+    }
+    
+    public function setProgramacionTarima($data)
+    {
+        $command = \Yii::$app->db;
+        //echo "EXECUTE p_SetProgramacionDia $data,NULL";
+        $result =$command->createCommand("EXECUTE p_SetProgramacionTarima $data,NULL")->execute();
     }
     
     public function setProgramacionSemanal($data)

@@ -1,14 +1,27 @@
-var app = angular.module("programa", ['ngTable','ui.bootstrap']).directive('fixedTableHeaders', ['$timeout', function($timeout) {
-    return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-            $timeout(function () {
-                container = element.parentsUntil(attrs.fixedTableHeaders);
-                    element.stickyTableHeaders({ scrollableArea: container, "fixedOffset": 2 });
-            }, 0);
+var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'])
+    .directive('fixedTableHeaders', ['$timeout', function($timeout) {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                $timeout(function () {
+                    container = element.parentsUntil(attrs.fixedTableHeaders);
+                        element.stickyTableHeaders({ scrollableArea: container, "fixedOffset": 2 });
+                }, 0);
+            }
         }
-    }
-}]).directive('fixedHeadersFoot', ['$timeout', function($timeout) {
+    }])
+    .directive('cellFixed', ['$timeout', function($timeout) {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                $timeout(function () {
+                    container = element.parentsUntil(attrs.cellFixed);
+                        element.stickyTableColumn({ scrollableArea: container, "fixedOffset": 2 });
+                }, 0);
+            }
+        }
+    }])
+    .directive('fixedHeadersFoot', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
         link: function(scope, element, attrs) {
@@ -91,4 +104,4 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap']).directive('fixe
             });
         }
     };
-});;
+});

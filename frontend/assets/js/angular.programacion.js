@@ -12,6 +12,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     $scope.maquinas = [];
     $scope.clientes = [];
     $scope.selectedPedido = [];
+    $scope.aleaciones = [];
     $scope.semanaActual = new Date();
     
     $scope.selectedCerrado = [];
@@ -35,6 +36,12 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
 
     };
     
+    $scope.loadAleaciones = function(){
+        return $http.get('/fimex/angular/aleaciones',{params:{IdPresentacion:2}}).success(function(data) {
+           $scope.aleaciones = data;
+        });
+    };
+    
     $scope.saveEnvio = function(IdPedido,FechaEnvio){
         return $http.get('save-envio',{params:{
             IdPedido:IdPedido,
@@ -52,6 +59,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     };
     
     $scope.setSelected = function(item) {
+        $scope.aleacion = item.Aleacion;
         $scope.selected = item;
     };
     
@@ -224,6 +232,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         return $http.get('data-diaria',{params:{semana:$scope.semanaActual,IdSubProceso:$scope.IdSubProceso}}).success(function(data){
             $scope.programaciones = [];
             $scope.programaciones = data.rows;
+            $scope.diaActual= $scope.diaActual == undefined ? 1 : $scope.diaActual;
+            $scope.loadTarimas();
         }).error(
             function(data, status, headers, config){
             }
@@ -243,7 +253,10 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             IdTurno:row['IdTurno'],
             Maquina:row['Maquina'+dia],
             IdAreaProceso:row['IdAreaProceso'],
-            IdSubProceso:row['IdSubProceso']
+            IdSubProceso:row['IdSubProceso'],
+            Tarima:row['Tarima'],
+            Loop:row['Loop'],
+            Delete:row['Delete']
         }}).success(function(data){
             if(data == true){
                 $scope.loadProgramacionDiaria();
@@ -319,5 +332,60 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             };
         }
         return mostrar;
+    };
+    
+    /*************************************
+                    TARIMAS
+    **************************************/
+    
+    $scope.loops = [];
+    
+    $scope.loadTarimas = function(){
+        return $http.get('datos-tarimas',{params:{
+            Dia:$scope.programaciones[0]['Dia'+$scope.diaActual]
+        }}).success(function(data){
+            $scope.loops = [];
+            $scope.loops = data;
+        });
+    };
+    
+    $scope.onDragComplete=function(data,evt){
+        console.log("drag success, data:", data);
+    };
+    
+    $scope.onDropComplete=function(data,evt,loop,tarima){
+        $scope.loops[loop]['Tarima'+tarima] = [];
+        $scope.loops[loop]['Tarima'+tarima] = data;
+        $scope.loops[loop]['Tarima'+tarima].visible = true;
+        $scope.loops[loop]['Tarima'+tarima].Loop = loop;
+        $scope.loops[loop]['Tarima'+tarima].Tarima = tarima;
+        $scope.saveTarima(data);
+    };
+    
+    $scope.saveTarima = function(data){
+        var cantidad = 0;
+        
+        for(x=0;x < $scope.loops.length;x++){
+            for(y=1;y<=8 ;y++){
+                if($scope.loops[x]['Tarima'+y].Producto == data.Producto){
+                    cantidad += 1;
+                }
+            }
+        }
+        
+        cantidad /= data.CiclosMolde;
+        data['Programadas'+$scope.diaActual] = cantidad;
+        $scope.saveProgramacionDiaria(data,$scope.diaActual);
+        console.log(cantidad);
+    };
+    
+    $scope.Delete = function(loop,tarima){
+        var data = $scope.loops[loop]['Tarima' + tarima];
+        data.Delete = true;
+        data['Maquina'+$scope.diaActual] = data.Maquina;
+        data['Dia'+$scope.diaActual] = data.Dia;
+        data['Programadas'+$scope.diaActual] = 0;
+        $scope.loops[loop]['Tarima' + tarima] = [];
+        $scope.saveTarima(data);
     };
 });
