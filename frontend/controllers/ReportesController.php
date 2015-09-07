@@ -151,6 +151,24 @@ class ReportesController extends Controller
             'IdArea' => 3
         ]);
     }
+
+	 public function actionAlmasCatalogoac()
+    {
+        return $this->render('index',[
+            'vista' => 'almasCatalogo',
+            'IdSubProceso' => 2,
+            'IdArea' => 2
+        ]);
+    }
+    
+    public function actionAlmasCatalogoAcero()
+    {
+        return $this->render('index',[
+            'vista' => 'almasCatalogo',
+            'IdSubProceso' => 2,
+            'IdArea' => 2
+        ]);
+    }
     
     public function actionVaciado()
     {
@@ -457,6 +475,7 @@ class ReportesController extends Controller
             $mod['Fecha'] = date('Y-m-d',strtotime($mod['Fecha']));
             $mod['Semana'] = date('W',strtotime($mod['Fecha']));
             $IdMaquina = $mod['IdMaquina'];
+            $IdEmpleado = $mod['IdEmpleado'];
 
             foreach ($mod['almasProduccionDetalles'] as &$almas){
                 $almas['Minutos'] = (strtotime($almas['Fin']) - strtotime($almas['Inicio']))/60;
@@ -472,21 +491,31 @@ class ReportesController extends Controller
                 $almas['MPRO'] = 0;
                 
                 $tiempos = VTiemposMuertos::find()->where(
-                    "IdMaquina = $IdMaquina AND Fecha = '".$mod['Fecha']."'"
+                    "IdEmpleado = $IdEmpleado AND IdMaquina = $IdMaquina AND Fecha = '".$mod['Fecha']."'"
                 )->asArray()->all();
                 
                 foreach ($tiempos as $time){
-                    $tIni = strtotime(strtotime($time['Inicio']) > strtotime($almas['Inicio']) ? $time['Inicio'] : $almas['Inicio']);
-                    $tFin = strtotime(strtotime($time['Fin']) > strtotime($almas['Fin']) ? $almas['Fin'] : $time['Fin']);
-                    $min = ($tFin - $tIni)/60;
-                    //echo $time['Inicio']." - ".$time['Fin']." -". $time['ClaveTipo']." - ".$min."<br />";
                     
+                    $tIni = strtotime($time['Inicio']) > strtotime($almas['Inicio']) ? $time['Inicio'] : $almas['Inicio'];
+                    $tIni = strtotime($almas['Fin']) > strtotime($tIni) ? $tIni : $almas['Fin'];
+                    
+                    $tFin = strtotime($time['Fin']) > strtotime($almas['Fin']) ? $almas['Fin'] : $time['Fin'];
+                    $tFin = strtotime($almas['Inicio']) > strtotime($tFin) ? $almas['Inicio'] : $tFin;
+                    
+                    $tIni = strtotime($tIni);
+                    $tFin = strtotime($tFin);
+                    
+                    $min = ($tFin - $tIni)/60;
+
                     $almas[$time['ClaveTipo']] +=$min;
+                    
+                    /*echo "Nomina: ".$mod['idEmpleado']['Nomina'] ." Nombre: ".$mod['idEmpleado']['Nombre'] ." :::: Tiempo: ". $almas['Inicio']." - " . $almas['Fin'];
+                    echo "Tiempo calculado: ".date('H:i',$tIni)." - ".date('H:i',$tFin)." ";
+                    echo " :::::: ". $time['Inicio']." - ".$time['Fin']." -". $time['ClaveTipo']." - ".$min."<br />";*/
                 }
                 
                 $almas['Inicio'] = date('H:i',strtotime($almas['Inicio']));
                 $almas['Fin'] = date('H:i',strtotime($almas['Fin']));
-                
             }
         }
         return json_encode($model);

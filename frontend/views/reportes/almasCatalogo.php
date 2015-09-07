@@ -4,7 +4,7 @@
 <table class="table table-striped table-bordered table-hover">
     <thead>
         <tr>
-            <th class="col-md-1">Producto</th>
+            <th class="col-md-1">Producto<br/><input class="form-control" ng-model="filtro.Producto"/></th>
             <th class="col-md-1">Tipo Alma</th>
             <th class="col-md-1">Almas x Molde</th>
             <th class="col-md-2">Cavidades</th>
@@ -14,7 +14,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr ng-repeat="dat in data">
+        <tr ng-repeat="dat in data | filter:filtro">
             <td>{{dat.Producto}}</td>
             <td>{{dat.Alma}}</td>
             <td>{{dat.PiezasMolde}}</td>

@@ -25,6 +25,7 @@ use common\models\catalogos\VProduccion2;
 use common\models\catalogos\Maquinas;
 use common\models\catalogos\VMaquinas;
 use common\models\catalogos\VEmpleados;
+use common\models\catalogos\SubProcesos;
 use common\models\catalogos\Areas;
 use common\models\datos\Causas;
 use common\models\catalogos\Materiales;
@@ -60,9 +61,18 @@ class AngularController extends \yii\web\Controller
         return $this->CapturaProduccion(2,3);
     }
     
+	 public function actionAlmasac()
+    {
+        return $this->CapturaProduccion(2,2);
+    }
+	
     public function actionRebabeo()
     {
         return $this->CapturaProduccion(3,3);
+    }
+	public function actionPintadoac()
+    {
+        return $this->CapturaProduccion(4,2);
     }
     
     public function actionVaciado()
@@ -200,15 +210,22 @@ class AngularController extends \yii\web\Controller
         return json_encode($model);
     }
     
-    public function actionMaquinas($IdSubProceso,$IdArea){
-        $model = VMaquinas::find()->where([
-            'IdSubProceso' => $IdSubProceso*1,
-            'IdArea'=>$IdArea,
-        ])->asArray()->all();
-      
-        return json_encode($model);
+    public function actionMaquinas($IdSubProceso = '',$IdArea = ''){
+        if($IdSubProceso != '' && $IdArea != ''){
+            $model = VMaquinas::find()->where([
+                'IdSubProceso' => $IdSubProceso*1,
+                'IdArea'=>$IdArea,
+            ])->asArray()->all();
+
+            return json_encode($model);
+        }
     }
     
+	public function actionSubprocesos(){
+		$model = SubProcesos::find()->asArray()->all();
+		 return json_encode($model);
+	}
+	
     public function actionDefectos($IdSubProceso,$IdArea){
         $model = VDefectos::find()->where([
             'IdSubProceso' => $IdSubProceso,

@@ -128,7 +128,7 @@
                 <th><?= $tota2?></th>
                 <th><?= $tota3?></th>
                 <th><?= $tota4?></th>
-                <th><?= $tota8?></th>
+                <th><?= $tota5?></th>
                 <th><?= $tota6?></th>
                 <th><?= $tota7?></th>
                 <th><?= $tota8?></th>

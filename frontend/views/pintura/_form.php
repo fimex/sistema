@@ -75,12 +75,12 @@ use yii\widgets\ActiveForm;
 
 			<?= $form->field($model, 'pintura')->dropDownList(
 														[
-														'Ceramic' => 'Ceramic',
-														'Ceramic Shield 256' => 'Ceramic Shield 256',
-														'New G 819 F' => 'New G 819 F ',
-														'REFCOBAR 1010 de 73-75' => 'REFCOBAR 1010 de 73-75',
-														'REFCOBAR 1010 de 78-82' => 'REFCOBAR 1010 de 78-82',
-														'REFCOHOL 1010' => 'REFCOHOL 1010'
+														'Isomol' => 'Isomol',
+														'Ceramic Shield New G 819' => 'Ceramic Shield New G 819',
+														'Recobar 1010i' => 'Recobar 1010i',
+														'Recobar 1017' => 'Recobar 1017',
+														'Holdcote 300-85' => 'Holdcote 300-85',
+														'TOP-211' => 'TOP-211',
 														] ,[]) ?>
 
 			<?= $form->field($model, 'serie')->textInput()->label("Serie/Tambor") ?>

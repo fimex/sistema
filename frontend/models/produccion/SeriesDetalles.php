@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "SeriesDetalles".
  *
  * @property integer $IdSeriesDetalles
- * @property integer $IdProduccionDetalle
+ * @property integer $IdProduccionDetalleMoldeo
  * @property integer $IdSerie
  * @property integer $IdCicloTipo
  * @property string $Comentarios
@@ -32,8 +32,8 @@ class SeriesDetalles extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProduccionDetalle', 'IdSerie'], 'required'],
-            [['IdProduccionDetalle', 'IdSerie', 'IdCicloTipo'], 'integer'],
+            [['IdProduccionDetalleMoldeo', 'IdSerie'], 'required'],
+            [['IdProduccionDetalleMoldeo', 'IdSerie', 'IdCicloTipo'], 'integer'],
             [['Comentarios'], 'string']
         ];
     }
@@ -45,7 +45,7 @@ class SeriesDetalles extends \yii\db\ActiveRecord
     {
         return [
             'IdSeriesDetalles' => 'Id Series Detalles',
-            'IdProduccionDetalle' => 'Id Produccion Detalle',
+            'IdProduccionDetalleMoldeo' => 'Id Produccion Detalle',
             'IdSerie' => 'Id Serie',
             'IdCicloTipo' => 'Id Ciclo Tipo',
             'Comentarios' => 'Comentarios',
@@ -55,9 +55,9 @@ class SeriesDetalles extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdProduccionDetalle()
+    public function getIdProduccionDetalleMoldeo()
     {
-        return $this->hasOne(ProduccionesDetalle::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
+        return $this->hasOne(ProduccionesDetalleMoldeo::className(), ['IdProduccionDetalleMoldeo' => 'IdProduccionDetalleMoldeo']);
     }
 
     /**

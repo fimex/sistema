@@ -72,10 +72,10 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.countProducciones = function(IdSubProceso,IdArea){
-        return $http.get('count-produccion',{params:{
-                IdSubProceso:IdSubProceso,
-                IdArea:IdArea
-            }}).success(function(data){
+        return $http.post('count-produccion',{
+            IdSubProceso:IdSubProceso,
+            IdArea:IdArea
+        }).success(function(data){
             $scope.producciones = [];
             $scope.producciones = data;
             if($scope.index === undefined){
@@ -135,11 +135,11 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     $scope.buscar = function(){
         $scope.showModal = !$scope.showModal;
         $scope.countProducciones($scope.IdSubProceso,$scope.IdArea);
-        return $http.get('produccion',{params:{
+        return $http.post('produccion',{
                 busqueda: true,
                 IdSubProceso:$scope.IdSubProceso,
                 IdArea:$scope.IdArea,
-            }}).success(function(data){
+            }).success(function(data){
             $scope.busquedas = data;
         });
     };
@@ -281,7 +281,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
      *******************************************************************/
 
     $scope.loadProduccion = function(){
-        return $http.get('produccion',{params:{IdProduccion:$scope.producciones[$scope.index].IdProduccion}}).success(function(data){
+        return $http.post('produccion',{IdProduccion:$scope.producciones[$scope.index].IdProduccion}).success(function(data){
             $scope.mostrar = true;
             $scope.produccion = data;
             $scope.loadData();
@@ -337,14 +337,17 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             IdCentroTrabajo:null,
             IdEmpleado:null,
             IdMaquina:null,
+            IdTurno:$scope.IdTurno,
             IdProduccionEstatus:1,
             IdSubProceso:$scope.IdSubProceso,
             lances:{IdAleacion:$scope.IdAleacion}
         };
         $scope.produccion = $scope.inserted;
+        console.log($scope.produccion);
     };
     
     $scope.saveProduccion = function (){
+        console.log($scope.produccion,$scope.IdMaquina);
         return $http.get('save-produccion',{params:{
             Fecha: $scope.Fecha,
             IdMaquina:$scope.IdMaquina,
@@ -406,11 +409,13 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveDetalle = function(index){
-        $scope.detalles[index].Fecha = $scope.produccion.Fecha;
-        return $http.get('save-detalle',{params:$scope.detalles[index]}).success(function(data) {
-            $scope.detalles[index] = data;
-            $scope.loadProgramacion();
-        });
+        if($scope.controlClick('detalles',index)){
+            $scope.detalles[index].Fecha = $scope.produccion.Fecha;
+            return $http.get('save-detalle',{params:$scope.detalles[index]}).success(function(data) {
+                $scope.detalles[index] = data;
+                $scope.loadProgramacion();
+            });
+        }
     };
     
     $scope.deleteDetalle = function(index){
@@ -526,10 +531,12 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveRechazo = function(index){
-        return $http.get('save-rechazo',{params:$scope.rechazos[index]}).success(function(data) {
-            $scope.rechazos[index] = data;
-            $scope.loadDetalle();
-        });
+        if($scope.controlClick('rechazos',index)){
+            return $http.get('save-rechazo',{params:$scope.rechazos[index]}).success(function(data) {
+                $scope.rechazos[index] = data;
+                $scope.loadDetalle();
+            });
+        }
     };
     /********************************************************************
      *                        CONTROL DE FALLAS
@@ -549,6 +556,8 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         return $http.get('tiempos',{params:{
                 IdMaquina: $scope.produccion.IdMaquina,
                 Fecha: $scope.produccion.Fecha,
+                IdEmpleado: $scope.produccion.IdEmpleado,
+                IdTurno: $scope.produccion.IdTurno,
             }}).success(function(data) {
             $scope.TiemposMuertos = [];
             $scope.TiemposMuertos = data;
@@ -575,6 +584,8 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
                 Inicio:'00:00',
                 Fin:'00:00',
                 Descripcion:'',
+                IdTurno: $scope.produccion.IdTurno,
+                IdEmpleado: $scope.produccion.IdEmpleado
             };
             $scope.TiemposMuertos.push($scope.inserted);
             //$scope.TiemposMuertos($scope.TiemposMuertos.length - 1);
@@ -582,11 +593,13 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveTiempo = function(index){
-        if(($scope.TiemposMuertos[index].Incio != '00:00' && $scope.TiemposMuertos[index].Fin != '00:00') || $scope.TiemposMuertos[index].IdCausa != null){
-            return $http.get('save-tiempo',{params:$scope.TiemposMuertos[index]}).success(function(data) {
-                $scope.TiemposMuertos[index] = data;
-            });
-        }   
+        if($scope.controlClick('TiemposMuertos',index)){
+            if(($scope.TiemposMuertos[index].Incio != '00:00' && $scope.TiemposMuertos[index].Fin != '00:00') || $scope.TiemposMuertos[index].IdCausa != null){
+                return $http.get('save-tiempo',{params:$scope.TiemposMuertos[index]}).success(function(data) {
+                    $scope.TiemposMuertos[index] = data;
+                });
+            }
+        }
     };
     
     /********************************************************************
@@ -635,10 +648,12 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveConsumo = function(index){
+        if($scope.controlClick('consumos',index)){
         //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-        return $http.get('save-consumo',{params:$scope.consumos[index]}).success(function(data) {
-            $scope.consumos[index] = data;
-        });
+            return $http.get('save-consumo',{params:$scope.consumos[index]}).success(function(data) {
+                $scope.consumos[index] = data;
+            });
+        }
     };
     
     /********************************************************************
@@ -682,11 +697,13 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveTemperatura = function(index){
-        return $http.get('save-temperatura',{params:$scope.temperaturas[index]}).success(function(data) {
-            if(data != false){
-                $scope.temperaturas[index] = data;
-            }
-        });
+        if($scope.controlClick('temperaturas',index)){
+            return $http.get('save-temperatura',{params:$scope.temperaturas[index]}).success(function(data) {
+                if(data != false){
+                    $scope.temperaturas[index] = data;
+                }
+            });
+        }   
     };
     
     /********************************************************************
@@ -730,16 +747,18 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveAlmasDetalle = function(index){
-        console.log($scope.detalles[index]);
-        $scope.detalles[index].Fecha = $scope.produccion.Fecha;
-        return $http.get('save-almas-detalle',{params:$scope.detalles[index]}).success(function(data) {
-            if(data == false){
-                alert('Error en el sistema: favor de notificar al area de sistemas Ext. 225')
-            }else{
-                $scope.detalles[index] = data;
-            }
+        if($scope.controlClick('detalles',index)){
             console.log($scope.detalles[index]);
-        });
+            $scope.detalles[index].Fecha = $scope.produccion.Fecha;
+            return $http.get('save-almas-detalle',{params:$scope.detalles[index]}).success(function(data) {
+                if(data == false){
+                    alert('Error en el sistema: favor de notificar al area de sistemas Ext. 225')
+                }else{
+                    $scope.detalles[index] = data;
+                }
+                console.log($scope.detalles[index]);
+            });
+        }
     };
     
     $scope.deleteAlmasDetalle = function(index){
@@ -811,11 +830,13 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.saveAlmaRechazo = function(index){
-        return $http.get('save-almas-rechazo',{params:$scope.almasRechazos[index]}).success(function(data) {
-            IdAlmaProduccionDetalle = $scope.almasRechazos[index].IdAlmaProduccionDetalle;
-            $scope.almasRechazos[index] = data;
-            $http.get('total-rechazo',{params:{IdAlmaProduccionDetalle:IdAlmaProduccionDetalle}}).success(function(data){$scope.detalles[$scope.indexDetalle].Rechazadas = data;});
-        });
+        if($scope.controlClick('almasRechazos',index)){
+            return $http.get('save-almas-rechazo',{params:$scope.almasRechazos[index]}).success(function(data) {
+                IdAlmaProduccionDetalle = $scope.almasRechazos[index].IdAlmaProduccionDetalle;
+                $scope.almasRechazos[index] = data;
+                $http.get('total-rechazo',{params:{IdAlmaProduccionDetalle:IdAlmaProduccionDetalle}}).success(function(data){$scope.detalles[$scope.indexDetalle].Rechazadas = data;});
+            });
+        }
     };
     
     $scope.orden = function (dato,accion){
@@ -882,5 +903,17 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             };
         }
         return mostrar;
+    };
+    
+    $scope.controlClick = function(arr,index){
+        $scope[arr][index]['active'] = $scope[arr][index]['active'] == undefined ? true : $scope[arr][index]['active'];
+
+        if($scope[arr][index]['active'] == false){
+            console.log('entro y no hizo nada');
+            return false;
+        }
+        
+        $scope[arr][index]['active'] = false;
+        return true;
     };
 });

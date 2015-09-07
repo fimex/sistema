@@ -313,9 +313,9 @@ if($area == 2){
             </tr>
             <tr>
                 <th>TON PRG</th>
-                <th>{{resumen.TonPrgK | currency:'':0}}</th>
-                <th>{{resumen.TonPrgV | currency:'':0}}</th>
-                <th>{{resumen.TonPrgE | currency:'':0}}</th>
+                <th>{{ resumen.TonPrgK == 0 ? 0 : resumen.TonPrgK | currency:'':3}}</th>
+                <th>{{resumen.TonPrgV | currency:'':3}}</th>
+                <th>{{resumen.TonPrgE | currency:'':3}}</th>
             </tr>
             <tr>
                 <th>TON VAC</th>

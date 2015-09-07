@@ -2,6 +2,8 @@
 
 namespace frontend\models\produccion;
 
+use Yii;
+
 /**
  * This is the model class for table "Series".
  *

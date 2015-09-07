@@ -16,9 +16,13 @@ use common\models\datos\Maquinas;
  * @property string $Fin
  * @property string $Descripcion
  * @property string $Fecha
+ * @property integer $IdTurno
+ * @property integer $IdEmpleado
  *
  * @property Causas $idCausa
+ * @property Empleados $idEmpleado
  * @property Maquinas $idMaquina
+ * @property Turnos $idTurno
  */
 class TiemposMuerto extends \yii\db\ActiveRecord
 {
@@ -36,8 +40,8 @@ class TiemposMuerto extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdMaquina', 'IdCausa', 'Inicio', 'Fin'], 'required'],
-            [['IdMaquina', 'IdCausa'], 'integer'],
+            [['IdMaquina', 'IdCausa', 'Fecha'], 'required'],
+            [['IdMaquina', 'IdCausa', 'IdTurno', 'IdEmpleado'], 'integer'],
             [['Inicio', 'Fin', 'Fecha'], 'safe'],
             [['Descripcion'], 'string']
         ];
@@ -56,6 +60,8 @@ class TiemposMuerto extends \yii\db\ActiveRecord
             'Fin' => 'Fin',
             'Descripcion' => 'Descripcion',
             'Fecha' => 'Fecha',
+            'IdTurno' => 'Id Turno',
+            'IdEmpleado' => 'Id Empleado',
         ];
     }
 
@@ -70,8 +76,24 @@ class TiemposMuerto extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getIdEmpleado()
+    {
+        return $this->hasOne(Empleados::className(), ['IdEmpleado' => 'IdEmpleado']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getIdMaquina()
     {
         return $this->hasOne(Maquinas::className(), ['IdMaquina' => 'IdMaquina']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdTurno()
+    {
+        return $this->hasOne(Turnos::className(), ['IdTurno' => 'IdTurno']);
     }
 }

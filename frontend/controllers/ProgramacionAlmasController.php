@@ -113,16 +113,27 @@ class ProgramacionAlmasController extends Controller
     public function actionSemanal($semana1 = '',$fecha = '')
     {
         $this->layout = 'programacion';
+		
+		 $area = Yii::$app->session->get('area');
+		 $area = $area['IdArea'];
+		 
+		 if ($area == 2 ) $title = 'Programación semanal almas ( ACEROS ) ';
+		 else $title = 'Programación semanal almas ( Bronce ) F-PC-7.0-49/1';
         
         return $this->render('programacionSemanal',[
-            'title'=>'Programación semanal almas ( Bronce ) F-PC-7.0-49/1',
-        ]);
+            'title'=>$title,
+       ]);
     }
     
     public function actionDiaria($AreaProceso,$subProceso=2,$semana = '')
     {
         $this->layout = 'programacion';
         
+		$area = Yii::$app->session->get('area');
+		$area = $area['IdArea'];
+		if ($area == 2 ) $title = 'Programación diaria almas ( ACEROS ) ';
+		else $title = 'Programación diaria almas ( Bronce )  F-PC-7.0-50/1';
+		
         $mes = date('m');
         if($semana == ''){
             $semana2 = $mes == 12 && date('W') == 1 ? array(date('Y')+1,date('W')) : array(date('Y'),date('W'));
@@ -135,7 +146,7 @@ class ProgramacionAlmasController extends Controller
         $AreaProceso = AreaProcesos::findOne($AreaProceso);
         
         return $this->render('programacionDiaria',[
-            'title'=>'Programación diaria almas ( Bronce )  F-PC-7.0-50/1',
+             'title'=>$title,
             'area'=>$AreaProceso->IdArea,
             'IdSubProceso'=>2,
             'semana'=>$semana,
@@ -222,6 +233,7 @@ class ProgramacionAlmasController extends Controller
         $model = new ProgramacionAlmas();
 
         $dat = $_GET;
+
         $datosSemana1 = $dat['IdProgramacionAlma'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         $model->setProgramacionSemanal($datosSemana1);
         return var_dump($dat);

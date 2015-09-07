@@ -29,11 +29,16 @@ class AppAsset extends AssetBundle
         'css/styles.css',
     ];
     public $js = [
+        //'js/angular/jquery.dataTables.js',
+        //'js/angular/dataTables.fixedColumns.js',
+        //'js/fixedtable.js',
         'js/easy_ui/jquery.easyui.min.js',
         'js/easy_ui/datagrid-groupview.js',
         'js/easy_ui/datagrid-filter.js',
         'js/jquery.fixedheadertable.js',
         'js/angular/angular.min.js',
+        //'js/angular/angular-touch.js', // para el frozen
+        //'js/angular/ui-grid.js', // para el frozen
         'js/angular/ui-bootstrap-tpls-0.13.0.min.js',
         'js/angular/i18n/angular-locale_es-mx.js',
         'js/angular/ng-table-master/dist/ng-table.js',
@@ -46,6 +51,7 @@ class AppAsset extends AssetBundle
         'js/angular.pruebas.js',
         'js/angular.almas.programacion.js',
         'js/angular.programacion.js',
+        //'js/angular.programacion_acero.js',
         'js/angular/flexy-layout.min.js',
         'js/angular/Block.js',
         'js/angular/Directives.js',

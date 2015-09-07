@@ -17,11 +17,12 @@ if($area == 4){
     <div id="opacidad" ng-show="isLoading"></div>
     <div class="animacionGiro" ng-show="isLoading"></div>
     <div id="semanal" class="scrollable">
-    <table ng-table fixed-table-headers="semanal" class="table table-striped table-bordered table-hover">
+    <table ng-table fixed-table-headers="semanal" class="table table-striped table-bordered table-hover" id="semana" >
         <thead>
             <tr>
+                <th ng-show="mostrar" style="min-width: 30px" rowspan="2"></th>
             <?php if($area == 2){ ?>
-                <th ng-show="mostrar" style="max-width: 100px" rowspan="2">
+                <th ng-show="mostrar" style="max-width: 100px"  rowspan="2">
                     Cliente<br />
                     <span ng-click="orden('Marca',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
                     <span ng-click="orden('Marca',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
@@ -56,7 +57,7 @@ if($area == 4){
                     <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
                     <span ng-click="orden('Producto',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true"></span>
                     <br />
-                    <input class="form-control" ng-model="filtro.descripcion" />
+                    <input class="form-control" ng-model="filtro.producto" />
                 </th>
             <?php if($area == 3){ ?>
                 <th ng-show="mostrar" style="max-width: 100px" rowspan="2">
@@ -223,13 +224,13 @@ if($area == 4){
                 }"
                 ng-click="setSelected(programacion);"
                 ng-class="{warning:selected.IdProgramacion == programacion.IdProgramacion}">
-            <?php if($area == 3){ ?>
                 <th ng-show="mostrar" > <input type="checkbox" class="form-control" name="Cerrado[]" value="{{programacion.IdProgramacion}}"  /></th>
+            <?php if($area == 3){ ?>
                 <th ng-show="mostrar" >{{programacion.OrdenCompra}}</th>
             <?php } ?>
                 <th ng-show="mostrar" style="max-width: 100px">{{programacion.Marca}}</th>
                 <th title="{{programacion.Descripcion}}" ng-show="mostrar" >{{programacion.Descripcion | uppercase | limitTo : 15}}</th>
-                <th title="{{programacion.Descripcion}}" ng-show="mostrar" >{{programacion.Producto | uppercase | limitTo : 15}} - {{programacion.ProductoCasting | uppercase | limitTo : 15}}</th>
+                <th title="{{programacion.producto}}" ng-show="mostrar" >{{programacion.Producto | uppercase | limitTo : 15}}</th>
             <?php if($area == 3){ ?>
                 <th ng-show="mostrar" style="min-width: 150px">{{programacion.FechaEmbarque | date:'dd-MMM-yyyy'}}</th>
                 <th ng-show="mostrar" ><input type="date" style="width:135px;height: 25px;" ng-change="saveEnvio(programacion.IdPedido,programacion.FechaEnvio);" ng-model="programacion.FechaEnvio" value="{{programacion.FechaEnvio | date:'yyyy-MM-dd'}}" ></th>
@@ -250,8 +251,8 @@ if($area == 4){
                 <th valign="middle">{{programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting }}</th>
                 <th>{{ programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting/programacion.PiezasMolde | number : 0 }}</th>
                 <th>{{((1 * programacion.Programadas1) + (1 * programacion.Programadas2) + (1 * programacion.Programadas3) + (1 * programacion.Programadas4)) | number : 1}}</th>
-                <th style="max-width: 100px">{{programacion.IdAreaAct == null ? programacion.CiclosMoldeA : ''}}</th>
-                <th style="max-width: 100px">{{programacion.IdAreaAct == 2 ? programacion.CiclosMoldeA : ''}}</th>
+                <th style="max-width: 100px">{{programacion.IdAreaAct != 2 ? programacion.CiclosMolde : ''}}</th>
+                <th style="max-width: 100px">{{programacion.IdAreaAct == 2 ? programacion.CiclosMolde : ''}}</th>
                 <th style="max-width: 100px">{{programacion.AreaAct}}</th>
             <?php } ?>
             <?php if($area == 3){ ?>

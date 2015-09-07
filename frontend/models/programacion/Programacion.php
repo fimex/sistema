@@ -135,12 +135,29 @@ class Programacion extends \yii\db\ActiveRecord
         $area = Yii::$app->session->get('area');
         $area = $area['IdArea'];
         
+        $command = \Yii::$app->db;
+        
         if($area == 2){
             $where = "";//"WHERE IdAreaAct IN(1,2,3)";
             $from = "f_GetProgramacionesAcero";
         }else{
             $where = "";//"WHERE IdAreaAct = 4";
             $from = "f_GetProgramaciones";
+            
+            $sql = "UPDATE dbo.Programaciones SET
+                dbo.Programaciones.IdProgramacionEstatus = 2003,
+                dbo.Programaciones.FechaCerrado = CONVERT (date, GETDATE()),
+                dbo.Programaciones.HoraCerrado = CONVERT (time, GETDATE()),
+                dbo.Programaciones.CerradoPor = 'ServidorCont',
+                dbo.Programaciones.CerradoPC = 'ServidorCont'
+
+                FROM
+                dbo.Pedidos
+                INNER JOIN dbo.Programaciones ON dbo.Programaciones.IdPedido = dbo.Pedidos.IdPedido
+                WHERE
+                dbo.Pedidos.SaldoCantidad <= 0 AND
+                dbo.Programaciones.IdProgramacionEstatus = 1";
+            $result =$command->createCommand($sql)->execute();
         }
 
         
@@ -151,22 +168,6 @@ class Programacion extends \yii\db\ActiveRecord
         
         $params = implode(",",$arreglo);
         
-        $command = \Yii::$app->db;
-        $sql = "UPDATE dbo.Programaciones SET
-            dbo.Programaciones.IdProgramacionEstatus = 2003,
-            dbo.Programaciones.FechaCerrado = CONVERT (date, GETDATE()),
-            dbo.Programaciones.HoraCerrado = CONVERT (time, GETDATE()),
-            dbo.Programaciones.CerradoPor = 'ServidorCont',
-            dbo.Programaciones.CerradoPC = 'ServidorCont'
-
-            FROM
-            dbo.Pedidos
-            INNER JOIN dbo.Programaciones ON dbo.Programaciones.IdPedido = dbo.Pedidos.IdPedido
-            WHERE
-            dbo.Pedidos.SaldoCantidad <= 0 AND
-            dbo.Programaciones.IdProgramacionEstatus = 1";
-        $result =$command->createCommand($sql)->execute();
-       
         $sql = "SELECT *, 
                 IIF( PiezasMolde != 0, (Cantidad / PiezasMolde), 0 ) AS Moldes,
                 CASE 
@@ -179,10 +180,9 @@ class Programacion extends \yii\db\ActiveRecord
                 END AS Maq
                 FROM $from($area,$params) 
                 $where ORDER BY Producto, Estatus, FechaEmbarque ASC";
-        
+        //echo $sql;
         $result =$command->createCommand($sql)->queryAll();
-       
-       if(count($result)!=0){
+        if(count($result)!=0){
             return new ArrayDataProvider([
                 'allModels' => $result,
                 'key'=>['IdProgramacionSemana1','IdProgramacionSemana2','IdProgramacionSemana3','IdProgramacionSemana4'],

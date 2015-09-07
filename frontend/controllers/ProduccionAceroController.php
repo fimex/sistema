@@ -5,7 +5,9 @@ namespace frontend\controllers;
 use Yii;
 use frontend\models\produccion\TiemposMuerto;
 use frontend\models\produccion\Temperaturas;
+use frontend\models\produccion\TiempoAnalisis;
 use frontend\models\produccion\MaterialesVaciado;
+use frontend\models\produccion\ProduccionesDetalleMoldeo;
 use frontend\models\produccion\ProduccionesDetalle;
 use frontend\models\produccion\ProduccionesDefecto;
 use frontend\models\produccion\Producciones;
@@ -23,6 +25,8 @@ use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\produccion\VDetalleProduccion;
 use frontend\models\produccion\VProgramacionDiaAcero;
 use frontend\models\produccion\VProgramacionCiclosAcero;
+use frontend\models\produccion\MantenimientoHornos;
+use common\models\vistas\VAleaciones;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\VProduccion2;
 use common\models\catalogos\Maquinas;
@@ -32,6 +36,7 @@ use common\models\catalogos\VEmpleados;
 use common\models\datos\Causas;
 use common\models\catalogos\Materiales;
 use common\models\catalogos\Lances;
+use common\models\vistas\VLances;
 use common\models\catalogos\PartesMolde;
 use common\models\dux\Aleaciones;
 use common\models\dux\Productos;
@@ -64,24 +69,19 @@ class ProduccionAceroController extends \yii\web\Controller
     }
     public function actionMoldeoV()
     {
-        return $this->CapturaMoldeo(6,2);
+        return $this->CapturaProduccion(7,2);
     }
     public function actionMoldeoK()
     {
-        return $this->CapturaMoldeo(6,1);
+        return $this->CapturaProduccion(6,1);
     }
     public function actionMoldeoE()
     {
-        return $this->CapturaMoldeo(6,3);
+        return $this->CapturaProduccion(17,3);
     }
     public function actionCerradoK()
     {
-        $this->layout = 'produccionAceros';
-
-        return $this->render('CerradoK', [
-            'title' => 'Cerrado Kloster',
-            'IdSubProceso'=> 6,
-            ]);
+        return $this->CapturaCerrado();
     }
     public function actionVaciado()
     {
@@ -90,6 +90,10 @@ class ProduccionAceroController extends \yii\web\Controller
         return $this->render('Vaciado', [
             'title' => 'Vaciado',
             ]);
+    }
+    public function actionVaciadoAcero()
+    {
+        return $this->CapturaProduccion(10,1);
     }
     public function CapturaSeries()
     {
@@ -100,7 +104,7 @@ class ProduccionAceroController extends \yii\web\Controller
         ]);
     }  
 
-    public function CapturaMoldeo($subProceso, $IdArea, $IdEmpleado = ''){
+    public function CapturaProduccion($subProceso, $IdArea, $IdEmpleado = ''){
         $this->layout = 'produccionAceros';
         return $this->render('CapturaProduccionAcero', [
             'title' => 'Captura de Produccion',
@@ -111,11 +115,35 @@ class ProduccionAceroController extends \yii\web\Controller
         ]);
     }
 
+    public function CapturaCerrado($IdEmpleado = '')
+    {
+        $this->layout = 'produccionAceros';
+
+        return $this->render('CapturaCerrado', [
+            'title' => 'Cerrado Kloster',
+            'IdSubProceso'=> 9,    
+            'Proceso' => 'Cerrado',  
+            'IdEmpleado' => $IdEmpleado == ' ' ? Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'] : $IdEmpleado,
+            ]);
+    }
 
     public function actionProductosSeries(){
 
         $model = ConfiguracionSeries::find()->asArray()->all();
 
+        return json_encode($model);
+    }
+
+    public function actionAleaciones(){
+       
+        $model = VAleaciones::find()->where(['IdPresentacion' => $this->areas->getCurrent(),])->orderBy('Identificador')->asArray()->all();
+        
+        foreach($model as &$mod){
+            $mod['IdAleacion'] *= 1;
+            $mod['IdAleacionTipo'] *= 1;
+            $mod['IdPresentacion'] *= 1;
+        }
+        
         return json_encode($model);
     }
 
@@ -127,9 +155,9 @@ class ProduccionAceroController extends \yii\web\Controller
 
 
     public function actionProduccion(){
+
         if ( $_GET['IdProduccion']) {
           
-       
         $model = Producciones::find()
                 ->where(['IdProduccion' => $_GET['IdProduccion']])
                 ->with('lances')
@@ -164,51 +192,112 @@ class ProduccionAceroController extends \yii\web\Controller
         return json_encode($model);
     }
 
+
+    public function actionDetalleVaciado(){
+        $model = VProgramacionDiaAcero::find()->where("Dia = '".$_GET['Dia']."' AND IdArea = ".$_GET['IdArea']." AND IdSubProceso = ".$_GET['IdSubProceso']." ")->asArray()->all();
+
+        foreach ($model as &$value) {
+            $detalle = ProduccionesDetalle::find()->where("IdProgramacion = ".$value['IdProgramacion']." AND IdProductos = ".$value['IdProducto']." AND IdProduccion = ".$_GET['IdProduccion']."")->asArray()->one();
+
+            if ($detalle != null) {
+                $value['Hechas'] = $detalle['Hechas'];
+                $value['IdProduccionDetalle'] = $detalle['IdProduccionDetalle'];
+                $value['Rechazadas'] = $detalle['Rechazadas'];
+            }
+        }
+        
+        foreach($model as &$mod){
+            $mod['Class'] = "";
+        }
+        
+        return json_encode($model);
+    }
+
     public function actionDetalle(){
         //$model = VDetalleProduccion::find()->where($_GET)->asArray()->all();
         $_GET['Dia'] = date('Y-m-d',strtotime($_GET['Dia']));
-       
+        $in = '';
+
         if ($_GET['Dia'] != '' && $_GET['IdArea'] != '' && $_GET['IdArea'] != 'IdProduccion') {
         
             $model = VProgramacionDiaAcero::find()->where("Dia =  '".$_GET['Dia']."' AND IdArea = ".$_GET['IdArea']." AND IdAreaAct = ".$_GET['IdAreaAct']." AND IdSubProceso = ".$_GET['IdSubProceso']." ")->asArray()->all();
-            //var_dump($model);exit;
             if ($model != null) {
                 foreach ($model as &$value ) {
-                    $ciclos = VProgramacionCiclosAcero::find()->where("IdProductos = ".$value['IdProducto']." AND IdProgramacion = ".$value['IdProgramacion']." AND IdProduccion = ".$_GET['IdProduccion']." ")->asArray()->one();
+                    $in = '';
+                    $produccion = Producciones::find()->where("Fecha = '".$_GET['Dia']."' AND IdArea = ".$_GET['IdArea']." AND IdCentroTrabajo = ".$_GET['IdCentroTrabajo']." AND IdMaquina = ".$_GET['IdMaquina']." AND IdEmpleado = ".$_GET['IdEmpleado']." AND IdSubProceso IN (8,9) ")->asArray()->all();
+                    foreach ($produccion as $key) {
+                        $in .= "".$key['IdProduccion'].",";
+                    }
+                    $in .= $_GET['IdProduccion'];
+
+                    $ciclos = VProgramacionCiclosAcero::find()->select('IdProducto, IdProgramacion, 
+                                                                        SUM(CantK) AS CantK, 
+                                                                        SUM(CantV) AS CantV, 
+                                                                        SUM(CantE) AS CantE, 
+                                                                        SUM(ReposicionK) AS ReposicionK, 
+                                                                        SUM(ReposicionV) AS ReposicionV, 
+                                                                        SUM(ReposicionE) AS ReposicionE, 
+                                                                        SUM(CantC) AS CantC,
+                                                                        SUM(RechazadasP) AS RechazadasP, 
+                                                                        SUM(RechazadasC) AS RechazadasC, 
+                                                                        SUM(RechazadasM) AS RechazadasM, 
+                                                                        SUM(RechazadasR) AS RechazadasR, 
+                                                                        SUM(RechazadasV) AS RechazadasV, 
+                                                                        SUM(CantVaciadas) AS CantVaciadas')
+                                                                ->where("IdProducto = ".$value['IdProducto']." 
+                                                                        AND IdProgramacion = ".$value['IdProgramacion']."
+                                                                        AND IdProduccion IN ($in)")->groupby('IdProducto, IdProgramacion')
+                                                                ->asArray()->one();
+                   
 
                     if($ciclos != null){
-                        $value['CiclosOk'] = ($ciclos['Cant'] ) - ($ciclos['RechazadasP'] + $ciclos['RechazadasC']);
+                        $value['CiclosOkV'] = ($ciclos['CantV'] ) - ($ciclos['RechazadasP'] + $ciclos['RechazadasC']); //Varel
+                        $value['CiclosOkE'] = ($ciclos['CantE'] ) - ($ciclos['RechazadasP'] + $ciclos['RechazadasC']); //Especial
                         $value['CiclosOkC'] =   $ciclos['CantC'];
-                        $value['MoldesOK'] = (($ciclos['Cant'] - ($ciclos['RechazadasP'] + $ciclos['RechazadasC'])) / $value['CiclosMolde']) ; //floor se quito para que ya no redondeara a hacia arriba 1.5 = 1, 2.5 = 2
+                        $value['MoldesOKV'] = (($ciclos['CantV'] - ($ciclos['RechazadasP'] + $ciclos['RechazadasC'])) / $value['CiclosMolde']) ; //floor se quito para que ya no redondeara a hacia arriba 1.5 = 1, 2.5 = 2
+                        $value['MoldesOKE'] = (($ciclos['CantE'] - ($ciclos['RechazadasP'] + $ciclos['RechazadasC'])) / $value['CiclosMolde']) ; //floor se quito para que ya no redondeara a hacia arriba 1.5 = 1, 2.5 = 2
                         $value['RechazadasP'] = $ciclos['RechazadasP'];
                         $value['RechazadasC'] = $ciclos['RechazadasC'];
                         $value['RechazadasM'] = $ciclos['RechazadasM'];
                         $value['RechazadasR'] = $ciclos['RechazadasR'];
-                        $value['CicRequeridosV'] = ($value['CicRequeridos'] + $ciclos['RechazadasP'] + $ciclos['RechazadasC']) - ($ciclos['Cant']);
-                        
+                        $value['RechazadasV'] = $ciclos['RechazadasV'];
+                        $value['CantVaciadas'] = $ciclos['CantVaciadas'];
+                        $value['CicRequeridosV'] = ($value['CicRequeridos'] + $ciclos['RechazadasP'] + $ciclos['RechazadasC']) - ($ciclos['CantV']);
+                        $value['CicRequeridosE'] = ($value['CicRequeridos'] + $ciclos['RechazadasP'] + $ciclos['RechazadasC']) - ($ciclos['CantE']);
+
                         // Calculo para los ciclos requeridos en Kloster
-                        $value['CiclosOkK'] = $ciclos['Cant'];
+                        $value['CiclosOkK'] = $ciclos['CantK'];
 
-                        $RechazadasP = $ciclos['RechazadasP'] == 0 ? 0 : ($ciclos['RechazadasP'] * $value['CiclosMolde']);
-                        $RechazadasC = $ciclos['RechazadasC'] == 0 ? 0 : ($ciclos['RechazadasC'] * $value['CiclosMolde']);
-                        $RechazadasM = $ciclos['RechazadasM'] == 0 ? 0 : ($ciclos['RechazadasM'] * $value['CiclosMolde']);
-                        $value['CicRequeridosK'] = ($value['CicRequeridos'] + $RechazadasP + $RechazadasC + $RechazadasM)  - $ciclos['Cant'];
+                        $RechazadasP = $ciclos['RechazadasP'] == 0 ? 0 : ($ciclos['RechazadasP'] / $value['CiclosMolde']);
+                        $RechazadasC = $ciclos['RechazadasC'] == 0 ? 0 : ($ciclos['RechazadasC'] / $value['CiclosMolde']);
+                        $RechazadasM = $ciclos['RechazadasM'] == 0 ? 0 : ($ciclos['RechazadasM'] / $value['CiclosMolde']);
+                        $value['CicRequeridosK'] = ($value['CicRequeridos'] + $RechazadasP + $RechazadasC + $RechazadasM + $value['RechazadasR']) - $ciclos['CantK'];
 
-                        $value['MoldesOKK'] = floor((($ciclos['Cant'] - ($ciclos['RechazadasP'] + $ciclos['RechazadasC'] + $ciclos['RechazadasM'])) / $value['CiclosMolde']));
+                        $value['MoldesOKK'] = floor((($ciclos['CantK'] - ($ciclos['RechazadasP'] + $ciclos['RechazadasC'] + $ciclos['RechazadasM'])) / $value['CiclosMolde']));
+                        $value['RechazoK'] = ($ciclos['RechazadasP']  + $ciclos['RechazadasC']  + $ciclos['RechazadasM']  + $value['RechazadasR']) / $value['CiclosMolde'];
 
-                        $value['FaltaLlenadas'] = $value['Programadas'] - $value['Llenadas']; 
-                        $value['FaltaCerradas'] = floor($ciclos['Cant'] / $value['CiclosMolde']) - $value['CiclosOkC'];
+                        $value['FaltaLlenadasV'] = $value['Programadas'] - $value['CiclosOkV']; 
+                        $value['FaltaLlenadasE'] = $value['Programadas'] - $value['CiclosOkE']; 
+                        $value['FaltaLlenadasK'] = $value['Programadas'] - $value['CiclosOkK']; 
+                        $value['FaltaCerradasV'] = floor($ciclos['CantV'] / $value['CiclosMolde']) - $value['CiclosOkC'];
+                        $value['FaltaCerradasE'] = floor($ciclos['CantE'] / $value['CiclosMolde']) - $value['CiclosOkC'];
+                        $value['FaltaCerradasK'] = floor($ciclos['CantK'] / $value['CiclosMolde']) - $value['CiclosOkC'];
 
                     }else{
-                        $value['CiclosOk'] = 0;
-                         $value['CiclosOkK'] = 0;
+                        $value['CiclosOkV'] = 0;
+                        $value['CiclosOkE'] = 0;
+                        $value['CiclosOkK'] = 0;
                         $value['CiclosOkC'] = 0;
-                        $value['MoldesOK'] = 0;
+                        $value['MoldesOKV'] = 0;
+                        $value['MoldesOKE'] = 0;
                         $value['MoldesOKK'] = 0;
+                        $value['RechazoK'] = 0;
                         $value['RechazadasP'] = 0;
                         $value['RechazadasC'] = 0;
                         $value['RechazadasM'] = 0;
                         $value['RechazadasR'] = 0;
+                        $value['RechazadasV'] = 0;
+                        $value['CantVaciadas'] = 0;
                         $value['CicRequeridosK'] = $value['CicRequeridos'];
                         $value['CicRequeridosV'] = $value['CicRequeridos'];
                     }
@@ -301,6 +390,62 @@ class ProduccionAceroController extends \yii\web\Controller
         return json_encode($producto[0]);
     }
 
+    public function actionMaterial($IdSubProceso){
+        $model = Materiales::find()->where([
+            'IdSubProceso' => $IdSubProceso,
+            'IdArea'=>$this->areas->getCurrent(),
+        ])->asArray()->all();
+        return json_encode($model);
+    }
+
+    public function actionConsumo(){
+        if(isset($_GET['IdProduccion'])){
+            $model = MaterialesVaciado::find()->where($_GET)->asArray()->all();
+            foreach ($model as &$mod){
+                $mod['Cantidad'] *=1; 
+            }
+            return json_encode($model);
+        }
+    }
+
+    public function actionTemperaturas($IdTemperatura = ''){
+        if(isset($_GET['IdProduccion']) || $IdTemperatura != ''){
+            $params = $IdTemperatura != '' ? ['IdTemperatura' => $IdTemperatura] : $_GET;
+            if( $IdTemperatura != ''){
+                $model = Temperaturas::find()->where($params)->orderBy('Fecha')->asArray()->one();
+                        
+                $model['Temperatura'] *= 1;
+                $model['Temperatura2'] *= 1;
+                $model['Fecha2'] = date('Y-m-d',strtotime($model['Fecha']));
+                $model['Fecha'] = date('H:i',strtotime($model['Fecha']));
+            }else{
+                $model = Temperaturas::find()->where($params)->orderBy('Fecha')->asArray()->all();
+                        
+                foreach($model as &$mod){
+                    $mod['Temperatura'] *= 1;
+                    $mod['Temperatura2'] *= 1;
+                    $mod['Fecha2'] = date('Y-m-d',strtotime($mod['Fecha']));
+                    $mod['Fecha'] = date('H:i',strtotime($mod['Fecha']));
+                }
+            }
+            
+            return json_encode($model);
+        }
+    }
+
+    public function actionTiempoAnalisis(){
+        if(isset($_GET['IdProduccion'])){
+            $model = TiempoAnalisis::find()->where($_GET)->asArray()->all();
+
+            foreach ($model as &$key) {
+               $key['Tiempo'] = date('H:i',strtotime($key['Tiempo']));
+               $key['Fecha'] =  date('Y-m-d',strtotime($key['Tiempo']));
+            }
+
+            return json_encode($model);
+        }
+    }
+
     /************************************************************
      *                    FUNCIONES EN GENERAL
      ************************************************************/
@@ -309,7 +454,7 @@ class ProduccionAceroController extends \yii\web\Controller
 
         $serie = isset($_GET['Serie']) ? $_GET['SerieInicio'] : 0 ;
         $producto = isset($_GET['IdProducto']) ? $_GET['IdProducto'] : 0 ;
-        $model = ConfiguracionSeries::find()->where('SerieInicio = '.$serie.' OR IdProducto = '.$producto.'')->asArray()->one();
+        $model = ConfiguracionSeries::find()->where('SerieInicio = '.$serie.' AND IdProducto = '.$producto.'')->asArray()->one();
 
         if ($model == null) {
             $model = new ConfiguracionSeries();
@@ -327,8 +472,14 @@ class ProduccionAceroController extends \yii\web\Controller
 
 
     public function actionSaveProduccion(){
+        
         $data['Producciones'] = $_GET;
         $update = false;
+       // exit();
+        if ($data['Producciones']['IdSubProceso'] == 9) {
+            $data['Producciones']['IdMaquina'] = 1;
+            $data['Producciones']['IdCentroTrabajo'] = 1;
+        }
 
         if(!isset($data['Producciones']['IdArea'])){
             $data['Producciones']['IdArea'] = $this->areas->getCurrent();
@@ -341,9 +492,9 @@ class ProduccionAceroController extends \yii\web\Controller
         $data['Producciones']['Fecha'] = date('Y-m-d',strtotime($data['Producciones']['Fecha']));
 
         if(!isset($data['Producciones']['IdCentroTrabajo'])){
-            $data['Producciones']['IdCentroTrabajo'] = VMaquinas::find()->where(['IdMaquina'=>$data['Producciones']['IdMaquina']])->one()->IdCentroTrabajo;
+            $data['Producciones']['IdCentroTrabajo'] = VMaquinas::find()->where(['IdMaquina'=>$_GET['IdMaquina']])->one()->IdCentroTrabajo;
         }
-        
+       // echo $data['Producciones']['IdMaquina']; exit();
         if(!isset($data['Producciones']['IdProduccionEstatus'])){
             $data['Producciones']['IdProduccionEstatus'] = 1;
         }
@@ -361,17 +512,21 @@ class ProduccionAceroController extends \yii\web\Controller
         $model->load($data);
         $model->Observaciones = isset($data['Producciones']['Observaciones']) ? $data['Producciones']['Observaciones'] : "";
 
-        $model1 = Producciones::find()->where("Fecha = '".$data['Producciones']['Fecha']."' AND IdSubProceso = ".$data['Producciones']['IdSubProceso']." AND IdArea = 2 ")->asArray()->one();
+        $model1 = Producciones::find()->where("Fecha = '".$data['Producciones']['Fecha']."' AND IdSubProceso = ".$data['Producciones']['IdSubProceso']." AND IdMaquina = ". $data['Producciones']['IdMaquina']." AND IdEmpleado = ".$data['Producciones']['IdEmpleado']." AND IdArea = 2 ")->asArray()->one();
 
         if($model1){
             $datos[0] = $model1;
             $datos[1] = 1;
+           // print_r($datos);
             return json_encode($datos);
         }else{
            $model->save();
+           var_dump($model);
         }
+
         
-       if($model->IdSubProceso == 10 && $update == false){
+        if($model->IdSubProceso == 10){
+
             $this->SaveLance($data['Producciones'],$model);
             $materiales = json_decode($this->actionMaterial($model->IdSubProceso));
 
@@ -401,9 +556,96 @@ class ProduccionAceroController extends \yii\web\Controller
         $programacionDia = new ProgramacionesDia();
         $programacionDia->incrementa($_GET['id']);
     }
+
+    function getProduccion($datos){
+        $produccion = Producciones::find()->where("Fecha = '".$datos['Fecha']."' AND IdSubProceso = ".$datos['SubProceso']." AND IdArea = ".$datos['IdArea']." AND IdCentroTrabajo = ".$datos['IdCentroTrabajo']." AND IdMaquina = ".$datos['IdMaquina']." AND IdEmpleado = ".$datos['IdEmpleado']." ")->asArray()->one();
+        //$producciones = array();
+        if ($produccion == null) {
+            $model = new Producciones();
+            $model ->IdCentroTrabajo = $datos['IdCentroTrabajo'];
+            $model ->IdMaquina = $datos['IdMaquina'];
+            $model ->IdEmpleado = $datos['IdEmpleado'];
+            $model ->IdProduccionEstatus = $datos['IdProduccionEstatus'];
+            $model ->Fecha = $datos['Fecha'];
+            $model ->IdSubProceso = $datos['SubProceso'];
+            $model ->IdArea = $datos['IdArea'];
+            $model ->save();
+            $producciones = Producciones::find()->where("Fecha = '".$datos['Fecha']."' AND IdSubProceso = ".$datos['SubProceso']." AND IdArea = ".$datos['IdArea']." AND IdCentroTrabajo = ".$datos['IdCentroTrabajo']." AND IdMaquina = ".$datos['IdMaquina']." AND IdEmpleado = ".$datos['IdEmpleado']." ")->one();
+            return $producciones;
+        }
+
+        return $produccion;
+    }
+
+
+    function actionSaveVaciado(){
+      // var_dump($_GET); exit();
+
+        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
+        $_GET['Inicio'] = isset($_GET['Inicio']) ? $_GET['Inicio'] : '00:00';
+        $_GET['Fin'] = isset($_GET['Fin']) ? $_GET['Fin'] : '00:00';
+        $_GET['Inicio'] = str_replace('.',':',$_GET['Inicio']);
+        $_GET['Fin'] = str_replace('.',':',$_GET['Fin']);
+        $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
+        $_GET['Fin'] = ($_GET['Fin'] < $_GET['Inicio'] ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
+        $_GET['Eficiencia'] = isset($_GET['Eficiencia']) ? $_GET['Eficiencia'] : 1;
+        $_GET['IdProductos'] = $_GET['IdProducto'];
+
+        if ($_GET['op'] == 1) {
+            $_GET['Hechas'] = isset($_GET['Vaciar']) ? $_GET['Hechas'] : $_GET['Count'];
+        }else{
+            $_GET['Rechazadas'] = isset($_GET['Vaciar']) ? $_GET['Rechazadas'] : $_GET['Count'];
+        }
+
+        $model = new ProduccionesDetalle();
+        $IdDetalle = 'ProduccionesDetalle';
+        
+        if(!isset($_GET['IdProduccionDetalle'])){
+            $model->load([
+                "$IdDetalle"=>$_GET
+            ]);
+            $model->save();
+        }else{
+            $model = $model::findOne($_GET['IdProduccionDetalle']);
+            $model->load([
+                "$IdDetalle"=>$_GET
+            ]);
+            $model->update();
+        }
+
+        $model = ProduccionesDetalle::find()->where(["IdProduccionDetalle" => $model->IdProduccionDetalle])->with('idProductos')->with('idProduccion')->asArray()->one();
+        
+        $this->actualizaHechas($model,$_GET);
+
+        $series = explode(",", $_GET['Series']);
+
+        foreach ($series as $key => $serie) {
+            if ($serie != "") {
+                $modelS = Series::find()->where("IdProducto = ".$_GET['IdProducto']." AND IdSerie = ".$serie." AND Estatus = 'B' ")->one();
+                if ($modelS != null) {
+                    $modelS->IdSubProceso = $_GET['IdSubProceso'];
+                    $modelS->FechaHora = date("Y-m-d H:i:s");
+                    if ($_GET['op'] == 0) {
+                         $modelS->Estatus = 'R';
+                    }else{  $modelS->Estatus = 'B'; }
+                    $modelS->update();
+                }
+            }
+        }
+
+        return json_encode(
+            $model
+        );
+    }
+    
     
     function actionSaveDetalleAcero(){  
-        //var_dump($_GET); exit(); 
+       
+        $produccion = $this -> getProduccion($_GET);
+        if (isset($produccion['IdProduccion']) != null) {
+            $_GET['IdProduccion'] = $produccion['IdProduccion'];
+        }
+       // var_dump($_GET); exit();
 
         $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
         $_GET['Inicio'] = isset($_GET['Inicio']) ? $_GET['Inicio'] : '00:00';
@@ -411,7 +653,8 @@ class ProduccionAceroController extends \yii\web\Controller
         $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
         $_GET['Fin'] = ($_GET['Fin'] < $_GET['Inicio'] ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
         $_GET['Eficiencia'] = isset($_GET['Eficiencia']) ? $_GET['Eficiencia'] : 1;
-        
+        $_GET['IdEstatus'] = $_GET['IdCicloTipo'];
+
         $partesK = strlen($_GET['IdParteMoldeCapK']) >= 2 ? explode(",", $_GET['IdParteMoldeCapK']) : '';
 
         if(strlen($_GET['IdParteMoldeCapK']) == 2){      
@@ -421,80 +664,77 @@ class ProduccionAceroController extends \yii\web\Controller
         }elseif ($_GET['IdParteMoldeCapK'] == '') {
             $_GET['IdParteMolde'] = $_GET['IdParteMoldeCap'];
         }
-        //var_dump($_GET); exit();
-        //if($_GET['EstatusCiclos'] == 'B' || $_GET['EstatusCiclos'] == 'RE' || $_GET['EstatusCiclos'] == 'CB'){
-        if($_GET['IdCicloTipo'] == 1 || $_GET['IdCicloTipo'] == 2 || $_GET['IdCicloTipo'] == 5){
+
+        if($_GET['IdCicloTipo'] == 1){
             $_GET['CantidadCiclos'] = 1;
             $_GET['Hechas'] = 1;
             $rechazo = 0;
-            $_GET['IdCicloTipo'] == 5 ? $_GET['SerieInicio'] = $_GET['SerieR'] : isset($_GET['SerieInicio']);
-        }
-        //if($_GET['EstatusCiclos'] == 'R' || $_GET['EstatusCiclos'] == 'RM' ||  $_GET['EstatusCiclos'] == 'RC' || $_GET['EstatusCiclos'] == 'RCl'){
-        if($_GET['IdCicloTipo'] == 3 || $_GET['IdCicloTipo'] == 4 || $_GET['IdCicloTipo'] == 6 || $_GET['IdCicloTipo'] == 7){
-            $_GET['Rechazadas'] = 1;
-            $rechazo = 1;
-            $_GET['SerieInicio'] = isset($_GET['SerieR']) == true ? $_GET['SerieR'] : 0;
+
+            if ($_GET['SubProceso'] == 8 || $_GET['SubProceso'] == 9 || $_GET['SubProceso'] == 10) {
+                $_GET['SerieInicio'] = $_GET['SerieR'];
+            }
+
+            if ($_GET['IdCicloTipo'] == 1) {
+               isset($_GET['SerieInicio']);
+            }else{ 
+                isset($_GET['SerieInicio']);
+            }
         }
 
+        if($_GET['IdCicloTipo'] == 3 || $_GET['IdCicloTipo'] == 4){
+            $_GET['Rechazadas'] = 1;
+            $rechazo = 1;
+            //if (isset($_GET['SerieR']) != 'A' ) {
+            if ($_GET['IdCicloTipo'] == 3) {
+                $_GET['SerieInicio'] = $_GET['SerieR'];
+            }
+            if ($_GET['IdCicloTipo'] == 4 && isset($_GET['SerieInicio']) != '') {
+                $_GET['SerieInicio'] =  $_GET['SerieInicio'];
+            }
+        }
+
+        $model = new ProduccionesDetalleMoldeo();
+        $IdDetalle = 'ProduccionesDetalleMoldeo';
         
-        $model = new ProduccionesDetalle();
-        $IdDetalle = 'ProduccionesDetalle';
-        
-        if(!isset($_GET['IdProduccionDetalle'])){
+        if(!isset($_GET['IdProduccionDetalleMoldeo'])){
             $model->load([
                 "$IdDetalle"=>$_GET
             ]);
         }else{
-            $model = $model::findOne($_GET['IdProduccionDetalle']);
+            $model = $model::findOne($_GET['IdProduccionDetalleMoldeo']);
             $model->load([
                 "$IdDetalle"=>$_GET
             ]);
         }
          
         $model->save();
-       
-        $model = ProduccionesDetalle::find()->where(["IdProduccionDetalle" => $model->IdProduccionDetalle])->with('idProductos')->with('idProduccion')->asArray()->one();
-   
+        $model = ProduccionesDetalleMoldeo::find()->where(["IdProduccionDetalleMoldeo" => $model->IdProduccionDetalleMoldeo])->with('idProducto')->with('idProduccion')->asArray()->one();
+
         if($_GET['IdCicloTipo'] == 1){
-           $this->actualizaHechas($model);
+           $this->actualizaHechas($model,$_GET);
         }
 
-      
         if ($partesK != '') {
             foreach ($partesK as $parte ) {  
-                //echo "string ".$key;
-                //$parte = isset($_GET['IdParteMoldeCap']) == true ? $_GET['IdParteMoldeCap'] : 0; 
-                if ($model['idProductos']['IdParteMolde'] == $parte || $_GET['IdCicloTipo'] == 5 && $_GET['LlevaSerie'] == 'Si' && $_GET['SerieR'] != '' ) { 
-                    $resultSerie = $this->Series($_GET,$rechazo);
-                }            }
-        }else{
+                if (isset($_GET['LlevaSerie']) == 'Si') {
+                    if ($model['idProducto']['IdParteMolde'] == $parte && $_GET['SerieR'] != '' ) { 
+                        $resultSerie = $this->Series($_GET,$rechazo,$model['idProducto']['IdParteMolde']);
+                    }   
+                }         
+            }
+        }else{ 
             $parte = isset($_GET['IdParteMoldeCap']) == true ? $_GET['IdParteMoldeCap'] : 0;  
-            if ($model['idProductos']['IdParteMolde'] == $parte || $_GET['IdCicloTipo'] == 5 && $_GET['LlevaSerie'] == 'Si' && $_GET['SerieR'] != '' ) {
-                $resultSerie = $this->Series($_GET,$rechazo);
+            if (isset($_GET['LlevaSerie']) == 'Si') {
+                if ($model['idProducto']['IdParteMolde'] == $parte || $_GET['SerieR'] != '' || $_GET['IdSubProceso'] == 9) {
+                  $resultSerie = $this->Series($_GET,$rechazo,$model['idProducto']['IdParteMolde']);
+                }
             }
         }
-
-        //************ SERIE DE CICLOS BUENOS **************/
-        /*if ($model['idProductos']['IdParteMolde'] == $parte || $_GET['IdCicloTipo'] == 5 && $_GET['LlevaSerie'] == 'Si' && $_GET['SerieR'] != '' ) {
-            if(isset($_GET['Comentarios'])){
-                $comentario = $_GET['Comentarios'];
-            }else{
-                $comentario = " ";
-            }
-            if (isset($_GET['LlevaSerie']) == 'Si') {
-                $resultSerie = $this->setSeries($_GET['IdProducto'], $_GET['SubProceso'], $_GET['SerieInicio'], $_GET['IdProduccion'], $_GET['IdProgramacion'],$_GET['IdCicloTipo'],$rechazo,$comentario);
-            }
-        }*/
-
-        //***********************  RECHAZO DE SERIES CERRADO  *************************/
-        /*if ($_GET['EstatusCiclos'] == 'RC' && $_GET['SerieR'] != '') {
-          //  $resultSerie = $this->setSeries($_GET['IdProducto'], $_GET['SubProceso'], $_GET['SerieInicio'], $_GET['IdProduccion'], $_GET['IdProgramacion'],$_GET['EstatusCiclos'],$rechazo,$_GET['Comentarios']);
-        }*/
 
         /************************ SE ELIMINA EL CICLO SI ARROJA ERROR LA CAPTURA DE SERIES *********************/
         if(isset($resultSerie[0]) == 'E') {
-            $produccion = ProduccionesDetalle::find()->where(['IdProduccionDetalle' => $model['IdProduccionDetalle']])->with('idProductos')->with('idProduccion')->asArray()->one();
-            $model = ProduccionesDetalle::findOne($model['IdProduccionDetalle'])->delete();
+            $produccion = ProduccionesDetalleMoldeo::find()->where(['IdProduccionDetalleMoldeo' => $model['IdProduccionDetalleMoldeo']])->with('idProducto')->with('idProduccion')->asArray()->one();
+            $model = ProduccionesDetalleMoldeo::findOne($model['IdProduccionDetalleMoldeo'])->delete();
             $this->actualizaHechas($produccion);
         }
 
@@ -512,7 +752,7 @@ class ProduccionAceroController extends \yii\web\Controller
             }
             $fechaMoldeoDetalle = new FechaMoldeoDetalle();
             $fechaMoldeoDetalle->load(['FechaMoldeoDetalle'=>[
-                "IdProduccionDetalle" =>  $model["IdProduccionDetalle"]*=1,
+                "IdProduccionDetalleMoldeo" =>  $model["IdProduccionDetalleMoldeo"]*=1,
                 "IdFechaMoldeo" => $fechaMoldeo["IdFechaMoldeo"]*=1
             ]]);
             $fechaMoldeoDetalle->save();
@@ -534,7 +774,8 @@ class ProduccionAceroController extends \yii\web\Controller
         );
     }
     
-    function actualizaHechas($produccion){
+    function actualizaHechas($produccion,$datos){
+       // var_dump($datos);
         $programacionDia = VProgramacionDiaAcero::find()->where([
             'IdProgramacion' => $produccion['IdProgramacion'],
             'IdSubProceso' => $produccion['idProduccion']['IdSubProceso'],
@@ -543,7 +784,7 @@ class ProduccionAceroController extends \yii\web\Controller
         $diario = $programacionDia;
         
         $programacionDia = ProgramacionesDia::findOne($programacionDia['IdProgramacionDia']);
-        //var_dump($diario);
+
         $hechas = 0;
         $ProduccionesDetalle = VProduccion2::find()->where([
             'Fecha'=> date('Y-m-d',strtotime($produccion['idProduccion']['Fecha'])),
@@ -556,19 +797,25 @@ class ProduccionAceroController extends \yii\web\Controller
             $hechas -= $produccion['idProduccion']['IdSubProceso'] == 6 ? 0 : $detalle['Rechazadas'];
         }
 
-        //var_dump($programacionDia); exit();
         if($produccion['idProduccion']['IdSubProceso'] == 6){
-            $programacionDia->Llenadas = $hechas/$diario['CiclosMolde'];
+            $programacionDia->Llenadas = $produccion['idProduccion']['IdSubProceso'] == 6 ? floor($datos['CiclosOkK']/$diario['CiclosMolde']) : 0 ;
+            $programacionDia->Cerradas = $datos['CiclosOkC'];
+        }
+        if($produccion['idProduccion']['IdSubProceso'] == 7){
+            $programacionDia->Llenadas = $datos['CiclosOkV']/$diario['CiclosMolde'];
+            $programacionDia->Cerradas = $datos['CiclosOkC'];
+        }
+        if($produccion['idProduccion']['IdSubProceso'] == 17){
+            $programacionDia->Llenadas = $datos['CiclosOkE']/$diario['CiclosMolde'];
+            $programacionDia->Cerradas = $datos['CiclosOkC'];
         }
         
         if($produccion['idProduccion']['IdSubProceso'] == 10){
             $programacionDia->Vaciadas = $hechas;
-            $programacionDia->Hechas = $hechas * $produccion['PiezasMolde'];
+            $programacionDia->Hechas = $hechas * $datos['PiezasMolde'];
         }
         
         $programacionDia->save();
-        //var_dump($programacionDia);
-
         $produccion = new Producciones();
         $produccion->actualizaProduccion($diario);
     }
@@ -591,8 +838,8 @@ class ProduccionAceroController extends \yii\web\Controller
 
         $model = array();
         $modelR = array();
-
-        if(($rechazo == 0 && $estatus == 1 || $estatus == 2 ) || ($rechazo == 0 && $estatus == 3) || ($rechazo == 0 && $estatus == 4)  || ($rechazo == 0 && $estatus == 6) || ($rechazo == 0 && $estatus == 7)){
+        //if(($rechazo == 0 && $estatus == 1 || $estatus == 2 ) || ($rechazo == 0 && $estatus == 3) || ($rechazo == 0 && $estatus == 4)  || ($rechazo == 0 && $estatus == 6) || ($rechazo == 0 && $estatus == 7)){
+        if(($rechazo == 0 && $IdSubProceso != 9 && $IdSubProceso != 10  && $estatus == 1 || $estatus == 2 ) || ($rechazo == 0 && $estatus == 3) || ($rechazo == 0 && $estatus == 4) || ($rechazo == 1 && $estatus == 4)){
             $model = new Series();
             $model->IdProducto = $IdProducto;
             $model->IdSubProceso = $IdSubProceso;
@@ -605,13 +852,19 @@ class ProduccionAceroController extends \yii\web\Controller
            
             $model->FechaHora = date("Y-m-d H:i:s");
             $model->save();
+            var_dump($model);
             if ($model == null) {
                 return $model[0] = 'ERROR';
             }
         }else{
             $modelR = Series::find()->where("IdProducto = ".$IdProducto." AND Serie = ".$serie." ")->one();
             $modelR->IdSubProceso = $IdSubProceso;
-            $modelR->Estatus = $estatu;
+
+            if ($estatus == 1 || $estatus == 2) {
+                $modelR->Estatus = 'B';
+            }else{
+                 $modelR->Estatus = 'R';
+            } 
             $modelR->FechaHora = date("Y-m-d H:i:s");
             $modelR->update();
             
@@ -624,7 +877,8 @@ class ProduccionAceroController extends \yii\web\Controller
             $this->setSeriesDetalles($serie,$IdProducto,$IdProduccion, $IdProgramacion,$estatus,$comentarios);
         }
 
-        if (($rechazo == 0  && $estatus == 1 || $estatus == 2) || ($rechazo == 0  && $estatus == 3 || $estatus == 4 || $estatus == 6 || $estatus == 7)) {
+        //if (($rechazo == 0  && $estatus == 1 || $estatus == 2) || ($rechazo == 0  && $estatus == 3 || $estatus == 4 || $estatus == 6 || $estatus == 7)) {
+        if (($rechazo == 0  && $estatus == 1 && $IdSubProceso != 9 && $IdSubProceso != 10  || $estatus == 2) || ($rechazo == 0  && $estatus == 3) || ($rechazo == 1  && $estatus == 4)) {
             $this->updateConfSeries($_GET['IdConfiguracionSerie'], $_GET['SerieInicio']);
         }   
 
@@ -633,11 +887,11 @@ class ProduccionAceroController extends \yii\web\Controller
 
     public function setSeriesDetalles($serie,$IdProducto,$IdProduccion, $IdProgramacion,$estatus,$comentarios){
 
-        $lastId_pd = ProduccionesDetalle::find()->where('IdProductos = '.$IdProducto.' AND IdProduccion = '.$IdProduccion.' AND IdProgramacion = '.$IdProgramacion.' ')->orderBy('IdProduccionDetalle desc')->one();
+        $lastId_pd = ProduccionesDetalleMoldeo::find()->where('IdProducto = '.$IdProducto.' AND IdProduccion = '.$IdProduccion.' AND IdProgramacion = '.$IdProgramacion.' ')->orderBy('IdProduccionDetalleMoldeo desc')->one();
         $lastId_se = Series::find()->where(" IdProducto = ".$IdProducto." AND Serie = ".$serie." ")->orderBy('IdSerie desc')->one();
 
         $model = new SeriesDetalles();
-        $model->IdProduccionDetalle = $lastId_pd['IdProduccionDetalle'];
+        $model->IdProduccionDetalleMoldeo = $lastId_pd['IdProduccionDetalleMoldeo'];
         $model->IdSerie = $lastId_se['IdSerie']; 
         $model->IdCicloTipo = $estatus;
         $model->Comentarios = $comentarios;
@@ -646,21 +900,175 @@ class ProduccionAceroController extends \yii\web\Controller
         //var_dump($model);
     }
 
-    public function Series($GET,$rechazo){
-            //************ SERIE DE CICLOS BUENOS **************/
+    public function Series($GET,$rechazo,$parte){
+        //************ SERIE DE CICLOS BUENOS **************/
+         $resultSerie = '';
         //if ($model['idProductos']['IdParteMolde'] == $parte || $_GET['IdCicloTipo'] == 5 && $_GET['LlevaSerie'] == 'Si' && $_GET['SerieR'] != '' ) {
             if(isset($_GET['Comentarios'])){
                 $comentario = $GET['Comentarios'];
             }else{
                 $comentario = " ";
             }
-            if (isset($GET['LlevaSerie']) == 'Si') {
-                $resultSerie = $this->setSeries($GET['IdProducto'], $GET['SubProceso'], $GET['SerieInicio'], $GET['IdProduccion'], $GET['IdProgramacion'],$GET['IdCicloTipo'],$rechazo,$comentario);
+            //if ((isset($GET['LlevaSerie']) == 'Si' || $GET['IdParteMoldeCap'] == $parte) || ($GET['IdSubProceso'] == 9)) {
+            if (($GET['IdParteMoldeCap'] == $parte) || ($GET['IdSubProceso'] == 9) || ($GET['IdSubProceso'] == 8) || ($GET['SubProceso'] == 9) || ($GET['SubProceso'] == 10) ) {
+                  echo "entroo00 ".$GET['SerieInicio'];
+                  $resultSerie = $this->setSeries($GET['IdProducto'], $GET['SubProceso'], $GET['SerieInicio'], $GET['IdProduccion'], $GET['IdProgramacion'],$GET['IdCicloTipo'],$rechazo,$comentario);
             }
         //}
             return $resultSerie;
+
     }
 
-    
+
+    function SaveLance($data,$produccion){
+        
+        $model = VLances::find()->where([
+            'IdArea' => $this->areas->getCurrent()
+        ])->orderBy('Colada Desc')->asArray()->one();
+        
+        $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
+        $data['Fecha'] = date('Y-m-d',strtotime($data['Fecha']));
+        
+        if(is_null($model)){
+            $colada = 1;
+            $lance = 1;
+        }else{
+            $colada = date('Y',strtotime($data['Fecha'])) != date('Y',strtotime($model['Fecha'])) ? 1 : $model['Colada'] + 1;
+            $lance = date('Y-m-d',strtotime($data['Fecha'])) != date('Y-m-d',strtotime($model['Fecha'])) ? 1 : $model['Lance'] + 1;
+        }
+
+        $maq = Maquinas::findOne($produccion['IdMaquina']);
+        
+        $dat =[
+            'Lances'=>[
+                'IdAleacion' => $data['IdAleacion'] *1,
+                'IdProduccion' => $produccion['IdProduccion'] *1,
+                'HornoConsecutivo' => $maq->Consecutivo * 1,
+                'Colada' => $colada,
+                'Lance' => $lance,
+                'Kellblocks' => isset($data['Kellblocks']) ? $data['Kellblocks'] : '',
+                'Lingotes' => isset($data['Lingotes']) ? $data['Lingotes'] : '',
+                'Probetas' => isset($data['Probetas']) ? $data['Probetas'] : '',
+            ]
+        ];
+        $lances = new Lances();
+        $lances->load($dat);
+        $lances->save();
+        
+        $maq->Consecutivo++;
+        $maq->save();
+    }
+
+    function actionSaveConsumo(){
+        if(!isset($_GET['IdMaterialVaciado'])){
+            $model = new MaterialesVaciado();
+            $model->load([
+                'MaterialesVaciado'=>$_GET
+            ]);
+        }else{
+            $model = MaterialesVaciado::findOne($_GET['IdMaterialVaciado']);
+            $model->load([
+                'MaterialesVaciado'=>$_GET
+            ]);
+        }
+        if(!$model->save()){
+            return false;
+        }
+        
+        return json_encode(
+            $model->Attributes
+        );
+    }
+
+    function deleteConsumo(){
+        $model = Producciones::findOne($_GET['IdProduccion'])->delete();
+    }
+
+
+    function actionSaveTemperatura(){
+        $_GET['Fecha'] = str_replace('.',':',$_GET['Fecha']);
+        $_GET['Fecha'] = $_GET['Fecha2'] . " " . $_GET['Fecha'];
+        $_GET['IdMaquina'] *= 1;
+        $_GET['IdProduccion'] *= 1;
+        $_GET['Temperatura'] *= 1;
+        $_GET['Temperatura2'] *= 1;
+        
+        if(!isset($_GET['IdTemperatura'])){
+            $model = new Temperaturas();
+            $model->load([
+                'Temperaturas'=>$_GET
+            ]);
+        }else{
+            $model = Temperaturas::findOne($_GET['IdTemperatura']);
+            if(is_null($model)){
+                return false;
+            }
+            $model->load([
+                'Temperaturas'=>$_GET
+            ]);
+        }
+        if(!$model->save()){
+            return false;
+        }else{
+            return $this->actionTemperaturas($model->IdTemperatura);
+        }
+    }
+
+
+    function actionSaveTiempoAnalisis(){
+        //var_dump($_GET); exit();
+        $_GET['Tiempo'] = $_GET['Fecha'] . " " . $_GET['Tiempo'];
+
+        if(!isset($_GET['IdTiempoAnalisis'])){
+            $model = new TiempoAnalisis();
+            $model->load([
+                'TiempoAnalisis'=>$_GET
+            ]);
+        }else{
+            $model = TiempoAnalisis::findOne($_GET['IdTiempoAnalisis']);
+            $model->load([
+                'TiempoAnalisis'=>$_GET
+            ]);
+        }
+        $model->save();
+        var_dump($model);
+        if(!$model->save()){
+            return false;
+        }
+        
+        return json_encode(
+            $model->Attributes
+        );
+    }
+
+
+    public function actionMantHornos()
+    {
+        $model = MantenimientoHornos::find()
+        ->with('idMaquina')
+        ->asArray()
+        ->all();
+        foreach ($model as $key => $value) {
+            $model[$key]['Fecha'] = date('Y-m-d', strtotime($value['Fecha']));
+        }
+        return json_encode(
+            $model
+        );
+    }
+
+
+    function actionSaveHornos(){
+        $model = new MantenimientoHornos();
+        $maquina = \frontend\models\produccion\Maquinas::findOne($_GET['IdMaquina']);
+        $_GET['Fecha'] = date('Y-m-d', strtotime($_GET['Fecha']));
+        $_GET['Consecutivo'] = $maquina->Consecutivo;
+        
+        $model->load(['MantenimientoHornos'=>$_GET]);
+        $model->save();
+        
+        //Reiniciar consecutivo
+        $maquina->Consecutivo = 1;
+        $maquina->update();
+    }
 
 }

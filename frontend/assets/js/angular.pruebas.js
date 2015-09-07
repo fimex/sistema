@@ -60,37 +60,14 @@ app.controller('Pruebas', function($scope, $filter, $http){
         return $http.get(url,{params:params}).success(function(data){
             $scope.data = data;
             console.log($scope.data);
-        })
+        });
     };
     
     $scope.delete = function(url,params){
         return $http.get(url,{params:params}).success(function(data){
             $scope.data.splice(params.index,1);
-        })
+        });
     };
-
-    var app = angular.module("app", ["checklist-model"]);
-    app.controller('Ctrl3', function($scope) {
-      $scope.roles = [
-        {id: 1, text: 'guest'},
-        {id: 2, text: 'user'},
-        {id: 3, text: 'customer'},
-        {id: 4, text: 'admin'}
-      ];
-      $scope.user = {
-        roles: [$scope.roles[1]]
-      };
-      $scope.checkAll = function() {
-        $scope.user.roles = angular.copy($scope.roles);
-      };
-      $scope.uncheckAll = function() {
-        $scope.user.roles = [];
-      };
-      $scope.checkFirst = function() {
-        $scope.user.roles.splice(0, $scope.user.roles.length); 
-        $scope.user.roles.push($scope.roles[0]);
-      };
-    });
 
     $scope.getSemana = function(item,index) {
         return item['semana' + index];
@@ -106,9 +83,9 @@ app.controller('Pruebas', function($scope, $filter, $http){
         $('input[name="Cerrado[]"]:checked').each(function() {
             //$(this).val() es el valor del checkbox correspondiente
             checkboxValues.push($(this).val());
-             alert(checkboxValues);
+            alert(checkboxValues);
         });
-    }
+    };
 
     $scope.loadProductosSeries = function(){
         return $http.get('productos-series').success(function(data){
@@ -121,6 +98,18 @@ app.controller('Pruebas', function($scope, $filter, $http){
         var datos = $filter('filter')( $scope.data, $scope.filter);
         for(var j=0;j<datos.length;j++){
             res += datos[j][campo];
+        };
+        return res;
+    };
+    
+    $scope.Resumen = function(index,index2){
+        var res = 0;
+        var datos = $filter('filter')( $scope.data, $scope.filter);
+        console.log(datos);
+        for(var x=0;x<datos.length;x++){
+            for(var y=0;y<datos[x][index].length;y++){
+                res += datos[x][index][y][index2];
+            }
         };
         return res;
     };

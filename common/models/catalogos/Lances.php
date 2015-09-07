@@ -14,6 +14,9 @@ use common\models\catalogos\Aleaciones;
  * @property integer $Colada
  * @property integer $Lance
  * @property integer $HornoConsecutivo
+ * @property integer $Kellblocks
+ * @property integer $Lingotes
+ * @property integer $Probetas
  *
  * @property Aleaciones $idAleacion
  * @property Producciones $idProduccion
@@ -35,7 +38,7 @@ class Lances extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo'], 'required'],
-            [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo'], 'integer']
+            [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo', 'Kellblocks', 'Lingotes', 'Probetas'], 'integer']
         ];
     }
 
@@ -51,6 +54,9 @@ class Lances extends \yii\db\ActiveRecord
             'Colada' => 'Colada',
             'Lance' => 'Lance',
             'HornoConsecutivo' => 'Horno Consecutivo',
+            'Kellblocks' => 'Kellblocks',
+            'Lingotes' => 'Lingotes',
+            'Probetas' => 'Probetas',
         ];
     }
 

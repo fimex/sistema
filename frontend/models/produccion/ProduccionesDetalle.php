@@ -26,8 +26,6 @@ use frontend\models\produccion\TiemposMuerto;
  * @property integer $Seleccionado
  * @property integer $IdParteMolde
  * @property integer $CantidadCiclos
- * @property integer $IdCicloTipo
- * @property integer $Linea
  *
  * @property SeriesDetalles[] $seriesDetalles
  * @property Productos $idProductos
@@ -82,7 +80,6 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
             'Seleccionado' => 'Seleccionado',
             'IdParteMolde' => 'Id Parte Molde',
             'CantidadCiclos' => 'Cantidad Ciclos',
-            'IdCicloTipo' => 'Id Ciclo Tipo',
             'Linea' => 'Linea'
         ];
     }
@@ -142,15 +139,6 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Ma::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
     }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCiclosTipo()
-    {
-        return $this->hasMany(CiclosTipo::className(), ['IdCicloTipo' => 'IdCicloTipo']);
-    }
-
 
     public function getDetalle($produccion){
         /*$result = $this->find()->where("IdProduccionDetalle = 6")->all();
@@ -238,8 +226,7 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
                 FROM DuxSinc.dbo.v_rechaza_plb
                 WHERE DuxSinc.dbo.v_rechaza_plb.SEM = '$semana'
                 GROUP BY DuxSinc.dbo.v_rechaza_plb.SEM;")->queryAll();
-            print_r($key);
-			echo  $TiP;exit;
+            
             foreach ($eteR as &$value) {
                 $key['Rec'] = $value['TotKgRec'];
             }
@@ -254,38 +241,12 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
                 $datos['Fin'] = strtotime(date('H:i',strtotime($datos['Fin']))) > strtotime('17:00') ? (date('Y-m-d',strtotime($datos['Fin']))." 17:00") : $datos['Fin'];
                 $datos['Fin'] = strtotime(date('H:i',strtotime($datos['Fin']))) < strtotime('07:00') ? (date('Y-m-d',strtotime($datos['Fin']))." 07:00") : $datos['Fin'];
                 
-                $TiM = strtotime(date('H:i',strtotime($datos['Inicio'])));
+                $TiM = strtotime(date('H:i',strtotime($datos['Inicio'])))/60;
                 $TfM = strtotime(date('H:i',strtotime($datos['Fin'])))/60;
                 
-                
-				if(  ( ($TiM >= $TiP) && ($TiM <= $TfP)
-					&& ($TfM >= $TiP) && ($TfM <= $TfP))
-					)  
-					$gap =  $TfM - $TiM ;
-				
-				if (
-					($TiM >= $TiP) && ($TiM <= $TfP)
-				)
-					$gap = $TfP - $TiM;
-				
-				if (
-					($TfM >= $TiP) && ($TiP <= $TfM)
-				)
-					$gap =  $TfM - $TiP;
-								
-				if(   ($TiM <= $TiP) && ($TiM >= $TfP)
-					)  
-					$gap =  $TfM - $TiM;
-					
-				 $key[$datos['ClaveTipo']] += $gap;
-				
-				// if($TiM >= $TiP && $TfM <= $TfP ){
-                    // $key[$datos['ClaveTipo']] += $TfM - $TiM;
-                // }
-				
-				
-				
-		
+                if($TiM >= $TiP && $TfM <= $TfP ){
+                    $key[$datos['ClaveTipo']] += $TfM - $TiM;
+                }
             }
         }
         //exit;

@@ -1041,7 +1041,7 @@ $this->registerJS("
             </div>
 
             <div data-options="region:'center',border:false" style="width:350px; height:60%;" >
-                <div id="Series" class="easyui-panel" title="Series" style="width:350px;height:200px;padding:10px;margin-bottom: 25px;: float:right;">
+                <div id="Series" class="easyui-panel" title="Series" style="width:350px;height:200px;padding:10px;margin-bottom: 25px; float:right;">
                    
                 </div>
             </div>

@@ -202,14 +202,22 @@ class ProgramacionAngularController extends Controller
                     sum(dbo.ProgramacionesSemana.Programadas) AS PrgMol,
                     ROUND(sum(dbo.v_Programaciones.PiezasMolde * dbo.ProgramacionesSemana.Programadas*  dbo.v_Programaciones.PesoCasting)/1000,2)  AS PrgTonP,
                     ROUND(sum(dbo.ProgramacionesSemana.Programadas * dbo.v_Programaciones.PesoArania)/1000,2)  AS PrgTon,
-                    ROUND(sum(CAST(dbo.ProgramacionesSemana.Programadas AS FLOAT) / CAST(ISNULL(dbo.v_Programaciones.MoldesHora,65) as FLOAT)),1) AS PrgHrs,
+                    ROUND(sum(CAST(dbo.ProgramacionesSemana.Programadas AS FLOAT) / CAST(CASE dbo.v_Programaciones.MoldesHora
+	WHEN NULL THEN 65
+	WHEN 0 THEN 65
+	ELSE dbo.v_Programaciones.MoldesHora
+END as FLOAT)),1) AS PrgHrs,
                     sum(dbo.ProgramacionesSemana.Llenadas) AS HecMol,
                     ROUND(sum(dbo.v_Programaciones.PiezasMolde * dbo.ProgramacionesSemana.Llenadas * dbo.v_Programaciones.PesoCasting)/1000,2)  AS HecTonP,
                     ROUND(sum(dbo.ProgramacionesSemana.Llenadas * dbo.v_Programaciones.PesoArania)/1000,2)  AS HecTon,
                     ROUND(sum(
                             CASE WHEN dbo.ProgramacionesSemana.Llenadas = 0 THEN
                                     0
-                            ELSE CAST(dbo.ProgramacionesSemana.Llenadas AS FLOAT) / CAST(dbo.v_Programaciones.MoldesHora AS FLOAT)
+                            ELSE CAST(dbo.ProgramacionesSemana.Llenadas AS FLOAT) / CAST(CASE dbo.v_Programaciones.MoldesHora
+	WHEN NULL THEN 65
+	WHEN 0 THEN 65
+	ELSE dbo.v_Programaciones.MoldesHora
+END AS FLOAT)
                             END
                     ),1) AS HecHrs
 

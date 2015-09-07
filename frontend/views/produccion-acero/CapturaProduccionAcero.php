@@ -60,14 +60,21 @@ if ($IdAreaAct == 1){
     }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros" ng-init="
-    countProduccionesAceros(<?=$IdSubProceso?>);
+    countProduccionesAceros(<?=$IdSubProceso?>,<?=$IdArea?>);
     IdSubProceso = <?=$IdSubProceso?>;
     IdAreaAct = <?= $IdAreaAct?>;
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
     loadMaquinas();
     loadPartesMolde();
-    <?php if($IdSubProceso == 6):?>
+    loadMaterial();
+    <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
         loadEmpleados(['1-2']);
+    <?php endif?>
+    <?php if($IdSubProceso == 10):?>
+        loadEmpleados(['1-5']);
+    <?php endif?>
+    <?php if($IdSubProceso == 10):?>
+        loadAleaciones();
     <?php endif?>
 ">
     <?php if ($IdSubProceso == 6):?>
@@ -80,7 +87,7 @@ if ($IdAreaAct == 1){
                     <div class="col-md-2">
                         <div class="input-group">
                             <span class="input-group-addon">Fecha:</span>
-                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;loadProgramacion();" ng-model="Fecha"/>
+                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;" ng-model="Fecha"/>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.Fecha}}"/>
                         </div>
                     </div>
@@ -88,7 +95,7 @@ if ($IdAreaAct == 1){
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="Maquinas" class="input-group-addon">Proceso:</span>
-                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();loadProgramacion();" ng-model="IdMaquina" required>
+                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();" ng-model="IdMaquina" required>
                                 <option ng-selected="produccion.IdCentroTrabajo == maquina.IdCentroTrabajo" value="{{maquina.IdCentroTrabajo}}" ng-repeat="maquina in maquinas">{{maquina.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idCentroTrabajo.Descripcion}}"/>
@@ -99,14 +106,15 @@ if ($IdAreaAct == 1){
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="Maquinas" class="input-group-addon"><?php if($IdSubProceso == 10):?>Horno:<?php else:?>Maquina:<?php endif;?></span>
-                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();loadProgramacion();" ng-model="IdMaquina" required>
+                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();" ng-model="IdMaquina" required>
                                 <option ng-selected="produccion.IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idMaquina.Identificador}} - {{produccion.idMaquina.Descripcion}}"/>
                         </div>
                     </div>
-                    <?php endif;?>
-                    <?php if($IdSubProceso == 12 || $IdSubProceso == 6 || $IdSubProceso == 2 || $IdSubProceso == 16 || $IdSubProceso == 3):?>
+
+                    <?php endif;?> 
+                    <?php if($IdSubProceso == 12 || $IdSubProceso == 6 || $IdSubProceso == 2 || $IdSubProceso == 16 || $IdSubProceso == 3 || $IdSubProceso == 10 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-4">
                         <div class="input-group">
                             <span id="Empleados" class="input-group-addon">Empleado:</span>
@@ -157,8 +165,30 @@ if ($IdAreaAct == 1){
                         </div>
                     </div>
                 </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span id="consecutivo" class="input-group-addon">KellBlocks:</span>
+                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Kellblocks" ng-value="{{produccion.lances.Kellblocks}}"/>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span id="consecutivo" class="input-group-addon">Lingotes:</span>
+                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Lingotes" ng-value="{{produccion.lances.Lingotes}}"/>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span id="consecutivo" class="input-group-addon">Probetas:</span>
+                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Probetas" ng-value="{{produccion.lances.Probetas}}"/>
+
+                        </div>
+                    </div>
+                </div>
                 <?php endif;?>
-                <?php if($IdSubProceso == 6):?>
+                <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span class="input-group-addon">Fecha de Moldeo:</span>
@@ -172,6 +202,7 @@ if ($IdAreaAct == 1){
                         <button title="Registro Anterior" class="btn btn-primary" ng-click="Prev();" ng-disabled="!mostrar"><</button>
                         <button class="btn btn-primary" ng-click="addProduccion();mostrar=false" ng-show="mostrar">Nuevo Registro</button>
                         <button class="btn btn-primary" ng-click="saveProduccion();mostrar=true" ng-show="!mostrar">Generar</button>
+                        <button class="btn btn-success" ng-click="loadProduccion();mostrar=true" ng-show="!mostrar">Cancelar</button>
                         <button class="btn btn-success" ng-click="updateProduccion();" ng-show="mostrar">Guardar</button>
                         <button class="btn" ng-click="produccion.IdProduccionEstatus=2;saveProduccion();" ng-show="mostrar">Cerrar Captura</button>
                         <button title="Siguiente Registro" class="btn btn-primary" ng-click="Next();" ng-disabled="!mostrar">></button>
@@ -237,7 +268,7 @@ if ($IdAreaAct == 1){
         </div>
     </div>
     <?php endif?>
-    <?php if($IdSubProceso == 6):?>
+    <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
     <div class="row">
         <div class="col-md-8">
             <div class="row" style="width:110%">
@@ -253,21 +284,22 @@ if ($IdAreaAct == 1){
     <?php endif?>
     <?php if($IdSubProceso == 10):?>
     <div class="row">
-        <div class="col-md-4">
-            <?= $this->render('programacion',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-        <div class="col-md-4">
-            <?= $this->render('FormProduccionDetalle',[
+        <div class="col-md-4" style="width:60%">
+            <?= $this->render('FormProduccionDetalleVaciado',[
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
             <?= $this->render('FormTemperaturas',[
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
+            
         </div>
         <div class="col-md-4">
             <?= $this->render('FormProduccionMaterial',[
+                'subProceso'=>$IdSubProceso,
+            ]);?>
+        </div>
+        <div class="col-md-4">
+            <?= $this->render('FormTiemposAnalisis',[
                 'subProceso'=>$IdSubProceso,
             ]);?>
         </div>

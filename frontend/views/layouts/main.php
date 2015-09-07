@@ -61,7 +61,7 @@ AppAsset::register($this);
                 $menuLogin[] = ['label' => 'Iniciar Sesion', 'url' => ['/site/login']];
             } else {
                 //var_dump(Yii::$app->user->identity);
-                $user = Yii::$app->user->identity->empleados[0];
+                $user = Yii::$app->user->identity->empleados;
                 $nombre = $user->Nombre." ".$user->ApellidoPaterno." ".$user->ApellidoMaterno;
                 $menuLogin[] = [
                     'label' => 'Cerrar Sesion',

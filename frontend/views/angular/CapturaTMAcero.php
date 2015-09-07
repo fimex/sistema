@@ -56,17 +56,26 @@ $minFecha = date('H')< 6 ? date('Y-m-d',strtotime('-1 day',strtotime(date()))) :
         border-top: 1px solid #ccc;
     }
 </style>
+<h2>Captura de tiempos muertos</h2>
 <div class="container-fluid" ng-controller="Produccion" ng-init="
-    producciones[0].IdSubProceso = <?=$IdSubProceso?>;
-    loadMaquinas();
-    loadFallas();
-    loadTurnos();
+   IdSubProceso = <?=$IdSubProceso?>;
+   IdArea = 2;
+   loadMaquinas();
+   loadFallas();
+   loadTurnos();
+   loadSuBrocesos();
 ">
     <div id="encabezado" class="row">
         <div class="col-md-10">
             <form class="form-horizontal" name="editableForm" onaftersave="saveProduccion()">
                 <div class="row">
-                
+					<div class="col-md-4">
+							 <div class="input-group">
+                            <span class="input-group-addon">SubProceso:</span>
+                            <select ng-disabled="mostrar" id="turnos" aria-describedby="Proceso" class="form-control" ng-change="selecTurnos();" ng-model="producciones[index].SuBroceso" required>
+                                <option  value="{{SuBrocesos.IdSubproceso}}" ng-repeat="SuBroceso in SuBrocesos">{{SuBroceso.IdSubproceso}} - {{SuBroceso.Descripcion}}</option>
+                            </select>                    </div>
+					</div>
                     <div class="col-md-4">
                         <div class="input-group">
                             <span id="Maquinas" class="input-group-addon">Maquina:</span>

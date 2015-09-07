@@ -1,4 +1,48 @@
-var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'])
+var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'],function($httpProvider) {
+  // Use x-www-form-urlencoded Content-Type
+  $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
+ 
+  /**
+   * The workhorse; converts an object to x-www-form-urlencoded serialization.
+   * @param {Object} obj
+   * @return {String}
+   */ 
+  var param = function(obj) {
+    var query = '', name, value, fullSubName, subName, subValue, innerObj, i;
+      
+    for(name in obj) {
+      value = obj[name];
+        
+      if(value instanceof Array) {
+        for(i=0; i<value.length; ++i) {
+          subValue = value[i];
+          fullSubName = name + '[' + i + ']';
+          innerObj = {};
+          innerObj[fullSubName] = subValue;
+          query += param(innerObj) + '&';
+        }
+      }
+      else if(value instanceof Object) {
+        for(subName in value) {
+          subValue = value[subName];
+          fullSubName = name + '[' + subName + ']';
+          innerObj = {};
+          innerObj[fullSubName] = subValue;
+          query += param(innerObj) + '&';
+        }
+      }
+      else if(value !== undefined && value !== null)
+        query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
+    }
+      
+    return query.length ? query.substr(0, query.length - 1) : query;
+  };
+ 
+  // Override $http service's default transformRequest
+  $httpProvider.defaults.transformRequest = [function(data) {
+    return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
+  }];
+})
     .directive('fixedTableHeaders', ['$timeout', function($timeout) {
         return {
             restrict: 'A',
@@ -8,18 +52,7 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'])
                         element.stickyTableHeaders({ scrollableArea: container, "fixedOffset": 2 });
                 }, 0);
             }
-        }
-    }])
-    .directive('cellFixed', ['$timeout', function($timeout) {
-        return {
-            restrict: 'A',
-            link: function(scope, element, attrs) {
-                $timeout(function () {
-                    container = element.parentsUntil(attrs.cellFixed);
-                        element.stickyTableColumn({ scrollableArea: container, "fixedOffset": 2 });
-                }, 0);
-            }
-        }
+        };
     }])
     .directive('fixedHeadersFoot', ['$timeout', function($timeout) {
     return {
@@ -105,3 +138,9 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'])
         }
     };
 });
+app.config(['$httpProvider', function ($httpProvider) {
+    $httpProvider.defaults.headers.post['X-CSRF-Token'] = $('meta[name="csrf-token"]').attr("content");
+    $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+    $httpProvider.defaults.headers.common['Accept'] = 'application/json, text/javascript';
+    $httpProvider.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
+}]);

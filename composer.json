@@ -31,7 +31,8 @@
 		"sheillendra/yii2-jeasyui": "dev-master",
 		"mdmsoft/yii2-admin": "*",
 		"letyii/yii2-rbac-cached": "dev-master",
-		"kartik-v/yii2-export": "*"
+		"kartik-v/yii2-export": "*",
+		"webvimark/module-user-management": "*"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",

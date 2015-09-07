@@ -6,6 +6,7 @@ use yii\bootstrap\Modal;
 use yii\helpers\URL;
 
 $title = '';
+if($IdArea == 3)
 switch($IdSubProceso){
     case 6:
         $title = "Control de Fallas Robert Sinto y FDNX F-PC-7.0-31/05";
@@ -20,6 +21,19 @@ switch($IdSubProceso){
         $title = "Rebabeo y ensamble almas ( Bronce ) F-PC-7.0-51/1";
         break;
 }
+
+if($IdArea == 2){
+    switch($IdSubProceso){
+        case 2:
+            $title = "Reporte de producción Almas ( ACEROS )";
+            break;
+
+        case 4:
+            $title = "Pintado Almas ( ACEROS ) ";
+            break;
+    }
+}
+
 
 $this->title = $title;
 
@@ -89,8 +103,11 @@ $this->title = $title;
     <?php if($IdSubProceso == 16):?>
         loadEmpleados('2-6');
     <?php endif?>
-    <?php if($IdSubProceso == 2 || $IdSubProceso == 3):?>
+   <?php if( ($IdSubProceso == 2 || $IdSubProceso == 3)  && $IdArea == 3 ):?>
         loadEmpleados('2-1');
+    <?php endif?>
+	<?php if( ($IdSubProceso == 2 || $IdSubProceso == 4)  && $IdArea == 2 ):?>
+        loadEmpleados('1-1');
     <?php endif?>
     <?php if($IdSubProceso == 6 || $IdSubProceso == 10):?>
         loadEmpleados(['2-1,2-2,2-5']);
@@ -126,7 +143,7 @@ $this->title = $title;
                         <div class="input-group">
                             <span id="Maquinas" class="input-group-addon"><?php if($IdSubProceso == 10):?>Horno:<?php else:?>Maquina:<?php endif;?></span>
                             <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();loadProgramacion();" ng-model="IdMaquina" required>
-                                <option ng-selected="produccion.IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
+                                <option ng-selected="IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idMaquina.Identificador}} - {{produccion.idMaquina.Descripcion}}"/>
                         </div>
@@ -267,16 +284,25 @@ $this->title = $title;
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
         </div>
-        <div class="col-md-4">
-            <?= $this->render('FormProduccionAlmasDetalle',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-        <div class="col-md-4">
-            <?= $this->render('FormProduccionAlmasRechazo',[
-                'subProceso'=>$IdSubProceso,
-                'titulo' => 'Rechazo Almas',
-            ]);?>
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-6">
+                    <?= $this->render('FormProduccionAlmasDetalle',[
+                        'IdSubProceso'=>$IdSubProceso,
+                    ]);?>
+                </div>
+                <div class="col-md-6">
+                    <?= $this->render('FormProduccionAlmasRechazo',[
+                        'subProceso'=>$IdSubProceso,
+                        'titulo' => 'Rechazo Almas',
+                    ]);?>
+                </div>
+            </div>
+            <div class="row">
+                <?= $this->render('FormTiemposMuerto',[
+                    'IdSubProceso'=>$IdSubProceso,
+                ]);?>
+            </div>
         </div>
     </div>
     <?php endif?>

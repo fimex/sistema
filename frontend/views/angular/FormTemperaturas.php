@@ -46,7 +46,7 @@
                     <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Moldes" value="{{temperatura.Moldes}}"/></th>
                     <?php endif;?>
                     <th class="col-md-2">
-                        <button class="btn btn-success btn-xs" ng-click="saveTemperatura($index)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
+                        <button class="btn btn-success btn-xs" ng-click="saveTemperatura($index)"  ng-disabled="temperatura.active"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
                         <button class="btn btn-danger btn-xs" ng-click="deleteTemperatura($index)"><span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span></button>
                     </th>
                 </tr>

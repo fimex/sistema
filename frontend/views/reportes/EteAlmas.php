@@ -3,7 +3,8 @@
     IdSubProceso: 2,
     FechaIni:FechaIni,
     FechaFin:FechaFin,
-})">
+});
+">
     <div class="row">
         <div class="col-md-2">
             <p class="input-group">
@@ -35,6 +36,7 @@
                 <th>Nombre</th>
                 <th>Maquina</th>
                 <th>Alma</th>
+                <th>Pzas x Min</th>
                 <th>Inicio</th>
                 <th>Fin</th>
                 <th>T Tot</th>
@@ -56,23 +58,24 @@
             </tr>
         </thead>
         <tbody ng-repeat="dat in data">
-            <tr ng-repeat="almas in dat.almasProduccionDetalles">
+            <tr ng-class="{danger:almas.Total == 0}" ng-repeat="almas in dat.almasProduccionDetalles">
                 <td>{{dat.Fecha}}</td>
                 <td>{{dat.idEmpleado.ApellidoPaterno}} {{dat.idEmpleado.ApellidoMaterno}} {{dat.idEmpleado.Nombre}}</td>
                 <td>{{dat.idMaquina.Identificador}} - {{dat.idMaquina.Descripcion}}</td>
                 <td>{{almas.idProducto.Identificacion}}/{{almas.idAlmaTipo.Descripcion}}</td>
+                <td>{{almas.PiezasHora / 60 | currency:"":2 }}</td>
                 <td>{{almas.Inicio}}</td>
                 <td>{{almas.Fin}}</td>
                 <td>{{almas.Minutos}}</td>
-                <td>{{almas.TiempoDisponible = (almas.Minutos - almas.SU - almas.TT)}}</td>
-                <td>{{almas.SU}}</td>
-                <td>{{almas.MC}}</td>
-                <td>{{almas.MP}}</td>
-                <td>{{almas.TT}}</td>
-                <td>{{almas.MI}}</td>
-                <td>{{almas.MPRO}}</td>
-                <td>{{almas.Disponibilidad = ((almas.TiempoDisponible - almas.MC - almas.MP - almas.MI - almas.MPRO) / almas.TiempoDisponible) * 100 | currency:"":0}}%</td>
-                <td>{{almas.ProduccionEsperada = almas.Minutos * (almas.PiezasHora /60 | currency:"":0)}}</td>
+                <td>{{almas.TiempoDisponible = (almas.Minutos - almas.MP - almas.TT)}}</td>
+                <td ng-class="{danger:almas.SU < 0}">{{almas.SU}}</td>
+                <td ng-class="{danger:almas.MC < 0}">{{almas.MC}}</td>
+                <td ng-class="{danger:almas.MP < 0}">{{almas.MP}}</td>
+                <td ng-class="{danger:almas.TT < 0}">{{almas.TT}}</td>
+                <td ng-class="{danger:almas.MI < 0}">{{almas.MI}}</td>
+                <td ng-class="{danger:almas.MPRO < 0}">{{almas.MPRO}}</td>
+                <td ng-init="almas.TotalDisponible = (almas.TiempoDisponible - almas.MC - almas.SU - almas.MI - almas.MPRO)">{{almas.Disponibilidad = ((almas.TiempoDisponible - almas.MC - almas.SU - almas.MI - almas.MPRO) / almas.TiempoDisponible) * 100 | currency:"":0}}%</td>
+                <td>{{almas.ProduccionEsperada = (almas.TiempoDisponible - almas.MC - almas.SU - almas.MI - almas.MPRO) * (almas.PiezasHora /60) | currency:"":0}}</td>
                 <td>{{almas.Total = (almas.Hechas + almas.Rechazadas) | currency:"":0}}</td>
                 <td>{{almas.Eficiencia = (almas.Total / almas.ProduccionEsperada) * 100 | currency:"":0}}%</td>
                 <td>{{almas.Rechazadas}}</td>
@@ -80,6 +83,43 @@
                 <td>{{almas.Calidad = (almas.Hechas / almas.Total) * 100 | currency:"":0}}%</td>
                 <td>{{(almas.Calidad * almas.Eficiencia * almas.Disponibilidad)/10000 | currency:"":0}}%</td>
             </tr>
-       </tbody>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="7" style="text-align: right;">Total:</th>
+                <th>{{Resumen('almasProduccionDetalles','Minutos')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','TiempoDisponible')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','SU')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','MC')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','MP')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','TT')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','MI')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','MPRO')}}</th>
+                <th>{{
+                    ((
+                        Resumen('almasProduccionDetalles','TiempoDisponible') - 
+                        Resumen('almasProduccionDetalles','MC') - 
+                        Resumen('almasProduccionDetalles','MP') - 
+                        Resumen('almasProduccionDetalles','MI') - 
+                        Resumen('almasProduccionDetalles','MPRO')) / Resumen('almasProduccionDetalles','TiempoDisponible')) * 100 | currency:"":0
+                }}%</th>
+                <th>{{Resumen('almasProduccionDetalles','ProduccionEsperada') | currency:"":0}}</th>
+                <th>{{Resumen('almasProduccionDetalles','Total')}}</th>
+                <th>{{(Resumen('almasProduccionDetalles','Total') / Resumen('almasProduccionDetalles','ProduccionEsperada')) * 100 | currency:"":0}}%</th>
+                <th>{{Resumen('almasProduccionDetalles','Rechazadas')}}</th>
+                <th>{{Resumen('almasProduccionDetalles','Hechas')}}</th>
+                <th>{{(Resumen('almasProduccionDetalles','Hechas') / Resumen('almasProduccionDetalles','Total')) * 100 | currency:"":0}}%</th>
+                <th>{{(
+                    (
+                        (Resumen('almasProduccionDetalles','TiempoDisponible') - 
+                        Resumen('almasProduccionDetalles','MC') - 
+                        Resumen('almasProduccionDetalles','MP') - 
+                        Resumen('almasProduccionDetalles','MI') - 
+                        Resumen('almasProduccionDetalles','MPRO')) / Resumen('almasProduccionDetalles','TiempoDisponible')) * 
+                        (Resumen('almasProduccionDetalles','Total') / Resumen('almasProduccionDetalles','ProduccionEsperada')) *
+                    Resumen('almasProduccionDetalles','Hechas') / Resumen('almasProduccionDetalles','Total') 
+                ) * 100 | currency:"":0}}%</th>
+            </tr>
+        </tfoot>
     </table>
 </div>
