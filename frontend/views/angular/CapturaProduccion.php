@@ -270,11 +270,13 @@ $this->title = $title;
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
         </div>
+        <?php if($IdArea == 3): ?>
         <div class="col-md-4">
             <?= $this->render('FormTemperaturas',[
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
         </div>
+        <?php endif;?>
     </div>
     <?php endif?>
     <?php if($IdSubProceso == 3):?>

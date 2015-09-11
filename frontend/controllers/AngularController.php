@@ -243,14 +243,14 @@ class AngularController extends \yii\web\Controller
     
     public function actionProduccion(){
         $busqueda = false;
-        if(isset($_GET['IdProduccion'])){
-            $where = ['IdProduccion' => $_GET['IdProduccion']];
+        if(isset($_POST['IdProduccion'])){
+            $where = ['IdProduccion' => $_POST['IdProduccion']];
         }else{
-            if(isset($_GET['busqueda'])){
-                unset($_GET['busqueda']);
+            if(isset($_POST['busqueda'])){
+                unset($_POST['busqueda']);
                 $busqueda = true;
             }
-            $where = $_GET;
+            $where = $_POST;
         }
 
             if($busqueda == true){
@@ -338,8 +338,9 @@ class AngularController extends \yii\web\Controller
 
     
     public function actionCountProduccion(){
-        $IdSubProceso = $_GET['IdSubProceso'];
-        $IdArea = isset($_GET['IdArea']) ? $_GET['IdArea'] : $this->areas->getCurrent();
+        $request = Yii::$app->request;
+        $IdSubProceso = $_POST['IdSubProceso'];
+        $IdArea = isset($_POST['IdArea']) ? $_POST['IdArea'] : $this->areas->getCurrent();
 
         $model = Producciones::find()
             ->select("Producciones.IdProduccion")

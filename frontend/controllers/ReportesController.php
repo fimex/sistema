@@ -510,7 +510,7 @@ class ReportesController extends Controller
                     $almas[$time['ClaveTipo']] +=$min;
                     
                     /*echo "Nomina: ".$mod['idEmpleado']['Nomina'] ." Nombre: ".$mod['idEmpleado']['Nombre'] ." :::: Tiempo: ". $almas['Inicio']." - " . $almas['Fin'];
-                    echo "Tiempo calculado: ".date('H:i',$tIni)." - ".date('H:i',$tFin)." ";
+                    echo "Tiempo calculado: ".date('Y-m-d H:i',$tIni)." - ".date('Y-m-d H:i',$tFin)." ";
                     echo " :::::: ". $time['Inicio']." - ".$time['Fin']." -". $time['ClaveTipo']." - ".$min."<br />";*/
                 }
                 

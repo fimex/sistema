@@ -251,8 +251,8 @@ if($area == 4){
                 <th valign="middle">{{programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting }}</th>
                 <th>{{ programacion.FaltaCasting <= 0 ? '' : programacion.FaltaCasting/programacion.PiezasMolde | number : 0 }}</th>
                 <th>{{((1 * programacion.Programadas1) + (1 * programacion.Programadas2) + (1 * programacion.Programadas3) + (1 * programacion.Programadas4)) | number : 1}}</th>
-                <th style="max-width: 100px">{{programacion.IdAreaAct != 2 ? programacion.CiclosMolde : ''}}</th>
-                <th style="max-width: 100px">{{programacion.IdAreaAct == 2 ? programacion.CiclosMolde : ''}}</th>
+                <th style="max-width: 100px">{{programacion.CiclosMolde || ''}}</th>
+                <th style="max-width: 100px">{{programacion.CiclosVarel || ''}}</th>
                 <th style="max-width: 100px">{{programacion.AreaAct}}</th>
             <?php } ?>
             <?php if($area == 3){ ?>

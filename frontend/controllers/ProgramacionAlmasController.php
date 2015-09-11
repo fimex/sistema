@@ -233,7 +233,9 @@ class ProgramacionAlmasController extends Controller
         $model = new ProgramacionAlmas();
 
         $dat = $_GET;
-
+		
+		if (!isset($dat['Prioridad']) ) $dat['Prioridad'] = 0;
+		
         $datosSemana1 = $dat['IdProgramacionAlma'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         $model->setProgramacionSemanal($datosSemana1);
         return var_dump($dat);

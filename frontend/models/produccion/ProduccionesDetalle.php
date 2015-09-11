@@ -3,7 +3,6 @@
 namespace frontend\models\produccion;
 
 use Yii;
-use yii\data\ArrayDataProvider;
 use common\models\dux\Productos;
 use frontend\models\produccion\TiemposMuerto;
 
@@ -22,18 +21,14 @@ use frontend\models\produccion\TiemposMuerto;
  * @property integer $Hechas
  * @property integer $Rechazadas
  * @property string $Eficiencia
- * @property integer $Enviado
- * @property integer $Seleccionado
- * @property integer $IdParteMolde
- * @property integer $CantidadCiclos
  *
  * @property SeriesDetalles[] $seriesDetalles
  * @property Productos $idProductos
  * @property Programaciones $idProgramacion
  * @property Producciones $idProduccion
- * @property PartesMolde $idParteMolde
- * @property CiclosTipo $idCicloTipo
+ * @property FechaMoldeoDetalle[] $fechaMoldeoDetalles
  * @property ProduccionesDefecto[] $produccionesDefectos
+ * @property ProduccionesCiclos[] $produccionesCiclos
  */
 class ProduccionesDetalle extends \yii\db\ActiveRecord
 {
@@ -52,7 +47,7 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccion', 'IdProgramacion', 'IdProductos', 'Eficiencia'], 'required'],
-            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas', 'Hechas', 'Rechazadas', 'Enviado', 'Seleccionado', 'IdParteMolde', 'CantidadCiclos'], 'integer'],
+            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas', 'Hechas', 'Rechazadas'], 'integer'],
             [['Inicio', 'Fin'], 'safe'],
             [['Eficiencia'], 'number']
         ];
@@ -76,11 +71,6 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
             'Hechas' => 'Hechas',
             'Rechazadas' => 'Rechazadas',
             'Eficiencia' => 'Eficiencia',
-            'Enviado' => 'Enviado',
-            'Seleccionado' => 'Seleccionado',
-            'IdParteMolde' => 'Id Parte Molde',
-            'CantidadCiclos' => 'Cantidad Ciclos',
-            'Linea' => 'Linea'
         ];
     }
 
@@ -119,9 +109,9 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdParteMolde()
+    public function getFechaMoldeoDetalles()
     {
-        return $this->hasOne(PartesMolde::className(), ['IdParteMolde' => 'IdParteMolde']);
+        return $this->hasMany(FechaMoldeoDetalle::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
     }
 
     /**
@@ -135,38 +125,12 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdMaquina()
+    public function getProduccionesCiclos()
     {
-        return $this->hasMany(Ma::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
-    }
-
-    public function getDetalle($produccion){
-        /*$result = $this->find()->where("IdProduccionDetalle = 6")->all();
-        var_dump($result);exit;*/
-        $result = $this->find()->where("IdProduccion= $produccion")->asArray()->all();
-
-        foreach ($result as &$res){
-            $productos = Productos::findOne($res['IdProductos'])->Attributes;
-            $res['Producto'] = $productos['Identificacion'];
-            $res['Fin'] = date('H:i:s',strtotime($res['Fin']));
-            $res['Inicio'] = date('H:i:s',strtotime($res['Inicio']));
-        }
-
-        if(count($result)!=0){
-            return new ArrayDataProvider([
-                'allModels' => $result,
-                'id'=>'IdPedido',
-                'sort'=>array(
-                    'attributes'=> $result[0],
-                ),
-                'pagination'=>false,
-            ]);
-        }
-        return [];
+        return $this->hasMany(ProduccionesCiclos::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
     }
     
-
-     public function getDatos($maquina,$ini,$fin,$area,$subProceso){
+    public function getDatos($maquina,$ini,$fin,$area,$subProceso){
         if($ini == 0){
             $fecha = date('Y-m-d');
             $where = " WHERE Fecha = '$fecha' AND pr.IdMaquina IN(SELECT IdMaquina FROM v_Maquinas WHERE IdArea = $area AND IdSubProceso = $subProceso) ";
@@ -252,5 +216,4 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
         //exit;
         return $result;
     }
-
 }

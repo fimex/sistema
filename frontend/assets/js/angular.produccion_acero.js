@@ -19,21 +19,26 @@ app.controller('vaciado_cont', function ($scope, $http){
 
 });*/
 
-app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $log, $timeout){
+app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $log, $timeout, $window){
     $scope.Fecha = new Date();
     $scope.IdProduccion = null;
     $scope.IdProduccionEstatus = 1;
     $scope.indexSerie = null;
+   
+    $scope.produccion = [];
+    $scope.turnos = [];
     
     $scope.loadProduccion = function(){
         return $http.get('data-produccion',{params:{
             IdArea: $scope.IdArea,
             Fecha: $scope.Fecha,
             IdMaquina: $scope.IdMaquina,
-            IdEmpleado: $scope.IdEmpleado
+            IdEmpleado: $scope.IdEmpleado,
+            IdTurno: $scope.IdTurno
         }}).success(function(data){
             $scope.IdProduccion = data.IdProduccion;
             $scope.IdProduccionEstatus = data.IdProduccionEstatus;
+            $scope.produccion = data;
         }).error(function(){
             
         });
@@ -44,7 +49,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         return $http.get('data-programaciones',{params:{
             IdArea: $scope.IdArea,
             IdAreaAct: $scope.IdAreaAct,
-            Dia: $scope.Fecha
+            Dia: $scope.Fecha,
+           
         }}).success(function(data){
             $scope.programacionAceros = data;
             $scope.loadProduccion();
@@ -183,6 +189,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             });
         }
     };
+
+    $scope.buscar2 = function(){
+        $scope.showModal2 = !$scope.showModal2;
+    };
+  
+    $scope.loadTurnos = function(){
+        return $http.get('turnos',{}).success(function(data) {
+            $scope.turnos = data;
+        });
+    };
+
 });
 
 app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $log, $timeout){
@@ -920,3 +937,115 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
     
       
 });
+
+app.controller('TiemposMuertos', function ($scope, $filter, $http, $log){
+
+    $scope.maquinas = [];
+    $scope.fallas = [];
+    $scope.TiemposMuertos = [];
+    $scope.turno = [];
+    $scope.tiempos = [];
+
+    $scope.countTiemposMuertos = function(){
+        return $http.get('count-tiempos',{params:{
+            IdEmpleado: 977
+        }}).success(function(data){
+            $scope.tiempos = [];
+            $scope.tiempos = data;
+            if ($scope.tiempos == '') {
+                $scope.tiempos.IdTiempoMuerto = '';
+            };
+           
+            if($scope.index == undefined){
+                $scope.index = $scope.tiempos.length - 1;
+                $scope.getDatos();
+            }
+        });
+    };
+
+    /********************************************************************
+    *                        CONTROL DE FALLAS
+    *******************************************************************/
+    
+    $scope.loadFallas = function(){
+        return $http.get('fallas',{params:{
+                IdSubProceso: $scope.IdSubProceso,
+                IdArea: 2
+            }}).success(function(data) {
+            $scope.fallas = [];
+            $scope.fallas = data;
+        });
+    };
+    
+    $scope.loadTiempos = function(){
+        return $http.get('tiempos',{params:{
+                Fecha: $scope.Fecha,
+                IdMaquina: $scope.IdMaquina,
+                IdEmpleado: $scope.IdEmpleado,
+                IdTurno: 1,//$scope.produccion.IdTurno,
+            }}).success(function(data) {
+            $scope.TiemposMuertos = [];
+            $scope.TiemposMuertos = data;
+        });
+    };
+    
+    $scope.deleteTiempo = function(index){
+        //if($scope.confirm()){
+            var dat = $scope.TiemposMuertos[index];
+            return $http.get('delete-tiempo',{params:dat}).success(function(data) {
+                $scope.TiemposMuertos.splice(index,1);
+            });
+        //}
+    };
+    
+    $scope.addTiempo = function() {
+        //if($scope.TiemposMuertos.IdTiempoMuerto != null){
+            $scope.inserted = {
+                IdTiempoMuerto: null,
+                IdCausa: 4,
+                Inicio:'00:00',
+                Fin:'00:00',
+                Descripcion:'',
+                IdTurno: 1,
+                Fecha: $scope.Fecha,
+                IdMaquina: $scope.IdMaquina,
+                IdEmpleado: $scope.IdEmpleado
+            };
+            $scope.TiemposMuertos.push($scope.inserted);
+            //$scope.TiemposMuertos($scope.TiemposMuertos.length - 1);
+        //}
+    };
+    
+    $scope.saveTiempo = function(index){
+        //if($scope.controlClick('TiemposMuertos',index)){
+            if(($scope.TiemposMuertos[index].Incio != '00:00' && $scope.TiemposMuertos[index].Fin != '00:00') || $scope.TiemposMuertos[index].IdCausa != null){
+                return $http.get('save-tiempo',{params:$scope.TiemposMuertos[index]}).success(function(data) {
+                    $scope.TiemposMuertos[index] = data;
+                    $scope.loadTiempos();
+                });
+            }
+       // }
+    };
+
+
+    /********************************************************************
+    *                        OBTENER DATOS
+    *******************************************************************/
+
+    $scope.openTiemposMuertos = function(){
+      
+    };
+
+    $scope.loadTurnos = function(){
+        return $http.get('turnos',{}).success(function(data) {
+            $scope.turnos = data;
+        });
+    };
+
+    $scope.getDatos = function(){
+        $scope.loadFallas();
+        $scope.loadTiempos();
+    };
+
+});
+

@@ -50,7 +50,7 @@ $this->title = $title;
         border-top: 1px solid #ccc;
     }
 </style>
-<div class="container-fluid" ng-controller="ProduccionAceros" ng-init="loadProductosSeries(); loadProductos();">
+<div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="loadProductosSeries(); loadProductos();">
     <div class="col-md-5">
     <div class="panel panel-primary">
         <!-- Default panel contents -->

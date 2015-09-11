@@ -62,7 +62,7 @@ $this->title = $title;
     }
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
-<div ng-controller="ProgramacionAcero" ng-init="IdAreaProceso=<?=$AreaProceso?>; IdArea=<?=$area?>; loadSemanas();filtro.orden2 = '!P-';">
+<div ng-controller="Programacion" ng-init="IdAreaProceso=<?=$AreaProceso?>; IdArea=<?=$area?>; loadSemanas();filtro.orden2 = '!P-';">
     <input type="week" ng-model="semanaActual" ng-change="loadSemanas();" format-date />
     <button class="btn btn-success" ng-click="loadProgramacionSemanal();loadResumen();">Actualizar</button>
     <button class="btn btn-primary" ng-click="mostrarPedido = !mostrarPedido"><span ng-if="!mostrarPedido">Mostrar Pedidos</span><span ng-if="mostrarPedido">Ocultar Pedidos</span></button>

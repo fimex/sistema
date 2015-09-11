@@ -76,7 +76,7 @@
                     </th>
                     <th>
                         <label ng-if="detalle.LlevaSerie == 'Si'" >
-                            <button class="btn btn-primary" ng-click="MostrarSeries(detalle.IdProducto,10); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
+                            <button class="btn btn-primary" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
                         </label>
                         <label ng-if="detalle.LlevaSerie != 'Si'" >
                             <button class="btn btn-success btn-xs" ng-click="saveDetalleVaciado($index,0,0)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
@@ -112,11 +112,7 @@
         <br>
         <div style="float:left; width:60%;" >
             <div style="float:right" >
-                <!--<div class="form-group">
-                    <label for="producto">Vaciar: </label>
-                    <input type="text" class="form-control" ng-model="Vaciar" value="Vaciar"  />
-                </div>-->
-                <fieldset id="btn-ciclo">
+                <fieldset id="btn-ciclo" ng-if=" listadoseries != '' " >
                     <button class="btn btn-success" data-dismiss="modal" class="btn btn-default" ng-click="saveDetalleVaciado(index,Vaciar,operacion)">Aceptar</button>
                 </fieldset>
             </div>

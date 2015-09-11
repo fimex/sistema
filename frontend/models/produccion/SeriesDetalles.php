@@ -8,9 +8,8 @@ use Yii;
  * This is the model class for table "SeriesDetalles".
  *
  * @property integer $IdSeriesDetalles
- * @property integer $IdProduccionDetalleMoldeo
+ * @property integer $IdProduccionDetalle
  * @property integer $IdSerie
- * @property integer $IdCicloTipo
  * @property string $Comentarios
  *
  * @property ProduccionesDetalle $idProduccionDetalle
@@ -32,9 +31,9 @@ class SeriesDetalles extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProduccionDetalleMoldeo', 'IdSerie'], 'required'],
-            [['IdProduccionDetalleMoldeo', 'IdSerie', 'IdCicloTipo'], 'integer'],
-            [['Comentarios'], 'string']
+            [['IdProduccionDetalle', 'IdSerie'], 'required'],
+            [['IdProduccionDetalle', 'IdSerie'], 'integer'],
+            [['Comentarios', 'Estatus'], 'string']
         ];
     }
 
@@ -45,19 +44,19 @@ class SeriesDetalles extends \yii\db\ActiveRecord
     {
         return [
             'IdSeriesDetalles' => 'Id Series Detalles',
-            'IdProduccionDetalleMoldeo' => 'Id Produccion Detalle',
+            'IdProduccionDetalle' => 'Id Produccion Detalle',
             'IdSerie' => 'Id Serie',
-            'IdCicloTipo' => 'Id Ciclo Tipo',
             'Comentarios' => 'Comentarios',
+            'Estatus' => 'Estatus',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdProduccionDetalleMoldeo()
+    public function getIdProduccionDetalle()
     {
-        return $this->hasOne(ProduccionesDetalleMoldeo::className(), ['IdProduccionDetalleMoldeo' => 'IdProduccionDetalleMoldeo']);
+        return $this->hasOne(ProduccionesDetalleMoldeo::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
     }
 
     /**
@@ -68,12 +67,4 @@ class SeriesDetalles extends \yii\db\ActiveRecord
         return $this->hasOne(Series::className(), ['IdSerie' => 'IdSerie']);
     }
 
-    
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCiclosTipo()
-    {
-        return $this->hasMany(CiclosTipo::className(), ['IdCicloTipo' => 'IdCicloTipo']);
-    }
 }
