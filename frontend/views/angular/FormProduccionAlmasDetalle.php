@@ -1,6 +1,11 @@
 <div class="panel panel-primary">
     <!-- Default panel contents -->
+	<?php if($IdSubProceso == 2): ?>
     <div class="panel-heading">Captura de produccion almas</div>
+	   <?php endif;?>
+	<?php if($IdSubProceso == 4): ?>
+    <div class="panel-heading">Captura de produccion almas (pintado)</div>
+	   <?php endif;?>
     <div class="panel-body">
         <button class="btn btn-success" ng-show="mostrar" ng-click="addAlmasDetalle()">Agregar Produccion</button>
     </div>

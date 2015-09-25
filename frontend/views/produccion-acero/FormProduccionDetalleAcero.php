@@ -40,23 +40,23 @@
                 <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
-                    <th>{{detalle.Programadas - (((detalle.OKMoldeo * 1) + (detalle.REPMoldeo - detalle.RECCerrado))/detalle.CiclosMolde)}}</th>
-                    <th>{{detalle.Programadas - detalle.MoldesCerrados - detalle.RECCerrado}}</th>
+                    <th>{{detalle.Programadas - ((( IdAreaAct != 2 ? detalle.OKMoldeo * 1 : detalle.OKVarel * 1) + (IdAreaAct != 2 ? detalle.REPMoldeo : detalle.REPVarel - detalle.RECCerrado))/detalle.CiclosMolde)}}</th>
+                    <th>{{detalle.Programadas - detalle.OKCerrado - detalle.RECCerrado}}</th>
                     <td class="col-md-3">{{detalle.Producto}}</td>
 
                     <th>{{detalle.Aleacion}}</th>
                     <th>{{detalle.SerieInicio || 'N/A'}}</th>
                     <th>{{detalle.CiclosMolde}}</th>
-                    <th>{{(detalle.CiclosMolde * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado)}}</th>
+                    <th>{{ IdAreaAct != 2 ? (detalle.CiclosMolde * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado) : (detalle.CiclosMolde * detalle.Programadas) - detalle.OKVarel + (detalle.REPVarel - detalle.RECCerrado) }}</th>
                     
-                    <th>{{detalle.OKMoldeo || 0 }}</th>
+                    <th>{{ IdAreaAct != 2 ? detalle.OKMoldeo : detalle.OKVarel}}</th>
                     <th><button type="button" ng-show="IdSubProceso == 6 || IdSubProceso == 7" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm ">+</button></th>
-                    <th>{{detalle.RECMoldeo || 0 }}</th>
+                    <th>{{ IdAreaAct != 2 ? detalle.RECMoldeo : detalle.RECVarel || 0 }}</th>
                     <th><button type="button" ng-show="IdSubProceso == 6 || IdSubProceso == 7" ng-click="ModelMoldeo($index,3);" class="btn btn-danger btn-sm ">-</button></th>
                     
-                    <th>{{(((detalle.OKMoldeo * 1) + (detalle.REPMoldeo - detalle.RECCerrado))/detalle.CiclosMolde)}}</th>
-                    <th>{{detalle.MoldesCerrados || 0}}</th>
-                    
+                    <th>{{ IdAreaAct != 2 ? (((detalle.OKMoldeo * 1) + (detalle.REPMoldeo - detalle.RECCerrado))/detalle.CiclosMolde) : (((detalle.OKVarel * 1) + (detalle.REPVarel - detalle.RECCerrado))/detalle.CiclosMolde) }}</th>
+                    <th>{{detalle.OKCerrado || 0}}</th>
+
                     <th>{{detalle.OKCerrado || 0 }}</th>
                     <th><button type="button" ng-show="IdSubProceso == 9" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm ">+</button></th>
                     <th>{{detalle.RECCerrado || 0 }}</th>

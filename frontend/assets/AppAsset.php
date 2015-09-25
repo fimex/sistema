@@ -51,7 +51,7 @@ class AppAsset extends AssetBundle
         'js/angular.pruebas.js',
         'js/angular.almas.programacion.js',
         'js/angular.programacion.js',
-        //'js/angular.programacion_acero.js',
+        'js/angular.calidad.js',
         'js/angular/flexy-layout.min.js',
         'js/angular/Block.js',
         'js/angular/Directives.js',

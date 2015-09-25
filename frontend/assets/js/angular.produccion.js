@@ -1,5 +1,6 @@
 app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $timeout){
     //$scope.Fecha = new Date();
+    $scope.control = false;
     $scope.produccion = [{
         Fecha: new Date(),
         IdArea: null,
@@ -206,7 +207,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
                 $scope.indexMaquina = key;
             }
         });
-        $scope.produccion.IdSubProceso == 2 || $scope.produccion.IdSubProceso == 3 ? $scope.loadAlmasDetalle() : $scope.loadDetalle();
+        $scope.produccion.IdSubProceso == 2 || $scope.produccion.IdSubProceso == 3 || $scope.produccion.IdSubProceso == 4 ? $scope.loadAlmasDetalle() : $scope.loadDetalle();
         $scope.loadConsumo();
         $scope.loadTemperaturas();
         $scope.loadTiempos();
@@ -250,7 +251,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     $scope.selectTurnos = function(){
         $scope.turnos.forEach(function(value, key) {
             if(value.IdTurno == $scope.produccion.IdTurno){
-                return $scope.indexMaquina = key;
+                return $scope.indexTurno = key;
             }
         });
     };
@@ -284,14 +285,16 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         return $http.post('produccion',{IdProduccion:$scope.producciones[$scope.index].IdProduccion}).success(function(data){
             $scope.mostrar = true;
             $scope.produccion = data;
+            $scope.control = true
             $scope.loadData();
-        });
+        }).error(function(){$scope.control = true});
     };
 
     $scope.deleteProducciones = function(){
         return $http.get('delete-producciones',{params:{
             IdProduccion:$scope.produccion.IdProduccion
         }}).success(function(data){
+            $scope.producciones.splice($scope.index,1);
             $scope.Prev();
         });
     };
@@ -309,7 +312,6 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         }}).success(function(data){
             if(data != 'null' && $scope.IdSubProceso != 10){
                 for(x = 0;x < $scope.producciones.length;x++){
-                    console.log(data.IdProduccion + " - " + $scope.producciones[x].IdProduccion);
                     if(data.IdProduccion == $scope.producciones[x].IdProduccion){
                         console.log('entro');
                         $scope.index = x;
@@ -446,11 +448,17 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
      *                        PROGRAMACION
      *******************************************************************/
     $scope.loadProgramacion = function(timeout){
-        //console.log($scope.IdArea);
+        console.log($scope.control);
+        if($scope.control == false){
+            return $timeout(function() {$scope.loadProgramacion(true);}, 3000);
+        }
+        
+        var IdTurno = $scope.IdSubProceso === 10 ? null : $scope.produccion.IdTurno;
         return $http.get('programacion',{params:{
-            Dia: $scope.mostrar ? $scope.produccion.Fecha : $scope.Fecha,
+            Dia: $scope.produccion.Fecha || $scope.Fecha,
             IdArea: $scope.IdArea,
             IdSubProceso: $scope.IdSubProceso,
+            IdTurno: IdTurno
             //IdMaquina: $scope.produccion.IdMaquina,
         }}).success(function(data) {
             $scope.programaciones = [];
@@ -470,7 +478,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             $scope.programacionEmpaque = [];
             $scope.programacionEmpaque = data;
             $timeout(function() {$scope.loadProgramacionEmpaque();}, 50000);
-        });
+			});
     };
     
     $scope.actualizarProgramacion = function(){

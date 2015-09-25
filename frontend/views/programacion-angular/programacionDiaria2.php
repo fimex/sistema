@@ -57,8 +57,12 @@ $this->title = $title;
     }
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
-<div ng-controller="Programacion" ng-init="filtro.Estatus = 'Abierto';IdArea=<?=$area?>;IdSubProceso=<?=$IdSubProceso?>;loadDias();">
-    <b style="font-size: 14pt;">Programacion Diaria</b>  <input type="week" ng-model="semanaActual" ng-change="loadDias();" />
+<div ng-controller="Programacion" ng-init="filtro.Estatus = 'Abierto';IdArea=<?=$area?>;Turno=1;IdSubProceso=<?=$IdSubProceso?>;loadDias();">
+    <b style="font-size: 14pt;">Programacion Diaria: </b>  <input type="week" ng-model="semanaActual" ng-change="loadDias();" />
+    <b style="font-size: 14pt;">Turno: </b><select ng-model="Turno" ng-change="loadDias();">
+        <option ng-selected="Turno == 1" value="1">Dia</option>
+        <option ng-selected="Turno == 3" value="3">Noche</option>
+    </select>
     <button class="btn btn-success" ng-click="loadProgramacionDiaria();">Actualizar</button>
     <button class="btn btn-primary" ng-show="!mostrar" ng-click="mostrar = true">Mostrar Datos</button>
     <button class="btn btn-primary" ng-show="mostrar" ng-click="mostrar = false">Ocultar Datos</button>
@@ -116,7 +120,7 @@ $this->title = $title;
                     <th ng-class="{info: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.FechaEmbarque | date:'dd-MM-yy'}}</th>
                     <th ng-class="{info: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.Aleacion}}</th>
                     <th ng-class="{info: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.Marca}}</th>
-                    <th ng-class="{info: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar" style="width: 33px;">{{programacion.Prioridad}}</th>
+                    <th ng-class="{info: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar" style="width: 33px;">{{programacion.Prioridad == 0 ? '' : programacion.Prioridad}}</th>
                     <th ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.Programadas}}</th>
                     <th ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.TotalProgramado | currency :"":0}}</th>
                     <th ng-init="programacion.Faltan = programacion.TotalProgramado - programacion.TotalHecho" ng-class="{success: programacion.Faltan <= 0, danger: programacion.Faltan == programacion.TotalProgramado, warning: (programacion.Faltan < programacion.TotalProgramado && programacion.Faltan > 0 )}" ng-show="mostrar">{{programacion.Faltan | currency :"":0}}</th>

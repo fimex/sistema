@@ -299,6 +299,14 @@ class ProgramacionAngularAceroController extends Controller
             $value['Programadas2']*=1;
             $value['Programadas3']*=1;
             $value['Programadas4']*=1;
+            $value['Prioridad1'] = $value['Prioridad1'] == 0 ? '' : $value['Prioridad1'];
+            $value['Prioridad2'] = $value['Prioridad2'] == 0 ? '' : $value['Prioridad2'];
+            $value['Prioridad3'] = $value['Prioridad3'] == 0 ? '' : $value['Prioridad3'];
+            $value['Prioridad4'] = $value['Prioridad4'] == 0 ? '' : $value['Prioridad4'];
+            $value['Programadas1'] = $value['Programadas1'] == 0 ? '' : $value['Programadas1'];
+            $value['Programadas2'] = $value['Programadas2'] == 0 ? '' : $value['Programadas2'];
+            $value['Programadas3'] = $value['Programadas3'] == 0 ? '' : $value['Programadas3'];
+            $value['Programadas4'] = $value['Programadas4'] == 0 ? '' : $value['Programadas4'];
 
             $value['Moldes']= round($value['Moldes'],0,PHP_ROUND_HALF_UP);
             

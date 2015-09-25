@@ -130,7 +130,7 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
         return $this->hasMany(ProduccionesCiclos::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
     }
     
-    public function getDatos($maquina,$ini,$fin,$area,$subProceso){
+    public function getDatos($maquina,$ini,$fin,$area,$subProceso,$turno){
         if($ini == 0){
             $fecha = date('Y-m-d');
             $where = " WHERE Fecha = '$fecha' AND pr.IdMaquina IN(SELECT IdMaquina FROM v_Maquinas WHERE IdArea = $area AND IdSubProceso = $subProceso) ";
@@ -141,12 +141,12 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
             $and = "AND pr.IdMaquina = $maquina";
         }else{$and="AND pr.IdMaquina IN(SELECT IdMaquina FROM v_Maquinas WHERE IdArea = $area AND IdSubProceso = $subProceso)";}
         $command = \Yii::$app->db;
-        $result = $command->createCommand('SELECT pd.IdProduccionDetalle, pd.Inicio, pd.Fin, pd.Hechas, pd.Rechazadas, 
+        $result = $command->createCommand('SELECT pr.Fecha, pd.IdProduccionDetalle, pd.Inicio, pd.Fin, pd.Hechas, pd.Rechazadas, 
                                                   p.Identificacion, p.MoldesHora, pr.IdMaquina, DATEPART("ww", pd.Inicio) as Semana
                                           FROM ProduccionesDetalle AS pd
                                           LEFT JOIN Productos AS p ON pd.IdProductos = p.IdProducto
                                           LEFT JOIN Producciones AS pr ON pd.IdProduccion = pr.IdProduccion
-                                          '.$where.' '.$and.' ORDER BY pd.Inicio ASC ')->queryAll();
+                                          '.$where.' '.$and.' AND pr.IdTurno = '.$turno.' ORDER BY pr.Fecha ASC, pd.Inicio ASC ')->queryAll();
 
         foreach ($result as &$key) {
             $key['SU'] = 0;
@@ -158,19 +158,27 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
             $key['OK'] = 0;
             $key['Rec'] = 0;
             
-            $key['Inicio'] = strtotime(date('H:i',strtotime($key['Inicio']))) < strtotime('07:00') ? (date('Y-m-d',strtotime($key['Inicio']))." 07:00") : $key['Inicio'];
-            $key['Inicio'] = strtotime(date('H:i',strtotime($key['Inicio']))) > strtotime('17:00') ? (date('Y-m-d',strtotime($key['Inicio']))." 17:00") : $key['Inicio'];
-
-            $key['Fin'] = strtotime(date('H:i',strtotime($key['Fin']))) > strtotime('17:00') ? (date('Y-m-d',strtotime($key['Fin']))." 17:00") : $key['Fin'];
-            $key['Fin'] = strtotime(date('H:i',strtotime($key['Fin']))) < strtotime('07:00') ? (date('Y-m-d',strtotime($key['Fin']))." 07:00") : $key['Fin'];                                                       
+            $key['Fecha'] = date('Y-m-d',strtotime($key['Fecha']));
+            $Fecha = $key['Fecha'];
+            $key['Inicio'] = date('H:i:s',strtotime($key['Inicio']));
+            $key['Fin'] = date('H:i:s',strtotime($key['Fin']));
+            
+            $HIni = $turno == 1 ? '07:00' : '22:00';
+            $HFin = $turno == 1 ? '17:00' : '07:00';
+            
+            $res = $this->limiteHoras($key['Inicio'], $key['Fin'], "$Fecha $HIni",($HIni <= $HFin ? $Fecha : date('Y-m-d',strtotime('+1 day',strtotime($Fecha))))." $HFin");
+            
+            $key['Inicio'] = $res[0];
+            $key['Fin'] = $res[1];
+            //$key['Fin'] = $this->limiteHoras($key['Fin'], "$Fecha $HIni",($HIni <= $HFin ? $Fecha : date('Y-m-d',strtotime('+1 day',strtotime($Fecha))))." $HFin");
             
             $TiP = strtotime(date('H:i',strtotime($key['Inicio'])))/60;
             $TfP = strtotime(date('H:i',strtotime($key['Fin'])))/60;
 
-            $fecha = date('Y-m-d',strtotime($key['Inicio']));
-            $semana = date('W',strtotime($key['Inicio']));
+            $fecha = date('Y-m-d',strtotime($key['Fecha']));
+            $semana = date('W',strtotime($key['Fecha']));
             
-            $timeDead = \common\models\vistas\VTiemposMuertos::find()->where("IdArea = $area AND IdMaquina = ".$key['IdMaquina']."AND Fecha = '$fecha'")->asArray()->all();
+            $timeDead = \common\models\vistas\VTiemposMuertos::find()->where("IdArea = $area AND IdMaquina = ".$key['IdMaquina']."AND Fecha = '$fecha' AND IdTurno = $turno ")->asArray()->all();
             
             $ete = $command->createCommand("
                 SELECT DATEPART(WW, DuxSinc.dbo.v_entrada_plb_detalle.FECHA) AS SEM, SUM(DuxSinc.dbo.v_entrada_plb_detalle.CANTIDAD) as U,
@@ -195,25 +203,54 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
                 $key['Rec'] = $value['TotKgRec'];
             }
             $x=1;
+
             foreach ($timeDead as $datos) {
-                //echo "<h4>TiempoMuerto</h4>";
-                //var_dump($datos);
                 
-                $datos['Inicio'] = strtotime(date('H:i',strtotime($datos['Inicio']))) < strtotime('07:00') ? (date('Y-m-d',strtotime($datos['Inicio']))." 07:00") : $datos['Inicio'];
-                $datos['Inicio'] = strtotime(date('H:i',strtotime($datos['Inicio']))) > strtotime('17:00') ? (date('Y-m-d',strtotime($datos['Inicio']))." 17:00") : $datos['Inicio'];
+                $datos['Inicio'] = date('H:i:s',strtotime($datos['Inicio']));
+                $datos['Fin'] = date('H:i:s',strtotime($datos['Fin']));
                 
-                $datos['Fin'] = strtotime(date('H:i',strtotime($datos['Fin']))) > strtotime('17:00') ? (date('Y-m-d',strtotime($datos['Fin']))." 17:00") : $datos['Fin'];
-                $datos['Fin'] = strtotime(date('H:i',strtotime($datos['Fin']))) < strtotime('07:00') ? (date('Y-m-d',strtotime($datos['Fin']))." 07:00") : $datos['Fin'];
+                //echo "In :  ";
+                $res = $this->limiteHoras($datos['Inicio'],$datos['Fin'], $key['Inicio'], $key['Fin']);
                 
-                $TiM = strtotime(date('H:i',strtotime($datos['Inicio'])))/60;
-                $TfM = strtotime(date('H:i',strtotime($datos['Fin'])))/60;
+                $datos['Inicio'] = $res[0];
+                $datos['Fin'] = $res[1];
+                //echo $datos['Inicio']." - ".$datos['Fin'] ;
+                //$datos['Fin'] = $this->limiteHoras($datos['Fin'], $key['Inicio'], $key['Fin']);
                 
-                if($TiM >= $TiP && $TfM <= $TfP ){
-                    $key[$datos['ClaveTipo']] += $TfM - $TiM;
-                }
+                $TiM = strtotime($datos['Inicio'])/60;
+                $TfM = strtotime($datos['Fin'])/60;
+                
+                //echo "$TfM - $TiM = ".($TfM - $TiM)."<br />";
+                $key[$datos['ClaveTipo']] += ($TfM - $TiM);
             }
         }
         //exit;
         return $result;
+    }
+    
+    function limiteHoras($horaIni,$horaFin,$limiteIni,$limiteFin){
+        
+        $fecha = date('Y-m-d',strtotime($limiteIni));
+        $horaIni = date('H:i:s',strtotime($horaIni));
+        $horaFin = date('H:i:s',strtotime($horaFin));
+        
+        $fecha2 = strtotime(date('H:i:s',strtotime($limiteIni))) <= strtotime(date('H:i:s',strtotime($limiteFin))) ? $fecha : date('Y-m-d',strtotime('+1 day',strtotime($fecha)));
+        $fecha3 = strtotime(date('H:i:s',strtotime($limiteIni))) <= strtotime(date('H:i:s',strtotime($limiteFin))) ? $fecha : date('Y-m-d',strtotime('-1 day',strtotime($fecha)));
+        $horaIni = (strtotime($horaIni) <= strtotime('07:00') ? $fecha2 : $fecha) ." $horaIni";
+        $horaFin = (strtotime($horaFin) <= strtotime('07:00') ? $fecha2 : $fecha) ." $horaFin";
+        $horaIni =  strtotime($horaIni) > strtotime($horaFin) ? date('Y-m-d H:i:s',strtotime('-1 day',strtotime($horaIni))) : $horaIni;
+        
+        
+        $hora = $horaIni;
+        $hora2 = $horaFin;
+        
+        $hora = strtotime($hora) <= strtotime($limiteFin) ? $hora : $limiteFin;
+        $hora = strtotime($hora) >= strtotime($limiteIni) ? $hora : $limiteIni;
+        $hora2 = strtotime($hora2) <= strtotime($limiteFin) ? $hora2 : $limiteFin;
+        $hora2 = strtotime($hora2) >= strtotime($limiteIni) ? $hora2 : $limiteIni;
+        
+        //echo "<hr />$limiteIni - $limiteFin :::: $horaIni == $hora  |||| $horaFin == $hora2 <br />";
+        
+        return [$hora,$hora2];
     }
 }

@@ -57,36 +57,9 @@ if($area == 4){
                     <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
                     <span ng-click="orden('Producto',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true"></span>
                     <br />
-                    <input class="form-control" ng-model="filtro.producto" />
-                </th>
-            <?php if($area == 3){ ?>
-                <th ng-show="mostrar" style="max-width: 100px" rowspan="2">
-                    Fecha Cliente<br />
-                    <span ng-click="orden('FechaEmbarque',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
-                    <span ng-click="orden('FechaEmbarque',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
-                    <span ng-click="orden('FechaEmbarque',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    <br />
-                    <input class="form-control" ng-model="filtro.embarque" />
-                </th>
-                <th ng-show="mostrar" style="max-width: 100px" rowspan="2">
-                    Fecha Embarque<br />
-                    <span ng-click="orden('FechaEnvio',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
-                    <span ng-click="orden('FechaEnvio',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
-                    <span ng-click="orden('FechaEnvio',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    <br />
-                    <input class="form-control" ng-model="filtro.envio" />
-                </th>
-            
-                <th style="max-width: 100px" rowspan="2">
-                    Casting<br />
-                    <span ng-click="orden('ProductoCasting',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
-                    <span ng-click="orden('ProductoCasting',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
-                    <span ng-click="orden('ProductoCasting',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    <br />
                     <input class="form-control" ng-model="filtro.casting" />
                 </th>
-            <?php } ?>
-                <th style="max-width: 100px" rowspan="2">
+                <th style="max-width: 200px" rowspan="2">
                     No Parte<br />
                     <span ng-click="orden('Producto',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
                     <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true"></span>
@@ -230,13 +203,8 @@ if($area == 4){
             <?php } ?>
                 <th ng-show="mostrar" style="max-width: 100px">{{programacion.Marca}}</th>
                 <th title="{{programacion.Descripcion}}" ng-show="mostrar" >{{programacion.Descripcion | uppercase | limitTo : 15}}</th>
-                <th title="{{programacion.producto}}" ng-show="mostrar" >{{programacion.Producto | uppercase | limitTo : 15}}</th>
-            <?php if($area == 3){ ?>
-                <th ng-show="mostrar" style="min-width: 150px">{{programacion.FechaEmbarque | date:'dd-MMM-yyyy'}}</th>
-                <th ng-show="mostrar" ><input type="date" style="width:135px;height: 25px;" ng-change="saveEnvio(programacion.IdPedido,programacion.FechaEnvio);" ng-model="programacion.FechaEnvio" value="{{programacion.FechaEnvio | date:'yyyy-MM-dd'}}" ></th>
-                <th style="max-width: 100px">{{programacion.ProductoCasting}}</th>
-            <?php } ?>
-                <th style="mix-width: 100px">{{programacion.Producto}}</th>
+                <th title="{{programacion.producto}}" ng-show="mostrar" >{{programacion.ProductoCasting | uppercase | limitTo : 15}}</th>
+                <th>{{programacion.Producto}}</th>
                 <th ng-show="mostrar" style="max-width: 100px">{{programacion.Aleacion}}</th>
                 <th style="max-width: 50px">{{programacion.SaldoCantidad}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PLA == 0 ? '' : programacion.PLA}}</th>

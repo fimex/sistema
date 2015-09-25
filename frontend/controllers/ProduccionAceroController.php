@@ -148,6 +148,7 @@ class ProduccionAceroController extends \yii\web\Controller
             case 8: $url = 'CapturaProduccionAcero'; $title = 'Pintado '. ($IdAreaActual == 1 ? 'Kloster' : 'Varel') ;break;
             case 9: $url = 'CapturaProduccionAcero'; $title = 'Cerrado '. ($IdAreaActual == 1 ? 'Kloster' : 'Varel') ;break;
             case 10: $url = 'CapturaProduccion'; $title = 'Vaciado';break;
+            case 17: $url = 'CapturaProduccionAcero'; $title = 'Moldeo Especial';break;
         }
         return $this->render($url, [
             'title' => $title,
@@ -852,7 +853,6 @@ class ProduccionAceroController extends \yii\web\Controller
         //var_dump($data);exit;
         $comentarios = isset($data['ProduccionesDetalleMoldeo']['Comentarios']) ? $data['ProduccionesDetalleMoldeo']['Comentarios'] : '';
         
-        
         //OBETENER PRODUCCION
         $produccion = $this->getProduccion($data['Producciones']);
         //OBETENER DETALLE DE PRODUCCION
@@ -871,6 +871,11 @@ class ProduccionAceroController extends \yii\web\Controller
             ]
         ]);
         $ProduccionesCiclos->save();
+        
+        $ProduccionesCiclos = ProduccionesCiclos::find()->where([
+            'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
+            'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus']
+        ])->one();
 
         //GENERAR DETALLES DE CICLO
         $ProduccionesCiclosDetalle = new ProduccionesCiclosDetalle();
@@ -882,14 +887,16 @@ class ProduccionAceroController extends \yii\web\Controller
         ]);
         $ProduccionesCiclosDetalle->save();
         
-        
         $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus <> 3")->asArray()->one();
         $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
         
         $produccionDetalle->Hechas = $totalOK['Ciclos'];
         $produccionDetalle->Rechazadas = $totalREC['Ciclos'];
         $produccionDetalle->update();
-        //$model = ProduccionesCiclos::find()->where(["IdProduccionCicloDetalle" => $model->IdProduccionCicloDetalle])->asArray()->one();
+        $model = ProduccionesCiclosDetalle::find()->where([
+            'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
+            'IdParteMolde' => $data['ProduccionesDetalleMoldeo']['IdParteMolde']
+        ])->asArray()->one();
         
         /*if($data['ProduccionesDetalleMoldeo']['IdCicloTipo'] == 1){
            $this->actualizaHechas($model,$data);
@@ -897,7 +904,7 @@ class ProduccionAceroController extends \yii\web\Controller
         
         //// CONTROL DE SERIES ----->INICIO
 
-        if (isset($data['ProduccionesDetalleMoldeo']['LlevaSerie']) == 'Si' && $model['idProducto']['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde']) {
+        if ($data['ProduccionesDetalleMoldeo']['LlevaSerie'] == 'Si' && $model['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde']) {
             $IdConfiguracionSerie = $data['ProduccionesDetalleMoldeo']['IdConfiguracionSerie'];
             
             if($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7) {

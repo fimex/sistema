@@ -799,9 +799,12 @@ public function  GetInfo_pza_op($semana){
 						
 		$maq_pieza = $this->maquinapieza_todo($data['producto']);
 		
+		$usr = Yii::$app->user->identity; 
+					$u  =$usr->role;
+		
 		if (!$this->p1exist($data['producto'],$data['semana'],$data['opx']) ){
 			if ($data['cantidad'] == 0) return ;
-			
+			if($u < 20) return false;
 			$result =$command->createCommand()->insert('pdp_cta',[
 
 									'pieza' => $data['producto'], //captura row
@@ -823,7 +826,7 @@ public function  GetInfo_pza_op($semana){
 		  //echo ' existe se actualiza';
 		  
 			  if($data['cantidad'] == 0  ){
-					
+					if($u < 20) return false;
 				$result =$command->createCommand()->delete('pdp_cta',[
 														
 														'semana' => $data['semana'],
@@ -837,7 +840,7 @@ public function  GetInfo_pza_op($semana){
 				
 												return true; //corta ejecucion y sale
 				}
-			  
+			  if($u < 15) return false;
 			  $result =$command->createCommand()->update('pdp_cta',[
 										'maquina' => $data['maquina'],
 										'prioridad' => $data['prioridad'],

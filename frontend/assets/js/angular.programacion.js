@@ -205,7 +205,10 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
                 }
             );
         }else{
-            return $http.get('resumen-diario',{params:{semana:$scope.semanaActual}})
+            return $http.get('resumen-diario',{params:{
+                semana:$scope.semanaActual,
+                turno:$scope.Turno
+            }})
             .success(function(data){
                 $scope.resumenes = data;
             }).error(function(data, status, headers, config){
@@ -231,7 +234,11 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     };
 
     $scope.loadProgramacionDiaria = function(){
-        return $http.get('data-diaria',{params:{semana:$scope.semanaActual,IdSubProceso:$scope.IdSubProceso}}).success(function(data){
+        return $http.get('data-diaria',{params:{
+                semana:$scope.semanaActual,
+                IdSubProceso:$scope.IdSubProceso,
+                turno:$scope.Turno
+            }}).success(function(data){
             $scope.programaciones = [];
             $scope.programaciones = data.rows;
             $scope.diaActual = $scope.diaActual === undefined ? 1 : $scope.diaActual;
@@ -269,7 +276,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             CiclosMolde:row.CiclosMolde,
             Delete:row.Delete
         }}).success(function(data){
-            if(data === true){
+            if(data === '1'){
                 $scope.loadProgramacionDiaria();
                 $scope.loadResumenDiario();
             }

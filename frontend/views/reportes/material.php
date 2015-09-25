@@ -99,7 +99,7 @@ $cantidad = isset($_GET['cantidad']) ? $_GET['cantidad'] : 4;
             </tr>
             <?php endforeach; ?>
         </tbody>
-       <tfoot>
+        <tfoot>
             <tr>
                 <th>Total</th>
                 <?php for ($i = 0; $i < $cantidad; $i++):?>

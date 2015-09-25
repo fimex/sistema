@@ -1,6 +1,8 @@
 <div class="panel panel-danger">
     <!-- Default panel contents -->
-    <div class="panel-heading"><?=$titulo?></div>
+	
+    <div class="panel-heading">Rechazo</div>
+	
     <div class="panel-body">
         <button class="btn btn-success" ng-show="mostrar" ng-click="addAlmasRechazo()">Agregar Defecto</button>
     </div>

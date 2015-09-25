@@ -272,6 +272,7 @@ END AS FLOAT)
 
     public function actionResumenDiario(){
         $dia = !isset($_REQUEST['semana']) ? date('Y-m-d') : $_REQUEST['semana'];
+        $turno = isset($_REQUEST['turno']) ? $_REQUEST['turno'] : 1;
         $area = Yii::$app->session->get('area');
         $area = $area['IdArea'];
         $year = date('Y',strtotime($dia));
@@ -284,6 +285,7 @@ END AS FLOAT)
                 'Anio' => $year,
                 'Semana' => $week,
                 'Dia' => $fecha,
+                'IdTurno' => $turno,
                 ])->asArray()->one();
             if($res == null){
                 $res = [
@@ -291,6 +293,7 @@ END AS FLOAT)
                     'Anio' => $year,
                     'Semana' => $week,
                     'Dia' => $fecha,
+                    'IdTurno' => $turno,
                     'PrgMol' => 0,
                     'PrgPzas' => 0,
                     'PrgTonP' => 0,

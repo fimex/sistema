@@ -1,6 +1,7 @@
 app.controller('Pruebas', function($scope, $filter, $http){
     $scope.FechaIni = new Date();
     $scope.FechaFin = new Date();
+    $scope.IdTurno = 1;
     $scope.semanaActual = new Date();
         
     // Disable weekend selection

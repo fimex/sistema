@@ -1,4 +1,4 @@
-<div class="container-fluid" ng-controller="TiemposMuertos" ng-init="loadTiempos(); loadFallas();" >
+<!--<div class="container-fluid" ng-controller="TiemposMuertos" ng-init="loadTiempos(); loadFallas();" >-->
     <!-- Default panel contents -->
     <div class="panel-body">
         <button class="btn btn-success"  ng-click="addTiempo()">Agregar Falla</button>
@@ -21,7 +21,7 @@
                 >
                     <th>
                         <select ng-change="tiempos.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="tiempos.IdCausa">
-                            <optgroup ng-repeat="falla in fallas" label="{{falla.Descripcion}}">
+                            <optgroup ng-repeat="falla in fallas" label="{{falla.Descripcion}}" ng-model="IdCausa" >
                                 <option ng-selected="tiempos.IdCausa == causa.IdCausa" ng-repeat="causa in falla.causas" value="{{causa.IdCausa}}">{{causa.Descripcion}}</option>
                             </optgroup>
                         </select>
@@ -37,4 +37,4 @@
             </tbody>
         </table>
     </div>
-</div>
+<!--</div>-->

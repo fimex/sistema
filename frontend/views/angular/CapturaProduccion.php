@@ -149,7 +149,7 @@ $this->title = $title;
                         </div>
                     </div>
                     <?php endif;?>
-                    <?php if($IdSubProceso == 12 || $IdSubProceso == 6 || $IdSubProceso == 2 || $IdSubProceso == 16 || $IdSubProceso == 3):?>
+                    <?php if($IdSubProceso == 12 || $IdSubProceso == 6 || $IdSubProceso == 2 || $IdSubProceso == 16 || $IdSubProceso == 3 ||  $IdSubProceso == 4):?>
                     <div class="col-md-3">
                         <div class="input-group">
                             <span id="Empleados" class="input-group-addon">Empleado:</span>
@@ -159,6 +159,7 @@ $this->title = $title;
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idEmpleado.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
                         </div>
                     </div>
+                    <?php endif;?>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="Turnos" class="input-group-addon">Turno:</span>
@@ -168,7 +169,6 @@ $this->title = $title;
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
-                    <?php endif;?>
                     <br><br>
                     <div class="col-md-4">
                         <div class="input-group">
@@ -279,7 +279,7 @@ $this->title = $title;
         <?php endif;?>
     </div>
     <?php endif?>
-    <?php if($IdSubProceso == 3):?>
+    <?php if($IdSubProceso == 3|| $IdSubProceso == 4):?>
     <div class="row">
         <div class="col-md-4" style="height: 700px;">
             <?= $this->render('programacionAlmas',[
@@ -295,7 +295,7 @@ $this->title = $title;
                 </div>
                 <div class="col-md-6">
                     <?= $this->render('FormProduccionAlmasRechazo',[
-                        'subProceso'=>$IdSubProceso,
+                        'IdSubProceso'=>$IdSubProceso,
                         'titulo' => 'Rechazo Almas',
                     ]);?>
                 </div>

@@ -100,6 +100,11 @@ class AngularController extends \yii\web\Controller
         return $this->CapturaProduccion(8,2);
     }
     
+	 public function actionPintadoalm()
+    {
+        return $this->CapturaProduccion(4,2);
+    }
+	
     public function actionCerrado()
     {
         return $this->CapturaProduccion(9,2);
@@ -198,7 +203,7 @@ class AngularController extends \yii\web\Controller
             $mod['IdAleacionTipo'] *= 1;
             $mod['IdPresentacion'] *= 1;
         }
-        
+        //var_dump($model);
         return json_encode($model);
     }
     
@@ -421,12 +426,14 @@ class AngularController extends \yii\web\Controller
         $_GET['Dia'] = date('Y-m-d',strtotime($_GET['Dia']));
         unset($_GET['IdMaquina']);
         
-        if($_GET['IdSubProceso'] == 2){
+        if($_GET['IdSubProceso'] == 2 || $_GET['IdSubProceso'] == 4){
             unset($_GET['IdSubProceso']);
+            unset($_GET['IdTurno']);
             $model = VProgramacionesAlmaDia::find()->where($_GET)->asArray()->all();
         }elseif($_GET['IdSubProceso'] == 3){
             unset($_GET['IdSubProceso']);
             unset($_GET['Dia']);
+            unset($_GET['IdTurno']);
             $model = VAlmasRebabeo::find()->where($_GET)->asArray()->all();
         }else{
             $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
@@ -508,6 +515,10 @@ class AngularController extends \yii\web\Controller
 
         if(!isset($_GET['IdArea'])){
             $_GET['IdArea'] = $this->areas->getCurrent();
+        }
+        
+        if(!isset($_GET['IdTurno'])){
+            $_GET['IdTurno'] = 1;
         }
 
         if(!isset($_GET['Fecha'])){
@@ -691,11 +702,13 @@ class AngularController extends \yii\web\Controller
         //var_dump($_GET);exit;
         $model = new AlmasProduccionDetalle();
         $IdDetalle = 'AlmasProduccionDetalle';
-        
         if(!isset($_GET['IdAlmaProduccionDetalle'])){
+        // var_dump($_GET);exit;
             $model->load([
                 "$IdDetalle"=>$_GET
             ]);
+			// $resp = $model->save();
+			// var_dump($resp);
             if(!$model->save()){
                 var_dump($model);
                 return false;
@@ -750,10 +763,15 @@ class AngularController extends \yii\web\Controller
     }
     
     function actualizaHechas($produccion){
-        $programacionDia = VProgramacionesDia::find()->where([
-            'IdProgramacion' => $produccion['IdProgramacion'],
-            'Dia' => date('Y-m-d',strtotime($produccion['idProduccion']['Fecha']))
-        ])->asArray()->all();
+        $where['IdProgramacion'] = $produccion['IdProgramacion'];
+        $where['Dia'] = date('Y-m-d',strtotime($produccion['idProduccion']['Fecha']));
+        $where['IdTurno'] = $produccion['idProduccion']['IdTurno'];
+        
+        if($produccion['idProduccion']['IdSubProceso'] == 10){
+            unset($where['IdTurno']);
+        }
+
+        $programacionDia = VProgramacionesDia::find()->where($where)->asArray()->all();
         $diario = $programacionDia[0];
         $programacionDia = ProgramacionesDia::findOne($programacionDia[0]['IdProgramacionDia']);
         
@@ -789,7 +807,7 @@ class AngularController extends \yii\web\Controller
         $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
         $_GET['Inicio'] = str_replace('.',':',$_GET['Inicio']);
         $_GET['Fin'] = str_replace('.',':',$_GET['Fin']);
-        $_GET['Fin'] = ($_GET['Fin'] < $_GET['Inicio'] ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
+        $_GET['Fin'] = ($_GET['Fin'] > $_GET['Inicio'] ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
         
         if(!isset($_GET['IdTiempoMuerto'])){
             $model = new TiemposMuerto();
@@ -816,7 +834,6 @@ class AngularController extends \yii\web\Controller
     function actionDeleteTiempo(){
         $model = TiemposMuerto::findOne($_GET['IdTiempoMuerto'])->delete();
     }
-    
     function actionSaveProgramacion(){
         $IdProgramacion = $_GET['IdProgramacion'];
         $IdProgramacionSemana = $_GET['IdProgramacionSemana'];
@@ -861,7 +878,15 @@ class AngularController extends \yii\web\Controller
             $model->Attributes
         );
     }
-    
+    function actionDelRechazo(){
+        $model = ProduccionesDefecto::findOne($_GET['IdProduccionDefecto']);
+        $elimina = ProduccionesDefecto::findOne($_GET['IdProduccionDefecto'])->delete();
+        $totalRechazo = ProduccionesDefecto::find()->select('SUM(Rechazadas) AS Rechazadas')->where(['IdProduccionDetalle'=>$model->IdProduccionDetalle])->asArray()->one();
+        if($totalRechazo['Rechazadas'] == NULL || $totalRechazo['Rechazadas'] == null || $totalRechazo['Rechazadas'] == "") $totalRechazo['Rechazadas'] = 0;
+        $detalle = ProduccionesDetalle::findOne($model->IdProduccionDetalle);
+        $detalle->load(['ProduccionesDetalle'=>$totalRechazo]);
+        $detalle->save();
+    }
     function actionSaveAlmasRechazo(){
         if(!isset($_GET['IdAlmaProduccionDefecto'])){
             $model = new AlmasProduccionDefecto();

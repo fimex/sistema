@@ -3,6 +3,7 @@
     FechaFin:FechaFin,
     Filtro:Filtro,
     IdSubProceso:<?=$IdSubProceso;?>,
+    IdTurno:IdTurno,
     IdArea:<?=$IdArea;?>,
 })"></div>
 <div class="row">
@@ -22,6 +23,15 @@
           </span>
         </p>
     </div>
+    <div class="col-md-2">
+        <p class="input-group">
+            <span id="Turnos" class="input-group-addon">Turno:</span>
+            <select aria-describedby="Aleaciones"  class="form-control" ng-model="IdTurno">
+                <option ng-selected="IdTurno == 1" value="1">Dia</option>
+                <option ng-selected="IdTurno == 3" value="3">Noche</option>
+            </select>
+        </p>
+    </div>
     <div class="col-md-1">
           <input type="checkbox" ng-model="Filtro"/> TM ETE
     </div>
@@ -30,6 +40,7 @@
         FechaFin:FechaFin,
         IdSubProceso:<?=$IdSubProceso;?>,
         Filtro:Filtro,
+        IdTurno:IdTurno,
         IdArea:<?=$IdArea;?>,
     })" class="btn btn-default" >Ver</button>
 </div>

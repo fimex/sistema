@@ -57,8 +57,12 @@ $this->title = $title;
     }
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
-<div ng-controller="Programacion" ng-init="filtro.Estatus = 'Abierto';IdArea=<?=$area?>;IdSubProceso=<?=$IdSubProceso?>;loadDias();">
-    <b style="font-size: 14pt;">Programacion Diaria</b><input type="week" ng-model="semanaActual" ng-change="loadDias();" />
+<div ng-controller="Programacion" ng-init="filtro.Estatus = 'Abierto';IdArea=<?=$area?>;Turno=1;IdSubProceso=<?=$IdSubProceso?>;loadDias();">
+    <b style="font-size: 14pt;">Programacion Diaria: </b><input type="week" ng-model="semanaActual" ng-change="loadDias();" />
+    <b style="font-size: 14pt;">Turno: </b><select ng-model="Turno" ng-change="loadDias();">
+        <option ng-selected="Turno == 1" value="1">Dia</option>
+        <option ng-selected="Turno == 3" value="3">Noche</option>
+    </select>
     <button class="btn btn-success" ng-click="loadProgramacionDiaria();">Actualizar</button>
     Mostrar Pedidos: <select  ng-model="filtro.Estatus">
         <option value="">Todos</option>
@@ -131,14 +135,14 @@ $this->title = $title;
                     <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.Aleacion}}</th>
                     <?php endif; ?>
                     <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.Marca}}</th>
-                    <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar" style="width: 33px;">{{programacion.Prioridad}}</th>
+                    <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar" style="width: 33px;">{{programacion.Prioridad == 0 ? '' : programacion.Prioridad}}</th>
                     <th style="width: 33px" ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.Programadas}}</th>
                     <th style="width: 33px" ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.TotalProgramado | currency :"":0}}</th>
                     <th style="width: 33px" ng-init="programacion.Faltan = programacion.TotalProgramado - programacion.TotalHecho" ng-class="{success: programacion.Faltan <= 0, danger: programacion.Faltan == programacion.TotalProgramado, warning: (programacion.Faltan < programacion.TotalProgramado && programacion.Faltan > 0 )}" ng-show="mostrar">{{programacion.Faltan | currency :"":0}}</th>
 
                 <?php for($x=1;$x<=6;$x++):?>
                     <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
-                    <th class="cap"><input class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></th>
+                    <th class="cap"><input class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>"></th>
                     <?php if($IdSubProceso == 12): ?>
                     <th class="<?=$class?>"><select ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.IdCentroTrabajo<?=$x?>">
                         <option ng-selected="programacion.IdCentroTrabajo<?=$x?> == maquina.IdCentroTrabajo" value="{{maquina.IdCentroTrabajo}}" ng-repeat="maquina in maquinas">{{maquina.Descripcion}}</option>

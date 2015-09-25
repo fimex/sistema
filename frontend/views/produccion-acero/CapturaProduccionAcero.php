@@ -61,6 +61,8 @@ $this->title = $title;
     loadProgramaciones();
     loadPartesMolde();
     loadTurnos();
+    loadTiempos(); 
+    loadFallas();
 ">
     <h3><?=$title?></h3>
     <div id="encabezado" class="row">

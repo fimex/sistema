@@ -12,11 +12,21 @@
     $tota9 = 0; $tota10 = 0; $tota11 = 0; $tota12 = 0; $tota13 = 0; $tota14 = 0; $tota15 = 0; $tota16 = 0; $tota17 = 0; 
     $maquina = '';
     if(isset($_GET['maquina'])) $maquina =  $_GET['maquina'];
+    $turno = isset($_GET['IdTurno']) ? $_GET['IdTurno'] : 1;
 ?>
 <div style="margin-bottom: 20px" >
     <form id="form_ete" class="easyui-form" method="get">
         <label>Fecha ini: </label><input id="fecha_ini" value="<?php if(isset($_GET['ini'])) echo $_GET['ini']; ?>" class="easyui-datebox" style="width:200px" data-options="formatter:myformatter,parser:myparser" type="text" >
         <label>Fecha fin: </label><input id="fecha_fin" value="<?php if(isset($_GET['fin'])) echo $_GET['fin']; ?>" class="easyui-datebox" style="width:200px" data-options="formatter:myformatter,parser:myparser" >
+        <label>Turno: </label>
+        <input width="20" id="turno" value="<?= $turno;?>" class="easyui-combobox" 
+                        data-options="
+                            url:'/fimex/angular/turnos',
+                            method:'get',
+                            valueField:'IdTurno',
+                            textField:'Descripcion',
+                            panelHeight:'100',  
+                        ">
         <label>Maquina: </label>
         <input width="20" id="maquina" value="<?= $maquina ?>" class="easyui-combobox" 
                         data-options="
@@ -62,7 +72,7 @@
                     <?php $Ti = ( ( date('H',strtotime($detail['Inicio'])) * 60 ) + date('i',strtotime($detail['Inicio'])));?>
                     <?php if($detail['Semana'] == $value):?>
                          <tr style="color:#6E6E6E;font-weight: lighter" >
-                            <th><?=date('Y-m-d',strtotime($detail['Inicio']))?></th>
+                            <th><?=$detail['Fecha']?></th>
                             <th><?=$detail['Identificacion']?></th>
                             <th><?= date('H:i',strtotime($detail['Inicio']))?></th>
                             <th><?= date('H:i',strtotime($detail['Fin']))?></th>
@@ -165,9 +175,10 @@
     }
      function Filtrar(){
         var m = $('#maquina').combobox('getValue');
+        var t = $('#turno').combobox('getValue');
         var ini = $('#fecha_ini').datebox('getValue');
         var fin = $('#fecha_fin').datebox('getValue');
 
-        document.location = '/fimex/reportes/ete?subProceso=<?= $_GET["subProceso"] ?>&ini='+ini+'&fin='+fin+'&maquina='+m;
+        document.location = '/fimex/reportes/ete?IdTurno='+t+'&subProceso=<?= $_GET["subProceso"] ?>&ini='+ini+'&fin='+fin+'&maquina='+m;
     }    
 </script>
