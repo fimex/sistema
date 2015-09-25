@@ -191,7 +191,7 @@ if ($IdAreaAct == 1){
                 <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-2">
                         <div class="input-group">
-                            <span class="input-group-addon">gggFecha de Moldeo:</span>
+                            <span class="input-group-addon">Fecha de Moldeo:</span>
                             <input class="form-control input-sm" type="date" ng-model="FechaMoldeo2"/>
                         </div>
                     </div><br><br>

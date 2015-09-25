@@ -471,10 +471,15 @@ class ProduccionAceroController extends \yii\web\Controller
         switch ($_GET['IdAreaAct']) {
             case 1: $where = "Identificador IN('TAPA','BASE')"; break;
             case 2: $where = "Identificador IN('TAPA','BASE','C1','C2','C3','C4','C5','C6')"; break;
-            case 3: $where = "Identificador IN('TAPA','BASE','C1','C2','C3','C4','C5','C6')"; break;
+            case 3: $where = "Identificador IN('TAPA','BASE')"; break;
         }
         $model = PartesMolde::find()->where($where)->asArray()->all();
-    
+        $i = 1;
+        foreach ($model as &$key ) {
+            $key['Num'] = $i;
+            $i++;
+        }
+
         return json_encode($model);
     }
 
@@ -847,12 +852,13 @@ class ProduccionAceroController extends \yii\web\Controller
     }*/
     
     function actionSaveDetalleAcero(){
+        //exit();
         $data['Producciones'] = json_decode($_GET['Produccion'],true);
         $data['ProduccionesDetalleMoldeo'] = json_decode($_GET['ProduccionesDetalleMoldeo'],true);
         $data['Producciones']['Fecha'] = date('Y-m-d',strtotime($data['Producciones']['Fecha']));
         //var_dump($data);exit;
         $comentarios = isset($data['ProduccionesDetalleMoldeo']['Comentarios']) ? $data['ProduccionesDetalleMoldeo']['Comentarios'] : '';
-        
+        //print_r($data['ProduccionesDetalleMoldeo']['IdParteMolde']); exit();
         //OBETENER PRODUCCION
         $produccion = $this->getProduccion($data['Producciones']);
         //OBETENER DETALLE DE PRODUCCION
@@ -862,82 +868,83 @@ class ProduccionAceroController extends \yii\web\Controller
             'IdProductos' => $data['ProduccionesDetalleMoldeo']['IdProducto']
         ]);
 
-        //GENERAR CICLO
-        $ProduccionesCiclos = new ProduccionesCiclos();
-        $ProduccionesCiclos->load([
-            'ProduccionesCiclos' => [
-                'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
-                'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus']
-            ]
-        ]);
-        $ProduccionesCiclos->save();
-        
-        $ProduccionesCiclos = ProduccionesCiclos::find()->where([
-            'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
-            'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus']
-        ])->one();
+        foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
+            if ($parte) {
+                //GENERAR CICLO
+                $ProduccionesCiclos = new ProduccionesCiclos();
+                $ProduccionesCiclos->load([
+                    'ProduccionesCiclos' => [
+                        'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
+                        'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus']
+                    ]
+                ]);
+                $ProduccionesCiclos->save();
+                
+                $ProduccionesCiclos = ProduccionesCiclos::find()->where([
+                    'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
+                    'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus']
+                ])->one();
 
-        //GENERAR DETALLES DE CICLO
-        $ProduccionesCiclosDetalle = new ProduccionesCiclosDetalle();
-        $ProduccionesCiclosDetalle->load([
-            'ProduccionesCiclosDetalle' => [
-                'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
-                'IdParteMolde' => $data['ProduccionesDetalleMoldeo']['IdParteMolde']
-            ]
-        ]);
-        $ProduccionesCiclosDetalle->save();
-        
-        $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus <> 3")->asArray()->one();
-        $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
-        
-        $produccionDetalle->Hechas = $totalOK['Ciclos'];
-        $produccionDetalle->Rechazadas = $totalREC['Ciclos'];
-        $produccionDetalle->update();
-        $model = ProduccionesCiclosDetalle::find()->where([
-            'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
-            'IdParteMolde' => $data['ProduccionesDetalleMoldeo']['IdParteMolde']
-        ])->asArray()->one();
-        
-        /*if($data['ProduccionesDetalleMoldeo']['IdCicloTipo'] == 1){
-           $this->actualizaHechas($model,$data);
-        }*/
-        
-        //// CONTROL DE SERIES ----->INICIO
+                //GENERAR DETALLES DE CICLO
+                $ProduccionesCiclosDetalle = new ProduccionesCiclosDetalle();
+                $ProduccionesCiclosDetalle->load([
+                    'ProduccionesCiclosDetalle' => [
+                        'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
+                        'IdParteMolde' => $parte
+                    ]
+                ]);
+                $ProduccionesCiclosDetalle->save();
+                
+                $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus <> 3")->asArray()->one();
+                $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
+                
+                $produccionDetalle->Hechas = $totalOK['Ciclos'];
+                $produccionDetalle->Rechazadas = $totalREC['Ciclos'];
+                $produccionDetalle->update();
+                $model = ProduccionesCiclosDetalle::find()->where([
+                    'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
+                    'IdParteMolde' => $parte
+                ])->asArray()->one();
+                
+                /*if($data['ProduccionesDetalleMoldeo']['IdCicloTipo'] == 1){
+                   $this->actualizaHechas($model,$data);
+                }*/
 
-        if ($data['ProduccionesDetalleMoldeo']['LlevaSerie'] == 'Si' && $model['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde']) {
-            $IdConfiguracionSerie = $data['ProduccionesDetalleMoldeo']['IdConfiguracionSerie'];
-            
-            if($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7) {
-                //echo "entro";
-                $this->updateConfSeries($IdConfiguracionSerie);
+                //// CONTROL DE SERIES ----->INICIO
+                if ($data['ProduccionesDetalleMoldeo']['LlevaSerie'] == 'Si' && $model['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde']) {
+                    $IdConfiguracionSerie = $data['ProduccionesDetalleMoldeo']['IdConfiguracionSerie'];
+                    
+                    if($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7) {
+                        //echo "entro";
+                        $this->updateConfSeries($IdConfiguracionSerie);
+                    }
+                    
+                    $serie = $this->setSeries([
+                        'IdProducto' => $data['ProduccionesDetalleMoldeo']['IdProducto'],
+                        'IdSubProceso' => $produccion['IdSubProceso'],
+                        'Serie' => $data['ProduccionesDetalleMoldeo']['SerieInicio'],
+                        'Estatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 3 ? 'R' : 'B',
+                        'FechaHora' => date('Y-m-d G:i:s'),
+                    ]);
+                    $serie = $this->setSeriesDetalle([
+                        'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
+                        'IdSerie' => $serie->IdSerie,
+                        'Estatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 3 ? 'R' : 'B',
+                        'Comentarios' => $comentarios
+                    ]);
+                }
+                //// CONTROL DE SERIES -----> FIN
             }
-            
-            $serie = $this->setSeries([
-                'IdProducto' => $data['ProduccionesDetalleMoldeo']['IdProducto'],
-                'IdSubProceso' => $produccion['IdSubProceso'],
-                'Serie' => $data['ProduccionesDetalleMoldeo']['SerieInicio'],
-                'Estatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 3 ? 'R' : 'B',
-                'FechaHora' => date('Y-m-d G:i:s'),
-            ]);
-            $serie = $this->setSeriesDetalle([
-                'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
-                'IdSerie' => $serie->IdSerie,
-                'Estatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 3 ? 'R' : 'B',
-                'Comentarios' => $comentarios
-            ]);
         }
-        
-        //// CONTROL DE SERIES -----> FIN
-        
-        var_dump($model);
+        //var_dump($model);
         exit();
         
         /************************ SE ELIMINA EL CICLO SI ARROJA ERROR LA CAPTURA DE SERIES *********************/
-        if(isset($resultSerie[0]) == 'E') {
+        /*if(isset($resultSerie[0]) == 'E') {
             $produccion = ProduccionesDetalleMoldeo::find()->where(['IdProduccionDetalleMoldeo' => $model['IdProduccionDetalleMoldeo']])->with('idProducto')->with('idProduccion')->asArray()->one();
             $model = ProduccionesDetalleMoldeo::findOne($model['IdProduccionDetalleMoldeo'])->delete();
             $this->actualizaHechas($produccion);
-        }
+        }*/
         
         if ($data['FechaMoldeo']) {
             $data['FechaMoldeo2'] = date('Y-m-d',strtotime($data['FechaMoldeo2']));

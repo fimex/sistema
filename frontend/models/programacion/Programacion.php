@@ -156,7 +156,8 @@ class Programacion extends \yii\db\ActiveRecord
                 INNER JOIN dbo.Programaciones ON dbo.Programaciones.IdPedido = dbo.Pedidos.IdPedido
                 WHERE
                 dbo.Pedidos.SaldoCantidad <= 0 AND
-                dbo.Programaciones.IdProgramacionEstatus = 1";
+                dbo.Programaciones.IdProgramacionEstatus = 1 AND
+                dbo.Programaciones.IdArea = 3";
             $result =$command->createCommand($sql)->execute();
         }
 

@@ -1,4 +1,4 @@
-app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $timeout){
+app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $timeout){
     //$scope.Fecha = new Date();
     $scope.control = false;
     $scope.produccion = [{
@@ -222,16 +222,6 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     $scope.loadMaquinas = function(){
         return $http.get('maquinas',{params:{
             IdSubProceso:$scope.IdSubProceso,
-            IdArea:$scope.IdArea,
-            IdCentroTrabajo:$scope.IdCentroTrabajo
-        }}).success(function(data){
-            $scope.maquinas = data;
-        });
-    };
-    
-    $scope.loadCentros = function(){
-        return $http.get('centros-trabajo',{params:{
-            IdSubProceso:$scope.IdSubProceso,
             IdArea:$scope.IdArea
         }}).success(function(data){
             $scope.maquinas = data;
@@ -266,26 +256,8 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         });
     };
     
-    /********************************************************************
-     *                        MATTO HORNOS
-     *******************************************************************/
     
-    $scope.getData = function() {
-        $http.get('mant-hornos').success(function(data){
-            $scope.datos = [];
-            $scope.datos = data;
-        });
-   };
     
-    $scope.addMtto = function(mtto){
-        console.log(mtto);
-
-        
-        $http.get('save-hornos',{params:mtto}).success(function(data){
-            $scope.getData();
-            $scope.mtto = [];
-        });
-    };
     
     /********************************************************************
      *                        ENCABEZADO DE PRODUCCION
@@ -454,56 +426,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         $scope.loadAlmasRechazos();
     }
 
-    /********************************************************************
-     *                        PROGRAMACION
-     *******************************************************************/
-    $scope.loadProgramacion = function(timeout){
-        console.log($scope.control);
-        if($scope.control == false){
-            return $timeout(function() {$scope.loadProgramacion(true);}, 3000);
-        }
-        
-        var IdTurno = $scope.IdSubProceso === 10 ? null : $scope.produccion.IdTurno;
-        return $http.get('programacion',{params:{
-            Dia: $scope.produccion.Fecha || $scope.Fecha,
-            IdArea: $scope.IdArea,
-            IdSubProceso: $scope.IdSubProceso,
-            IdTurno: IdTurno
-            //IdMaquina: $scope.produccion.IdMaquina,
-        }}).success(function(data) {
-            $scope.programaciones = [];
-            $scope.programaciones = data;
-            if(timeout == true){
-                $timeout(function() {$scope.loadProgramacion(true);}, 50000);
-            }
-        });
-    };
-    
-    $scope.loadProgramacionEmpaque = function(){
-        return $http.get('programacion - empaque',{params:{
-                IdArea: $scope.IdArea,
-                IdSubProceso: $scope.produccion.IdSubProceso,
-                //IdMaquina: $scope.produccion.IdMaquina,
-            }}).success(function(data) {
-            $scope.programacionEmpaque = [];
-            $scope.programacionEmpaque = data;
-            $timeout(function() {$scope.loadProgramacionEmpaque();}, 50000);
-			});
-    };
-    
-    $scope.actualizarProgramacion = function(){
-        return $http.get('save-programacion',{
-            params:$scope.programaciones[$scope.indexProgramacion]
-        }).success(function(data) {
-        });
-    };
-    
-    $scope.selectProgramacion = function(index){
-        if($scope.indexProgramacion != null){
-            $scope.indexProgramacion = null;
-        }
-        $scope.indexProgramacion = index;
-    }
+   
     
     /********************************************************************
      *                        CONTROL DE RECHAZO
@@ -620,243 +543,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         }
     };
     
-    /********************************************************************
-     *                        CONTROL DE CONSUMOS
-     *******************************************************************/
-    
-    $scope.loadMaterial = function(){
-        return $http.get('material',{params:{
-                IdSubProceso: $scope.IdSubProceso,
-                IdArea: $scope.IdArea,
-            }}).success(function(data) {
-            $scope.materiales = [];
-            $scope.materiales = data;
-        });
-    };
-    
-    $scope.loadConsumo = function(){
-        return $http.get('consumo',{params:{
-                IdProduccion: $scope.produccion.IdProduccion,
-            }}).success(function(data) {
-            $scope.consumos = [];
-            $scope.consumos = data;
-        });
-    };
-    
-    $scope.deleteConsumo = function(index){
-        if($scope.confirm()){
-            var dat = $scope.consumos[index];
-            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-consumo',{params:dat}).success(function(data) {
-                $scope.consumos.splice(index,1);
-            });
-        }
-    };
-    
-    $scope.addConsumo = function() {
-        if($scope.produccion.IdProduccion != null){
-            $scope.inserted = {
-                IdMaterialVaciado: null,
-                IdProduccion: $scope.produccion.IdProduccion,
-                IdMaterial: null,
-                Cantidad: 0,
-            };
-            $scope.consumos.push($scope.inserted);
-        }
-    };
-    
-    $scope.saveConsumo = function(index){
-        if($scope.controlClick('consumos',index)){
-        //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('save-consumo',{params:$scope.consumos[index]}).success(function(data) {
-                $scope.consumos[index] = data;
-            });
-        }
-    };
-    
-    /********************************************************************
-     *                        CONTROL DE TEMPERATURAS
-     *******************************************************************/
-    
-    $scope.loadTemperaturas = function(){
-        return $http.get('temperaturas',{params:{
-                IdProduccion: $scope.produccion.IdProduccion,
-            }}).success(function(data) {
-            $scope.temperaturas = [];
-            $scope.temperaturas = data;
-        });
-    };
-    
-    $scope.deleteTemperatura = function(index){
-        if($scope.confirm()){
-            var dat = $scope.temperaturas[index];
-            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-temperatura',{params:dat}).success(function(data) {
-                $scope.temperaturas.splice(index,1);
-            });
-        }
-    };
-    
-    $scope.addTemperatura = function() {
-        if($scope.produccion.IdProduccion != null){
-            $scope.inserted = {
-                IdTemperatura: null,
-                IdProduccion: $scope.produccion.IdProduccion,
-                IdMaquina: $scope.produccion.IdMaquina,
-                Fecha: null,
-                Fecha2: $scope.produccion.Fecha,
-                Temperatura: 0,
-                Temperatura2: 0,
-                IdEmpleado: $scope.produccion.IdEmpleado,
-                Moldes: 0,
-            };
-            $scope.temperaturas.push($scope.inserted);
-        }
-    };
-    
-    $scope.saveTemperatura = function(index){
-        if($scope.controlClick('temperaturas',index)){
-            return $http.get('save-temperatura',{params:$scope.temperaturas[index]}).success(function(data) {
-                if(data != false){
-                    $scope.temperaturas[index] = data;
-                }
-            });
-        }   
-    };
-    
-    /********************************************************************
-     *                        DETALLE DE PRODUCCION ALMAS
-     *******************************************************************/
-    
-    $scope.loadAlmasDetalle = function(){
-        return $http.get('almas-detalle',{params:{
-                IdProduccion: $scope.produccion.IdProduccion,
-            }}).success(function(data) {
-            $scope.detalles = [];
-            $scope.detalles = data;
-        });
-    };
-    
-    $scope.addAlmasDetalle = function() {
-        if($scope.produccion.IdProduccion != null){
-            $scope.inserted = {
-                Fecha: $scope.produccion.Fecha,
-                IdAlmaProduccionDetalle: null,
-                IdProduccion:$scope.produccion.IdProduccion,
-                IdProgramacionAlma:$scope.programaciones[$scope.indexProgramacion].IdProgramacionAlma,
-                Inicio:'',
-                Fin:'',
-                Programadas: $scope.programaciones[$scope.indexProgramacion].Programadas,
-                Hechas: 0,
-                Rechazadas: 0,
-                IdAlmaTipo:$scope.programaciones[$scope.indexProgramacion].IdAlmaTipo,
-                IdProducto:$scope.programaciones[$scope.indexProgramacion].IdProducto,
-                PiezasCaja: $scope.programaciones[$scope.indexProgramacion].PiezasCaja,
-                PiezasMolde: $scope.programaciones[$scope.indexProgramacion].PiezasMolde,
-                PiezasHora: $scope.programaciones[$scope.indexProgramacion].PiezasHora,
-                idAlmaTipo: {Descripcion:$scope.programaciones[$scope.indexProgramacion].Alma},
-                idProducto: {Identificacion:$scope.programaciones[$scope.indexProgramacion].Producto},
-            };
-            $scope.detalles.push($scope.inserted);
-            //$scope.saveAlmasDetalle($scope.detalles.length - 1);
-        }else{
-            alert('Favor de seleccionar programacion');
-        }
-    };
-    
-    $scope.saveAlmasDetalle = function(index){
-        if($scope.controlClick('detalles',index)){
-            console.log($scope.detalles[index]);
-            $scope.detalles[index].Fecha = $scope.produccion.Fecha;
-            return $http.get('save-almas-detalle',{params:$scope.detalles[index]}).success(function(data) {
-                if(data == false){
-                    alert('Error en el sistema: favor de notificar al area de sistemas Ext. 225')
-                }else{
-                    $scope.detalles[index] = data;
-                }
-                console.log($scope.detalles[index]);
-            });
-        }
-    };
-    
-    $scope.deleteAlmasDetalle = function(index){
-        if($scope.confirm()){
-            var dat = $scope.detalles[index];
-            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-almas-detalle',{params:dat}).success(function(data) {
-                $scope.detalles.splice(index,1);
-            });
-        }
-    };
-    
-    $scope.selectAlmasDetalle = function(index){
-        console.log(index);
-        console.log($scope.indexDetalle);
-        if($scope.indexAlmaDetalle != null){
-            $scope.detalles[$scope.indexDetalle].Class = "";
-            $scope.indexDetalle = null;
-        }
-        $scope.indexDetalle = index;
-        $scope.detalles[$scope.indexDetalle].Class = "info";
-        $scope.loadRechazos();
-    }
-    
-    /********************************************************************
-     *                        CONTROL DE RECHAZO ALMAS
-     *******************************************************************/
-    
-    $scope.loadAlmasDefectos = function(){
-        return $http.get('defectos',{params:{
-                IdSubProceso: 2,
-            }}).success(function(data) {
-            $scope.defectosAlmas = [];
-            $scope.defectosAlmas = data;
-        });
-    };
-    
-    $scope.loadAlmasRechazos = function(){
-        return $http.get('rechazos',{params:{
-                IdAlmaProduccionDetalle: $scope.detalles[$scope.indexDetalle].IdAlmaProduccionDetalle,
-            }}).success(function(data) {
-            $scope.almasRechazos = [];
-            $scope.almasRechazos = data;
-        });
-    };
-    
-    $scope.addAlmasRechazo = function(){
-        if($scope.indexDetalle != null){
-            $scope.inserted = {
-                IdAlmaProduccionDefecto: null,
-                IdAlmaProduccionDetalle: $scope.detalles[$scope.indexDetalle].IdAlmaProduccionDetalle,
-                IdDefectoTipo:null,
-                Rechazadas:null
-            };
-            $scope.almasRechazos.push($scope.inserted);
-        }else{
-            $scope.addAlert('Primero debe guardar la produccion para poder generar rechazos','danger');
-        }
-    };
-    
-    $scope.delAlmaRechazo = function(index){
-        return $http.get('delete-alma-rechazo',{params:{IdAlmaProduccionDefecto:$scope.almasRechazos[index].IdAlmaProduccionDefecto}}).success(function(data) {
-            if(data){
-                IdAlmaProduccionDetalle = $scope.almasRechazos[index].IdAlmaProduccionDetalle;
-                $scope.almasRechazos.splice(index,1);
-                $http.get('total-rechazo',{params:{IdAlmaProduccionDetalle:IdAlmaProduccionDetalle}}).success(function(data){$scope.detalles[$scope.indexDetalle].Rechazadas = data;});
-            }
-        });
-    };
-    
-    $scope.saveAlmaRechazo = function(index){
-        if($scope.controlClick('almasRechazos',index)){
-            return $http.get('save-almas-rechazo',{params:$scope.almasRechazos[index]}).success(function(data) {
-                IdAlmaProduccionDetalle = $scope.almasRechazos[index].IdAlmaProduccionDetalle;
-                $scope.almasRechazos[index] = data;
-                $http.get('total-rechazo',{params:{IdAlmaProduccionDetalle:IdAlmaProduccionDetalle}}).success(function(data){$scope.detalles[$scope.indexDetalle].Rechazadas = data;});
-            });
-        }
-    };
-    
+     
     $scope.orden = function (dato,accion){
         if(typeof dato !== 'object'){
             var palabra = "+"+dato;

@@ -53,6 +53,7 @@ $this->title = $title;
     }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros" ng-init="
+    IdTurno = 1;
     IdSubProceso = <?=$IdSubProceso?>;
     IdAreaAct = <?= $IdAreaAct?>;
     IdMaquina = <?= $IdAreaAct == 1 ? 1751 : ($IdAreaAct == 2 ? 1610 : 1630) ?>;

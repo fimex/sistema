@@ -23,6 +23,7 @@ use common\models\vistas\VAleaciones;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\VProduccion2;
 use common\models\catalogos\Maquinas;
+use common\models\catalogos\CentrosTrabajo;
 use common\models\catalogos\VMaquinas;
 use common\models\catalogos\VEmpleados;
 use common\models\catalogos\SubProcesos;
@@ -93,6 +94,16 @@ class AngularController extends \yii\web\Controller
     public function actionLimpieza()
     {
         return $this->CapturaProduccion(12,3);
+    }
+    
+    public function actionLimpiezaAcero()
+    {
+        return $this->CapturaProduccion(12,2);
+    }
+    
+    public function actionTratamientosTermicos()
+    {
+        return $this->CapturaProduccion(19,2);
     }
     
     public function actionPintado()
@@ -215,7 +226,19 @@ class AngularController extends \yii\web\Controller
         return json_encode($model);
     }
     
-    public function actionMaquinas($IdSubProceso = '',$IdArea = ''){
+    public function actionCentrosTrabajo(){
+        $model = CentrosTrabajo::find()->where($_GET)->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionMaquinas(){
+        if(isset($_GET)){
+            $model = VMaquinas::find()->where($_GET)->asArray()->all();
+            return json_encode($model);
+        }
+    }
+    
+    public function actionCentrosTarabajo($IdSubProceso = '',$IdArea = ''){
         if($IdSubProceso != '' && $IdArea != ''){
             $model = VMaquinas::find()->where([
                 'IdSubProceso' => $IdSubProceso*1,
@@ -226,10 +249,10 @@ class AngularController extends \yii\web\Controller
         }
     }
     
-	public function actionSubprocesos(){
-		$model = SubProcesos::find()->asArray()->all();
-		 return json_encode($model);
-	}
+    public function actionSubprocesos(){
+            $model = SubProcesos::find()->asArray()->all();
+             return json_encode($model);
+    }
 	
     public function actionDefectos($IdSubProceso,$IdArea){
         $model = VDefectos::find()->where([
