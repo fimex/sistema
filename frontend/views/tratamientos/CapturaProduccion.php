@@ -85,6 +85,7 @@ $this->title = $title;
     loadDefectos();
     loadTurnos();
     loadEmpleados('1-7');
+	loadenfriamientos();
    
 ">
     <div id="encabezado" class="row">
@@ -95,7 +96,7 @@ $this->title = $title;
 					 <div class="col-md-2">
                         <div class="input-group">
                             <span id="numTT" class="input-group-addon">#Tratamiento:</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="numTT" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 				
@@ -138,13 +139,13 @@ $this->title = $title;
 					<div class="col-md-2">
                         <div class="input-group">
                             <span id="kwini" class="input-group-addon">kw ini:</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="KWIni" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					<div class="col-md-2">
                         <div class="input-group">
                             <span id="kwfin" class="input-group-addon">kw fin:</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="KWFin" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					<div class="col-md-3">
@@ -159,21 +160,21 @@ $this->title = $title;
 					<div class="col-md-2">
                         <div class="input-group">
                             <span id="temp1" class="input-group-addon">Temp1 Cº</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="Temp1" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-2">
                         <div class="input-group">
                             <span id="temp2" class="input-group-addon">Temp2 Cº</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="Temp2" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-2">
                         <div class="input-group">
                             <span id="ecofuel" class="input-group-addon">Ecofuel Consumido</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <input  class="form-control input-sm" ng-model="Ecofuel" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
@@ -182,15 +183,15 @@ $this->title = $title;
 					
 					<div class="col-md-2">
                         <div class="input-group">
-                            <span id="ecofuel" class="input-group-addon">Total KG Piezas</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="totalkg" class="input-group-addon">Total KG Piezas</span>
+                            <input  class="form-control input-sm" ng-model="TotalKG" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-4">
                         <div class="input-group">
-                            <span id="ecofuel" class="input-group-addon">Archivo de Graficas</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="archivoGraficas" class="input-group-addon">Archivo de Graficas</span>
+                            <input  class="form-control input-sm" ng-model="archivoGrafica" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
@@ -198,7 +199,7 @@ $this->title = $title;
                         <div class="input-group">
                             <span id="enfriamiento" class="input-group-addon">Tipo Enfriamiento:</span>
                             <select ng-show="!mostrar" aria-describedby="Turnos" class="form-control input-sm" ng-model="IdTurno" required>
-                                <option ng-selected="IdTurno == t.IdTurno" ng-repeat="t in turnos" ng-value="{{t.IdTurno}}">{{t.Descripcion}}</option>
+                                <option ng-selected="IdTipoEnfriamiento == e.IdTipoEnfriamiento" ng-repeat="e in enfriamientos" ng-value="{{e.IdTipoEnfriamiento}}">{{e.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
@@ -210,22 +211,22 @@ $this->title = $title;
 					
 					<div class="col-md-3">
                         <div class="input-group">
-                            <span id="tmpdepositoin" class="input-group-addon">Temp deposito</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="TempEntradaDeposito" class="input-group-addon">Temp deposito</span>
+                            <input  class="form-control input-sm" ng-model="TempEntradaDeposito" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-3">
                         <div class="input-group">
-                            <span id="tmpdepositoout" class="input-group-addon">Temp deposito salida </span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="TempSalidaDeposito" class="input-group-addon">Temp deposito salida </span>
+                            <input  class="form-control input-sm" ng-model="TempSalidaDeposito" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-3">
                         <div class="input-group">
-                            <span id="tiempenfriamiento" class="input-group-addon">Tiempo de enfriamiento </span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="TiempoEnfriamiento" class="input-group-addon">Tiempo de enfriamiento </span>
+                            <input  class="form-control input-sm" ng-model="TiempoEnfriamiento" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 				
@@ -233,15 +234,15 @@ $this->title = $title;
 					
 					<div class="col-md-3">
                         <div class="input-group">
-                            <span id="tmppzadepositoin" class="input-group-addon">Temp pza. deposito</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="TempPzDepositoIn" class="input-group-addon">Temp pza. deposito</span>
+                            <input  class="form-control input-sm" ng-model="TempPzDepositoIn" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
 					<div class="col-md-3">
                         <div class="input-group">
-                            <span id="tmppzadepositoout" class="input-group-addon">Temp pza deposito salida </span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="TempPzDepositoOut" class="input-group-addon">Temp pza deposito salida </span>
+                            <input  class="form-control input-sm" ng-model="TempPzDepositoOut" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
@@ -251,11 +252,11 @@ $this->title = $title;
 					<br><br>
 					 <div class="col-md-3">
                         <div class="input-group">
-                            <span id="Empleados" class="input-group-addon">Relializo:</span>
-                            <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
-                                <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
+                            <span id="idOperador" class="input-group-addon">Relializo:</span>
+                            <select ng-show="!mostrar" aria-describedby="idOperador" class="form-control input-sm" ng-model="idOperador" required>
+                                <option ng-selected="tratamientos.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
                             </select>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idEmpleado.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamientos.idOperador.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
                         </div>
                     </div>
 					 <div class="col-md-3">
@@ -264,7 +265,8 @@ $this->title = $title;
                             <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
                                 <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
                             </select>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idEmpleado.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
+                            </select>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamientos.idAprobo.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
                         </div>
                     </div>
 					 <div class="col-md-3">
@@ -273,7 +275,7 @@ $this->title = $title;
                             <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
                                 <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
                             </select>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idEmpleado.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamientos.idSuperviso.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
                         </div>
                     </div>
                     <br><br>

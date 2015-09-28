@@ -24,6 +24,31 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
     $scope.fallas = [];
     $scope.materiales = [];
     $scope.turnos = [];
+    $scope.tratamientos = [
+	{
+				Idproduccion: null,
+				HoraInicio: null,
+				Horafin: null,
+				NoGraficaTT: null,
+				KWIni: null,
+				KWFin: null,
+				Temp1: null, 
+				Temp2: null,
+				TempEntradaDeposito: null,
+				TempSalidaDeposito: null,
+				TempPzDepositoIn: null,
+				TempPzDepositoOut: null,
+				IdTipoEnfriamiento: null,
+				TiempoEnfriamiento: null,
+				TotalKG: null,
+				Ecofuel: null,
+				archivoGrafica: null,
+				idOperador: null,
+				idAprobo: null,
+				idSuperviso: null
+	}
+	];
+    $scope.enfriamientos = [];
     
     //Catalogos para las Capturas
     
@@ -339,7 +364,29 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             IdEmpleado:$scope.IdEmpleado,
             IdTurno:$scope.IdTurno,
             IdSubProceso:$scope.IdSubProceso,
-            IdAleacion:$scope.IdAleacion
+            IdAleacion:$scope.IdAleacion,
+			Idproduccion: $scope.IdAleacion,
+			
+			HoraInicio: $scope.IdAleacion,
+			Horafin: $scope.IdAleacion,
+			
+			NoGraficaTT: $scope.IdAleacion,
+			KWIni: $scope.KWIni,
+			KWFin: $scope.KWFin,
+			Temp1: $scope.Temp1, 
+			Temp2: $scope.Temp2,
+			TempEntradaDeposito: $scope.TempEntradaDeposito,
+			TempSalidaDeposito: $scope.TempSalidaDeposito,
+			TempPzDepositoIn: $scope.TempPzDepositoIn,
+			TempPzDepositoOut: $scope.TempPzDepositoOut,
+			IdTipoEnfriamiento: $scope.IdTipoEnfriamiento,
+			TiempoEnfriamiento: $scope.TiempoEnfriamiento,
+			TotalKG: $scope.TotalKG,
+			Ecofuel: $scope.Ecofuel,
+			archivoGrafica: $scope.archivoGrafica,
+			idOperador: $scope.idOperador,
+			idAprobo: $scope.idAprobo,
+			idSuperviso: $scope.idSuperviso
         }}).success(function(data) {
             $scope.produccion = data;
             $scope.index = undefined;
@@ -542,6 +589,35 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             }
         }
     };
+	
+	/********************************************************************
+     *                        tratamientos
+     *******************************************************************/
+	
+	$scope.loadTratamientos = function(){
+        return $http.get('tratamientos',{params:{
+                IdProduccion: $scope.produccion.IdProduccion,
+            }}).success(function(data) {
+            $scope.tratamientos = [];
+            $scope.tratamientos = data;
+        });
+    };
+    
+
+	
+	
+	$scope.loadenfriamientos = function(){
+        return $http.get('ttenfriamientos',{params:{
+                
+            }}).success(function(data) {
+            $scope.enfriamientos = [];
+            $scope.enfriamientos = data;
+        });
+    };
+	
+	/********************************************************************
+     *                        utilitarios
+     *******************************************************************/
     
      
     $scope.orden = function (dato,accion){

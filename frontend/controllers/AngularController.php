@@ -803,6 +803,7 @@ class AngularController extends \yii\web\Controller
             'Fecha'=> date('Y-m-d',strtotime($produccion['idProduccion']['Fecha'])),
             'IdProgramacion' => $produccion['IdProgramacion'],
             'IdSubProceso' => $produccion['idProduccion']['IdSubProceso'],
+            'IdTurno' => $produccion['idProduccion']['IdTurno'],
         ])->asArray()->all();
         
         //var_dump($programacionDia);exit;

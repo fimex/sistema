@@ -90,7 +90,10 @@ if($area == 4){
                 <th rowspan="2">MOLD <BR>PROG</th>
                 <th style="max-width: 100px" rowspan="2">Cic K</th>
                 <th style="max-width: 100px" rowspan="2">Cic V</th>
-                <th style="max-width: 100px" rowspan="2">Area</th>
+                <th style="max-width: 100px" rowspan="2">
+                    Area <br />
+                    <input class="form-control" ng-model="filtro.AreaAct" />
+                </th>
             <?php } ?>
             <?php if($area == 3){ ?>
                 <th colspan="2">Maquinado</th>
@@ -193,6 +196,7 @@ if($area == 4){
                     FechaEnvio:filtro.envio,
                     Aleacion:filtro.aleacion,
                     Marca:filtro.cliente,
+                    AreaAct:filtro.AreaAct,
                     SemanaActual:filtro.SemanaActual
                 }"
                 ng-click="setSelected(programacion);"

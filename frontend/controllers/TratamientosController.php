@@ -4,10 +4,13 @@ namespace frontend\controllers;
 
 use Yii;
 use frontend\models\produccion\Producciones;
+use frontend\models\tt\TratamientosTermicos;
+use frontend\models\tt\TTTipoEnfriamientos;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\Turnos;
 use common\models\catalogos\VEmpleados;
 use common\models\catalogos\VMaquinas;
+
 
 
 class TratamientosController extends \yii\web\Controller
@@ -115,8 +118,103 @@ class TratamientosController extends \yii\web\Controller
         );   
 		}
 		
+		public function actionTratamientos($idprod){
+			
+			$model = TratamientosTermicos::find()
+							->where([
+							'IdProduccion' => $idprod
+							])
+							->asArray()
+							->all();
+			return json_encode( $model	);   
+		
+		}
+		
+		public function actionTtenfriamientos(){
+			$model = TTTipoEnfriamientos::find()->asArray()->all();
+
+        return json_encode($model);
+		}
+		
+		 function actionFindProduccion(){
+        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
+        return json_encode(Producciones::find()->where($_GET)->asArray()->one());
+		}
 		//----------------------------------------------------------------
 		
 		
+		 public function actionSaveProduccion(){
+        $update = false;
+
+        if(!isset($_GET['IdArea'])){
+            $_GET['IdArea'] = $this->areas->getCurrent();
+        }
+        
+        if(!isset($_GET['IdTurno'])){
+            $_GET['IdTurno'] = 1;
+        }
+
+        if(!isset($_GET['Fecha'])){
+            $_GET['Fecha'] = date('Y-m-d');
+        }
+        
+        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
+
+        if(!isset($_GET['IdCentroTrabajo'])){
+            $_GET['IdCentroTrabajo'] = VMaquinas::find()->where(['IdMaquina'=>$_GET['IdMaquina']])->one()->IdCentroTrabajo;
+        }
+        
+        if(!isset($_GET['IdMaquina'])){
+            $_GET['IdMaquina'] = 1;
+        }
+        
+        if(!isset($_GET['IdProduccionEstatus'])){
+            $_GET['IdProduccionEstatus'] = 1;
+        }
+        
+        if(!isset($_GET['IdEmpleado'])){
+            $_GET['IdEmpleado'] = Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'];
+        }
+        
+        if(!isset($_GET['Observaciones'])){
+            $_GET['Observaciones'] = "";
+        }
+        
+        if(isset($_GET['IdProduccion'])){
+            $_GET['IdProduccion'] *= 1;
+            $model = Producciones::findOne($_GET['IdProduccion']);
+            $update = true;
+           
+        }else{
+            $model = new Producciones();
+        }
+        
+        $model->load(['Producciones' => $_GET]);
+        $model->Observaciones = $_GET['Observaciones'];
+        $r = $update ? $model->update() : $model->save();
+        
+        if(!$r){
+            var_dump($model);
+        }
+        
+
+		$model2 = new TratamientosTermicos;
+		$model->load(['TratamientosTermicos' => $_GET]);
+		$r2 = $update ? $model2->update() : $model2->save();
+
+		if(!$r){
+            var_dump($model2);
+        }
+		
+        $model = Producciones::find()->where(['IdProduccion'=>$model->IdProduccion])
+            ->with('lances')
+            ->with('idMaquina')
+            ->with('idEmpleado')
+            ->asArray()->one();
+        
+        $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
+        
+        return json_encode($model);
+    }
   
 }
