@@ -82,7 +82,7 @@ class Parmediciones extends \yii\db\ActiveRecord
      */
     public function getMedicionesDimenciones()
     {
-        return $this->hasMany(MedicionesDimenciones::className(), ['parMedicion' => 'id']);
+        return $this->hasMany(MedicionesDimenciones::className(), ['parMedicion' => 'id'])->orderBy('pieza , dimension');
     }
 
     /**

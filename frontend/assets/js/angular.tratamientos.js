@@ -367,8 +367,9 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             IdAleacion:$scope.IdAleacion,
 			Idproduccion: $scope.IdAleacion,
 			
-			HoraInicio: $scope.IdAleacion,
-			Horafin: $scope.IdAleacion,
+			numTT: $scope.numTT,
+			HoraInicio: $scope.HoraInicio,
+			Horafin: $scope.Horafin,
 			
 			NoGraficaTT: $scope.IdAleacion,
 			KWIni: $scope.KWIni,

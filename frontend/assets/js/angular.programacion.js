@@ -167,8 +167,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     
     $scope.saveProgramacionSemanal = function(row,semana){
         $scope.login(true);
-        row['Prioridad'+semana] = row['Prioridad'+semana] === '' ? 0 : row['Prioridad'+semana];
-        row['Programadas'+semana] = row['Programadas'+semana] === '' ? 0 : row['Programadas'+semana];
+        //row['Prioridad'+semana] = row['Prioridad'+semana] === '' ? 0 : row['Prioridad'+semana];
+        //row['Programadas'+semana] = row['Programadas'+semana] === '' ? 0 : row['Programadas'+semana];
 
         return $http.get('save-semanal',{params:{
                 IdProgramacion: row['IdProgramacion'],

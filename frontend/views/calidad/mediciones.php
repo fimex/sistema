@@ -62,6 +62,13 @@
                                 <th>Minimo</th>
                                 <th>Nominal</th>
                                 <th>Maximo</th>
+                                <th class="col-md-1" ng-repeat="captura in medida.capturas">
+                                    <table class="table">
+                                        <tr>
+                                            <td class="col-md-1" ng-repeat="piezas in captura.medicionesDimenciones">Pieza {{piezas.pieza}}</td>
+                                        </tr>
+                                    </table>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>

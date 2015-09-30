@@ -311,6 +311,7 @@ END AS FLOAT)
         }
         return json_encode($resumen);
     }
+    
     public function actionResumenDiarioAcero(){
         $dia = !isset($_REQUEST['semana']) ? date('Y-m-d') : $_REQUEST['semana'];
         $area = Yii::$app->session->get('area');
@@ -1670,6 +1671,9 @@ END AS FLOAT)
 
         $dat = $_REQUEST;
         //var_dump($dat);exit;
+        $dat['Prioridad'] = $dat['Prioridad'] != '' ? $dat['Prioridad'] : 'NULL';
+        $dat['Programadas'] = $dat['Programadas'] != '' ? $dat['Programadas'] : 'NULL';
+        
         $datosSemana1 = $dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         return $model->setProgramacionSemanal($datosSemana1);
     }

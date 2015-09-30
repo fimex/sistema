@@ -42,12 +42,28 @@ class DataCalidadController extends \yii\web\Controller
     }
     
     public function actionCapturas(){
-        //var_dump($_POST);
+        $data = '';
+        $data = isset($_POST) ? $_POST : $data;
+        $data = isset($_GET) ? $_GET : $data;
+        $model2 = [];
+        //var_dump($data);
         $model = Parmediciones::find()
-            ->where($_POST)
-            ->with('medicionesDimenciones')
+            ->where($data)
+            ->joinWith('medicionesDimenciones')
             ->asArray()
             ->all();
+
+        $x = 0;
+        $pza = '';
+        
+        foreach ($model as &$mod){
+            $mod2 = $mod;
+            unset($mod['medicionesDimenciones']);
+            
+            foreach ($mod['medicionesDimenciones'] as $piezas){
+                $model2[] = $mod['medicionesDimenciones'];
+            }
+        }
         
         return(json_encode($model));
     }
@@ -55,5 +71,4 @@ class DataCalidadController extends \yii\web\Controller
     public function actionSaveCliente(){
         
     }
-
 }

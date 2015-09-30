@@ -10,11 +10,19 @@ use common\models\catalogos\VDefectos;
 use common\models\catalogos\Turnos;
 use common\models\catalogos\VEmpleados;
 use common\models\catalogos\VMaquinas;
+use common\models\catalogos\Areas;
 
 
 
 class TratamientosController extends \yii\web\Controller
 {
+	
+	protected $areas;
+    
+    public function init(){
+        $this->areas = new Areas();
+    }
+	
     public function actionNormalizado(){
         return $this->CapturaProduccion(19,2);
     }
@@ -143,9 +151,9 @@ class TratamientosController extends \yii\web\Controller
 		//----------------------------------------------------------------
 		
 		
-		 public function actionSaveProduccion(){
+	 public function actionSaveProduccion(){
         $update = false;
-
+		//	var_dump($_GET);exit;
         if(!isset($_GET['IdArea'])){
             $_GET['IdArea'] = $this->areas->getCurrent();
         }
@@ -189,17 +197,57 @@ class TratamientosController extends \yii\web\Controller
             $model = new Producciones();
         }
         
-        $model->load(['Producciones' => $_GET]);
+		$tratamientos=[
+			
+			'Fecha' => isset( $_GET['Fecha']) ? $_GET['Fecha'] : null,
+			'IdMaquina' => isset( $_GET['IdMaquina']) ? $_GET['IdMaquina'] : null,
+			'IdEmpleado' => isset( $_GET['IdEmpleado']) ? $_GET['IdEmpleado'] : null,
+			'IdTurno' => isset( $_GET['IdTurno'] )  ? $_GET['IdTurno'] : null,
+			'IdSubProceso' => isset($_GET['IdSubProceso'])  ? $_GET['IdSubProceso'] : null,
+			'IdAleacion' => isset($_GET['IdAleacion'])  ? $_GET['IdAleacion'] : null,
+			
+			
+			'numTT' => isset( $_GET['numTT'] )? $_GET['numTT'] : null  ,
+			'KWFin' => isset( $_GET['KWFin'] )? $_GET['KWFin'] : null  ,
+			'KWIni' => isset($_GET['KWIni'] ) ? $_GET['KWIni']: null ,
+			'Temp1' => isset( $_GET['Temp1'] ) ? $_GET['Temp1'] : null ,
+			'Temp2' => isset( $_GET['Temp2'] )? $_GET['Temp2'] : null ,
+			'TempEntradaDeposito' => isset( $_GET['TempEntradaDeposito'] ) ? $_GET['TempEntradaDeposito'] : null   ,
+			'TempSalidaDeposito' => isset( $_GET['TempSalidaDeposito'] ) ? $_GET['TempSalidaDeposito'] : null,
+			'TempPzDepositoIn' => isset( $_GET['TempPzDepositoIn'] ) ? $_GET['TempPzDepositoIn'] : null ,
+			'TempPzDepositoOut' => isset( $_GET['TempPzDepositoOut'] ) ? $_GET['TempPzDepositoOut'] : null,
+			'IdTipoEnfriamiento' => isset( $_GET['IdTipoEnfriamiento'] ) ? $_GET['IdTipoEnfriamiento'] : null,
+			'TiempoEnfriamiento' => isset( $_GET['TiempoEnfriamiento'] )  ? $_GET['TiempoEnfriamiento'] : null,
+	 		'Ecofuel' => isset( $_GET['Ecofuel']) ? $_GET['Ecofuel'] : null,
+			'TotalKG' => isset( $_GET['TotalKG'] ) ? $_GET['TotalKG'] : null ,
+			'archivoGrafica' => isset( $_GET['archivoGrafica'] )  ? $_GET['archivoGrafica'] : null,
+			'idOperador' => isset( $_GET['idOperador'] ) ? $_GET['idOperador'] : null,
+			'idAprobo' => isset( $_GET['idAprobo'] ) ? $_GET['idAprobo'] : null ,
+			'idSuperviso' => isset( $_GET['idSuperviso'] ) ? $_GET['idSuperviso'] : null,
+			
+		];
+		
+		$produccion['Fecha']=$tratamientos['Fecha'];
+		$produccion['IdMaquina']=$tratamientos['IdMaquina'];
+		$produccion['IdSubProceso']=$tratamientos['IdSubProceso'];
+		$produccion['IdAleacion']=$tratamientos['IdAleacion'];
+		$produccion['IdCentroTrabajo']=$_GET['IdCentroTrabajo'];
+		$produccion['IdEmpleado']=$_GET['IdEmpleado'];
+		$produccion['IdProduccion']=$_GET['IdProduccion'];
+		$produccion['IdArea']=$_GET['IdArea'] ;
+		
+        $model->load(['Producciones' => $produccion]);
         $model->Observaciones = $_GET['Observaciones'];
         $r = $update ? $model->update() : $model->save();
-        
+            var_dump($tratamientos);var_dump($model);exit;
+       
+		
         if(!$r){
-            var_dump($model);
         }
         
 
 		$model2 = new TratamientosTermicos;
-		$model->load(['TratamientosTermicos' => $_GET]);
+		$model2->load(['TratamientosTermicos' => $tratamientos]);
 		$r2 = $update ? $model2->update() : $model2->save();
 
 		if(!$r){

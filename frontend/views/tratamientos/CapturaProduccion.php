@@ -148,10 +148,16 @@ $this->title = $title;
                             <input  class="form-control input-sm" ng-model="KWFin" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
-					<div class="col-md-3">
+					<div class="col-md-2">
                         <div class="input-group">
-                            <span id="numTT" class="input-group-addon">Duracion del Tratamiento:</span>
-                            <input  class="form-control input-sm" ng-model="" value="{{produccion.idTurno.Descripcion}}"/>
+                            <span id="kwini" class="input-group-addon">Tiempo ini:</span>
+                            <input  class="form-control input-sm" ng-model="HoraInicio" value="{{produccion.idTurno.Descripcion}}"/>
+                        </div>
+                    </div>
+					<div class="col-md-2">
+                        <div class="input-group">
+                            <span id="kwfin" class="input-group-addon">Tiempo fin:</span>
+                            <input  class="form-control input-sm" ng-model="Horafin" value="{{produccion.idTurno.Descripcion}}"/>
                         </div>
                     </div>
 					
@@ -262,17 +268,17 @@ $this->title = $title;
 					 <div class="col-md-3">
                         <div class="input-group">
                             <span id="Empleados" class="input-group-addon">Aprobo:</span>
-                            <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
+                            <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="idAprobo" required>
                                 <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
                             </select>
-                            </select>
+                          
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamientos.idAprobo.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
                         </div>
                     </div>
 					 <div class="col-md-3">
                         <div class="input-group">
                             <span id="Empleados" class="input-group-addon">Superviso:</span>
-                            <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
+                            <select ng-show="!mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="idSuperviso" required>
                                 <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamientos.idSuperviso.ApellidoPaterno}} {{produccion.idEmpleado.ApellidoMaterno}} {{produccion.idEmpleado.Nombre}}"/>
@@ -282,7 +288,7 @@ $this->title = $title;
                     <div class="col-md-4">
                         <div class="input-group">
                             <span id="Observaciones" class="input-group-addon">Observaciones:</span>
-                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-model="produccion.Observaciones">{{produccion.Observaciones}}</textarea>
+                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-model="Observaciones">{{produccion.Observaciones}}</textarea>
                         </div>
                     </div>
                 </div>
@@ -296,9 +302,7 @@ $this->title = $title;
                         <button class="btn btn-success" ng-click="updateProduccion();getChanges();saveChanges();" ng-show="mostrar">Guardar</button>
                         <button class="btn btn-danger" ng-click="deleteProducciones();" ng-show="mostrar">Eliminar</button>
                         <button class="btn" ng-click="produccion.IdProduccionEstatus=2;saveProduccion();" ng-show="mostrar">Cerrar Captura</button>
-                        <?php if($IdSubProceso == 10):?>
-                        <button ng-click="buscar2();" class="btn btn-info">Mantenimiento de Hornos</button>
-                        <?php endif;?>
+                        
                         <button title="Buscar" class="btn" ng-click="buscar();" >Buscar</button>
                     </div>
                 </div>
@@ -324,7 +328,13 @@ $this->title = $title;
    
     <div class="row">
        
-        <div class="col-md-8">
+		<div class="col-md-4">
+            <?= $this->render('programacion',[
+                'IdSubProceso'=>$IdSubProceso,
+            ]);?>
+        </div>
+		
+        <div class="col-md-6">
             <?= $this->render('FormProduccionDetalle',[
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>

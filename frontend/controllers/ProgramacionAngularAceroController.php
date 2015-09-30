@@ -299,14 +299,25 @@ class ProgramacionAngularAceroController extends Controller
             $value['Programadas2']*=1;
             $value['Programadas3']*=1;
             $value['Programadas4']*=1;
+            
             $value['Prioridad1'] = $value['Prioridad1'] == 0 ? '' : $value['Prioridad1'];
             $value['Prioridad2'] = $value['Prioridad2'] == 0 ? '' : $value['Prioridad2'];
             $value['Prioridad3'] = $value['Prioridad3'] == 0 ? '' : $value['Prioridad3'];
             $value['Prioridad4'] = $value['Prioridad4'] == 0 ? '' : $value['Prioridad4'];
+            
             $value['Programadas1'] = $value['Programadas1'] == 0 ? '' : $value['Programadas1'];
             $value['Programadas2'] = $value['Programadas2'] == 0 ? '' : $value['Programadas2'];
             $value['Programadas3'] = $value['Programadas3'] == 0 ? '' : $value['Programadas3'];
             $value['Programadas4'] = $value['Programadas4'] == 0 ? '' : $value['Programadas4'];
+            
+            if($area == 2){
+                $value['Prioridad5'] = $value['Prioridad5'] == 0 ? '' : $value['Prioridad5'];
+                $value['Prioridad6'] = $value['Prioridad6'] == 0 ? '' : $value['Prioridad6'];
+                
+                $value['Programadas5'] = $value['Programadas5'] == 0 ? '' : $value['Programadas5'];
+                $value['Programadas6'] = $value['Programadas6'] == 0 ? '' : $value['Programadas6'];
+            }
+            
 
             $value['Moldes']= round($value['Moldes'],0,PHP_ROUND_HALF_UP);
             
@@ -479,7 +490,7 @@ class ProgramacionAngularAceroController extends Controller
         return json_encode($resumen);
     }
 
-     public function actionResumenDiarioAcero(){
+    public function actionResumenDiarioAcero(){
         $dia = !isset($_REQUEST['semana']) ? date('Y-m-d') : $_REQUEST['semana'];
         $area = Yii::$app->session->get('area');
         $area = $area['IdArea'];
@@ -1882,6 +1893,8 @@ class ProgramacionAngularAceroController extends Controller
         $model = new Programacion();
 
         $dat = $_REQUEST;
+        $dat['Prioridad'] = $dat['Prioridad'] != '' ? $dat['Prioridad'] : 'NULL';
+        $dat['Programadas'] = $dat['Programadas'] != '' ? $dat['Programadas'] : 'NULL';
         //var_dump($dat);exit;
         $datosSemana1 = $dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         return $model->setProgramacionSemanal($datosSemana1);
@@ -1895,8 +1908,9 @@ class ProgramacionAngularAceroController extends Controller
     
     public function actionDatosTarimas()
     {
+        //$_GET['semana'] = date('W',  strtotime($_GET['Dia']));
         $tarimas = [];
-        
+        //var_dump($_GET);
         for($x=0;$x<131;$x++){
             $tarimas[] = [
                 'Tarima1' => '',
@@ -1911,9 +1925,10 @@ class ProgramacionAngularAceroController extends Controller
             ];
         }
         
-        if($_GET['reporte']){
+        if($_GET['reporte'] != 'false'){
             $model = VTarimas::find()->where("")->asArray()->all();
         }else{
+            unset($_GET['reporte']);
             $model = VTarimas::find()->where($_GET)->asArray()->all();
         }
 
