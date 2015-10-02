@@ -88,10 +88,11 @@ class ProgramacionAngularController extends Controller
     {
         $semanas = $this->LoadSemana(!isset($_REQUEST['semana1']) ? '' : $_REQUEST['semana1']);
         
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
+        $IdArea = Yii::$app->session->get('area');
+        $IdArea = $IdArea['IdArea'];
+        $IdProceso = 1;
         $programacion = new Programacion();
-        $dataProvider = $programacion->getProgramacionSemanal($semanas);
+        $dataProvider = $programacion->getProgramacionSemanal($IdArea,$IdProceso,$semanas);
      
         $Producto = '';
         
@@ -476,13 +477,15 @@ END AS FLOAT)
     public function actionDataDiaria($semana='',$subProceso = 6)
     {
         $subProceso = isset($_REQUEST['IdSubProceso']) ? $_REQUEST['IdSubProceso'] : $subProceso;
+        $Proceso = 1;
         $turno = isset($_REQUEST['turno']) ? $_REQUEST['turno'] : 1;
         $area = Yii::$app->session->get('area');
         
         $area = $subProceso == 12 ? 2 : $area['IdArea'];
-        if ($area == 2) {
+        
+        /*if ($area == 2) {
             $area = 1;
-        }
+        }*/
         $semana = $semana == '' ? [date('Y'),date('W')] : [date('Y',strtotime($semana)),date('W',strtotime($semana))];
         
         $this->layout = 'JSON';
@@ -490,7 +493,7 @@ END AS FLOAT)
         $semana['semana1'] = ['year'=>$semana[0],'week'=>$semana[1],'value'=>"$semana[0]-W$semana[1]"];
 
         $programacion = new Programacion();
-        $dataProvider = $programacion->getprogramacionDiaria($semana,$area,$subProceso,$turno);
+        $dataProvider = $programacion->getprogramacionDiaria($semana,$area,$Proceso,$turno);
         //var_dump($dataProvider->allModels);exit;
         if(count($dataProvider)==0){
             return json_encode([
@@ -1646,8 +1649,7 @@ END AS FLOAT)
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
-    {
+    public function actionCreate(){
         $model = new programacion();
         //var_dump(Yii::$app->request->post()); exit;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -1674,7 +1676,7 @@ END AS FLOAT)
         $dat['Prioridad'] = $dat['Prioridad'] != '' ? $dat['Prioridad'] : 'NULL';
         $dat['Programadas'] = $dat['Programadas'] != '' ? $dat['Programadas'] : 'NULL';
         
-        $datosSemana1 = $dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
+        $datosSemana1 = "1,".$dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         return $model->setProgramacionSemanal($datosSemana1);
     }
     
@@ -1695,7 +1697,7 @@ END AS FLOAT)
         $model = new Programacion();
         $maquinas = new VMaquinas();
         $dat = $_REQUEST;
-        $AreaProceso = $_REQUEST['IdAreaProceso'];
+        //$AreaProceso = $_REQUEST['IdAreaProceso'];
         $guardado = false;
 
         if(isset($dat['Programadas'])){
@@ -1706,7 +1708,7 @@ END AS FLOAT)
                 $maq = $maquinas->find()->where("IdMaquina = ".$dat['Maquina'])->asArray()->all();
                 $IdCentroTrabajo = $maq[0]['IdCentroTrabajo'];
             }
-            $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".$dat['Prioridad'].",".$dat['Programadas'].",".$AreaProceso.",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
+            $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".(isset($dat['Prioridad']) ? $dat['Prioridad'] : 'NULL').",".$dat['Programadas'].",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
             $model->setProgramacionDiaria($datosSemana);
             $guardado = true;
         }
@@ -1744,18 +1746,17 @@ END AS FLOAT)
                     $CantidadPT = $almacen[0]['Existencia'];
                 }
 
-                $SaldoPT = $CantidadPT - $pedidoDat['Cantidad'] < 0 ? $pedidoDat['Cantidad'] - $CantidadPT : 0 ; 
+                $SaldoPT = $CantidadPT - $pedidoDat['Cantidad'] < 0 ? $pedidoDat['Cantidad'] - $CantidadPT : 0 ;
                      
                 //exit();
                 if ($pedidoDat['Cantidad'] < $CantidadPT AND isset( $pedidosSaldos[0]['SaldoExistenciaPT']) == '') {
-                     echo "sii".$CantidadPT;     
+                    echo "sii".$CantidadPT;
                     $saldo = Pedidos::findOne($pedidoDat->IdPedido);
                     $saldo->SaldoExistenciaPT = intval(strval($CantidadPT*1)); //- $pedidoDat['Cantidad'];
                     $saldo->SaldoExistenciaProceso =  $CantidadPT - $pedidoDat['Cantidad'];
                     $saldo->EstatusEnsamble = 1;
                     $saldo->update();
                 }else{
-
                     if($pedidoDat['Cantidad'] < $CantidadPT) {
                         $saldo = Pedidos::findOne($pedidoDat->IdPedido);
                         $saldo->SaldoExistenciaPT =  intval(strval($CantidadPT*1)); //- $pedidoDat['Cantidad'];

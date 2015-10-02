@@ -214,13 +214,13 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     }
 
     $scope.loadEmpleados = function(depto){
-        return $http.get('empleados',{params:{depto:depto}}).success(function(data){
+        return $http.get('/fimex/angular/empleados',{params:{depto:depto}}).success(function(data){
             $scope.empleados = data;
         });
     };
     
     $scope.loadMaquinas = function(){
-        return $http.get('maquinas',{params:{
+        return $http.get('/fimex/angular/maquinas',{params:{
             IdSubProceso:$scope.IdSubProceso,
             IdArea:$scope.IdArea,
             IdCentroTrabajo:$scope.IdCentroTrabajo
@@ -230,16 +230,16 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.loadCentros = function(){
-        return $http.get('centros-trabajo',{params:{
+        return $http.get('/fimex/angular/centros-trabajo',{params:{
             IdSubProceso:$scope.IdSubProceso,
             IdArea:$scope.IdArea
         }}).success(function(data){
-            $scope.maquinas = data;
+            $scope.centros = data;
         });
     };
     
     $scope.loadTurnos = function(){
-        return $http.get('turnos',{}).success(function(data) {
+        return $http.get('/fimex/angular/turnos',{}).success(function(data) {
             $scope.turnos = data;
         });
     };
@@ -292,7 +292,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
      *******************************************************************/
 
     $scope.loadProduccion = function(){
-        return $http.post('produccion',{IdProduccion:$scope.producciones[$scope.index].IdProduccion}).success(function(data){
+        return $http.post('/fimex/angular/produccion',{IdProduccion:$scope.producciones[$scope.index].IdProduccion}).success(function(data){
             $scope.mostrar = true;
             $scope.produccion = data;
             $scope.control = true
@@ -312,8 +312,9 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     $scope.findProduccion = function(data){
         var guardar = true;
         $scope.countProducciones($scope.IdSubProceso,$scope.IdArea);
-        return $http.get('find-produccion',{params:{
+        return $http.get('/fimex/angular/find-produccion',{params:{
             Fecha: $scope.Fecha,
+            IdArea:$scope.IdArea,
             IdMaquina:$scope.IdMaquina,
             IdCentroTrabajo:$scope.IdCentroTrabajo,
             IdEmpleado:$scope.IdEmpleado,
@@ -362,6 +363,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         console.log($scope.produccion,$scope.IdMaquina);
         return $http.get('save-produccion',{params:{
             Fecha: $scope.Fecha,
+            IdArea:$scope.IdArea,
             IdMaquina:$scope.IdMaquina,
             IdCentroTrabajo:$scope.IdCentroTrabajo,
             IdEmpleado:$scope.IdEmpleado,
@@ -510,7 +512,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
      *******************************************************************/
     
     $scope.loadDefectos = function(){
-        return $http.get('defectos',{params:{
+        return $http.get('/fimex/angular/defectos',{params:{
                 IdSubProceso: $scope.IdSubProceso,
                 IdArea: $scope.IdArea,
             }}).success(function(data){

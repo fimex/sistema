@@ -63,7 +63,7 @@ $this->title = $title;
         <option ng-selected="Turno == 1" value="1">Dia</option>
         <option ng-selected="Turno == 3" value="3">Noche</option>
     </select>
-    <button class="btn btn-success" ng-click="loadProgramacionDiaria();">Actualizar</button>
+    <button class="btn btn-success" ng-click="loadProgramacionDiaria();loadResumenDiario();">Actualizar</button>
     <button class="btn btn-primary" ng-show="!mostrar" ng-click="mostrar = true">Mostrar Datos</button>
     <button class="btn btn-primary" ng-show="mostrar" ng-click="mostrar = false">Ocultar Datos</button>
     Mostrar Pedidos: <select  ng-model="filtro.Estatus">

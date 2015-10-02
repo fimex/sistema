@@ -120,15 +120,18 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     };
     
     $scope.loadSemanas = function(){
-        return $http.get('load-semana',{params:{semana1:$scope.semanaActual}}).success(function(data){
-            $scope.semanas = [];
-            $scope.semanas = data;
-            $scope.semanaActual = $scope.semanas.semana1.val;
-            $scope.loadMarcas();
-            $scope.loadPedidos();
-            $scope.loadProgramacionSemanal();
-            $scope.loadResumen();
-            $scope.loadActualizacion();
+        return $http.get('load-semana',{params:{
+                semana1:$scope.semanaActual,
+                IdArea:$scope.IdArea
+            }}).success(function(data){
+                $scope.semanas = [];
+                $scope.semanas = data;
+                $scope.semanaActual = $scope.semanas.semana1.val;
+                $scope.loadMarcas();
+                $scope.loadPedidos();
+                $scope.loadProgramacionSemanal();
+                $scope.loadResumen();
+                $scope.loadActualizacion();
         });
     };
     
@@ -158,7 +161,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     $scope.loadProgramacionSemanal = function(){
         return $http.get('data-semanal',{params:{
             semana1:$scope.semanaActual,
-            IdAreaProceso:$scope.IdAreaProceso
+            IdArea:$scope.IdArea,
+            IdProceso:$scope.IdProceso
         }}).success(function(data){
             $scope.programaciones = [];
             $scope.programaciones = data.rows;
@@ -171,6 +175,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         //row['Programadas'+semana] = row['Programadas'+semana] === '' ? 0 : row['Programadas'+semana];
 
         return $http.get('save-semanal',{params:{
+                IdProceso: $scope.IdProceso,
                 IdProgramacion: row['IdProgramacion'],
                 Anio: row['Anio'+semana],
                 Semana: row['Semana'+semana],
@@ -187,6 +192,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     $scope.loadResumenSemanal = function(){
         return $http.get('resumen-semanal',{params:{
                 semana:$scope.semanaActual,
+                IdArea:$scope.IdArea,
                 filtro:$scope.filtro
             }}).success(function(data){
             $scope.resumenes = data;
@@ -236,7 +242,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     $scope.loadProgramacionDiaria = function(){
         return $http.get('data-diaria',{params:{
                 semana:$scope.semanaActual,
-                IdSubProceso:$scope.IdSubProceso,
+                IdProceso:$scope.IdProceso,
+                IdArea:$scope.IdArea,
                 turno:$scope.Turno
             }}).success(function(data){
             $scope.programaciones = [];

@@ -1076,14 +1076,257 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
    };
     
     $scope.addMtto = function(mtto){
-        console.log(mtto);
-
-        
+        console.log(mtto);  
         $http.get('save-hornos',{params:mtto}).success(function(data){
             $scope.getData();
             $scope.mtto = [];
         });
     };
+});
+
+
+app.controller('PruebasDestructivas', function ($scope, $filter, $modal, $http, $log, $window){
+
+    $scope.Fecha= new Date();
+    $scope.turnos = [];
+    $scope.producciones = [];
+    $scope.aleaciones = [];
+    $scope.datoscharpy = [];
+
+    $scope.mostrar = true;
+   
+
+
+    $scope.countProduccionesAceros = function(IdSubProceso,IdArea,IdMaquina,IdCentroTrabajo){
+        return $http.get('count-produccion-pruebas',{params:{  
+            IdSubProceso:IdSubProceso, 
+            IdArea:IdArea,
+            IdCentroTrabajo:IdCentroTrabajo,
+            IdMaquina:IdMaquina
+        }}).success(function(data){
+            $scope.producciones = [];
+            $scope.producciones = data;
+            if ($scope.producciones == '') {
+                $scope.producciones.IdProduccion = '';
+            };
+           
+            if($scope.index == undefined){
+                $scope.index = $scope.producciones.length - 1;
+                $scope.loadProduccion();
+                $scope.loadAleaciones();
+            }
+        });
+    };     
+
+    $scope.saveProduccion = function (){
+        return $http.get('save-produccion',{params:{
+            Fecha: $scope.Fecha,
+            IdMaquina:$scope.IdMaquina,
+            IdCentroTrabajo:$scope.IdCentroTrabajo,
+            IdEmpleado:$scope.IdEmpleado,
+            IdSubProceso:$scope.IdSubProceso,
+            IdAleacion:$scope.IdAleacion,
+            IdTurno:$scope.IdTurno,
+        }})
+        .success(function(data) {
+            $scope.produccion = data[0];
+            $scope.erroresP = data[1];
+            if ($scope.erroresP == 1) {
+                $scope.IdProduccion2 = $scope.produccion.IdProduccion;
+                alert("Error ese registro ya fue capturado.");
+            }
+            //$scope.FechaProduccion = $scope.produccion.Fecha;
+            //console.log($scope.erroresP);
+            $scope.index = undefined;
+            $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea,$scope.IdMaquina,$scope.IdCentroTrabajo);
+        });
+    };
+
+    $scope.loadProduccion = function(){
+        return $http.get('produccion',{params:{
+            IdArea: $scope.IdArea,
+            Fecha: $scope.Fecha,
+            IdProduccion: $scope.producciones[$scope.index].IdProduccion,
+            IdSubProceso: $scope.IdSubProceso
+        }}).success(function(data){
+            $scope.mostrar = true;
+            $scope.IdProduccion = data.IdProduccion;
+            $scope.produccion = data;
+            $scope.loadCharpy();
+        }).error(function(){
+            
+        });
+    };
+
+
+    $scope.loadCharpy = function(){
+        return $http.get('data-charpy',{params:{
+            IdProduccion: $scope.produccion.IdProduccion
+        }}).success(function(data){
+            $scope.datoscharpy = data;
+        });
+    };
+
+
+    $scope.Prev = function(){
+        if($scope.index > 0 ){
+            $scope.index -= 1;
+        }
+        $scope.show();
+        console.log($scope.index);
+    };
     
-      
+    $scope.Next = function(){
+        if($scope.index < $scope.producciones.length-1  ){
+            $scope.index += 1;
+        }
+        $scope.show();
+    };
+    
+    $scope.First = function(){
+        $scope.index = 0;
+        $scope.show();
+    };
+    
+    $scope.Last = function(){
+        console.log($scope.producciones);
+        $scope.index = $scope.producciones.length - 1;
+        $scope.show();
+    };
+    
+    $scope.show = function(){
+        $scope.loadProduccion();
+        if($scope.produccion.IdProduccionEstatus != 1){
+            $scope.mostrar = false;
+        }else{
+            $scope.mostrar = true;
+        }
+        $scope.indexDetalle = null;
+        //$scope.loadData();
+    }
+
+    
+    $scope.loadTurnos = function(){
+        $http.get('turnos').success(function(data){
+            $scope.turnos = [];
+            $scope.turnos = data;
+        });
+    };
+
+
+    $scope.loadAleaciones = function(){
+        $http.get('aleaciones').success(function(data){
+            $scope.aleaciones = [];
+            $scope.aleaciones = data;
+        });
+    };
+	
+	  /*
+    ***************************Tratamientos***************************
+    */
+	
+	 $scope.loadCentros = function(){
+        return $http.get('/fimex/angular/centros-trabajo',{params:{
+            IdSubProceso:$scope.IdSubProceso,
+            IdArea:$scope.IdArea
+        }}).success(function(data){
+            $scope.centros = data;
+        });
+    };
+	
+	$scope.loadenfriamientos = function(){
+        return $http.get('ttenfriamientos',{params:{
+                
+            }}).success(function(data) {
+            $scope.enfriamientos = [];
+            $scope.enfriamientos = data;
+        });
+    };
+	
+	$scope.SaveTratamientos = function(index){
+        
+        console.log($scope.datoscharpy[index]);
+        return $http.get('save-tratamientos', {params:{
+           Produccion:{
+                IdArea: $scope.IdArea,
+                Fecha: $scope.Fecha, 
+                IdEmpleado: $scope.IdEmpleado,
+                IdCentroTrabajo:$scope.IdCentroTrabajo,
+                IdEmpleado:$scope.IdEmpleado,
+                IdSubProceso: $scope.IdSubProceso,
+                IdTurno: $scope.IdTurno,
+                IdProduccion: $scope.produccion.IdProduccion,
+				Observaciones: $scope.Observaciones,
+            },
+            tratamientos:{
+				HoraInicio: $scope.HoraInicio,
+				Horafin: $scope.Horafin,
+				NoTT:$scope.NoTT,
+				NoGraficaTT: null,
+				KWIni: $scope.KWIni,
+				KWFin: $scope.KWFin,
+				Temp1: $scope.Temp1, 
+				Temp2: $scope.Temp2,
+				TempEntradaDeposito: $scope.TempEntradaDeposito,
+				TempSalidaDeposito: $scope.TempSalidaDeposito,
+				TempPzDepositoIn: $scope.TempPzDepositoIn,
+				TempPzDepositoOut: $scope.TempPzDepositoOut,
+				IdTipoEnfriamiento: $scope.IdTipoEnfriamiento,
+				TiempoEnfriamiento: $scope.TiempoEnfriamiento,
+				TotalKG: $scope.TotalKG,
+				Ecofuel: $scope.Ecofuel,
+				archivoGrafica: $scope.archivoGrafica,
+				idOperador: $scope.idOperador,
+				idAprobo: $scope.idAprobo,
+				idSuperviso: $scope.idSuperviso
+				
+			}
+        }}).success(function(data){
+			$scope.produccion = data;
+            $scope.index = undefined;
+            $scope.countProducciones($scope.IdSubProceso,$scope.IdArea);
+           alert('Guardado');
+        })
+    };
+
+    /*
+    ***************************Pruebas Charpy***************************
+    */
+
+    $scope.addPruebas = function(){
+        $scope.inserted = {
+            IdCharpy: null,
+            IdPruebaDestructiva: 1,
+            Espesor: null,
+            Ancho: null,
+            Largo:null,
+            Profundo:null,
+            Angulo:null,
+            ResultadoLBFT:null,
+            Temperatura:null,
+            IdLance: $scope.produccion.lances.IdLance
+        };
+        $scope.datoscharpy.push($scope.inserted);
+    };
+
+    $scope.SavePruebas = function(index){
+        
+        console.log($scope.datoscharpy[index]);
+        return $http.get('save-pruebas', {params:{
+           Produccion:{
+                IdArea: $scope.IdArea,
+                Fecha: $scope.Fecha, 
+                IdEmpleado: $scope.IdEmpleado,
+                IdCentroTrabajo:$scope.IdCentroTrabajo,
+                IdEmpleado:$scope.IdEmpleado,
+                IdSubProceso: $scope.IdSubProceso,
+                IdTurno: $scope.IdTurno,
+                IdProduccion: $scope.produccion.IdProduccion
+            },
+            PruebasDestructivas:$scope.datoscharpy[index]  
+        }}).success(function(data){
+            $scope.loadCharpy();
+        })
+    };
+
 });

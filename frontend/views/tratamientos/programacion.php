@@ -10,7 +10,7 @@ use yii\helpers\URL;
 ?>
 <div class="panel panel-default">
     <!-- Default panel contents -->
-    <div class="panel-heading">Programacion del dia</div>
+    <div class="panel-heading">Por Tratar</div>
     <div class="panel-body">
     </div>
     <div id="programacion" class="scrollable">

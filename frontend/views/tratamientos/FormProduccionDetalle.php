@@ -1,6 +1,6 @@
 <div class="panel panel-primary">
     <!-- Default panel contents -->
-    <div class="panel-heading">Captura de produccion</div>
+    <div class="panel-heading">Carga de tratamiento</div>
     <div class="panel-body">
         <button class="btn btn-success" ng-show="mostrar" ng-click="addDetalle()">Agregar Produccion</button>
     </div>

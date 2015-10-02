@@ -43,7 +43,7 @@ class ProgramacionesDia extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProgramacionSemana', 'Dia', 'Programadas', 'IdAreaProceso', 'IdTurno', 'IdCentroTrabajo', 'IdMaquina'], 'required'],
+            [['IdProgramacionSemana', 'Dia', 'Programadas', 'IdTurno', 'IdCentroTrabajo', 'IdMaquina'], 'required'],
             [['IdProgramacionSemana', 'Prioridad', 'Programadas', 'Hechas', 'IdAreaProceso', 'IdTurno', 'IdCentroTrabajo', 'IdMaquina', 'Llenadas', 'Cerradas', 'Vaciadas'], 'integer'],
             [['Dia'], 'safe']
         ];

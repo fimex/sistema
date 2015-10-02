@@ -72,7 +72,7 @@ $this->title = $title;
     }
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
-<div class="container-fluid" ng-controller="tratamientos" ng-init="
+<div class="container-fluid" ng-controller="ProduccionAceros" ng-init="
     Fecha = '<?=date('Y-m-d G:i:s');?>';
     IdTurno = 1;
     countProducciones(<?=$IdSubProceso?>,<?=$IdArea?>);
@@ -80,13 +80,13 @@ $this->title = $title;
     IdArea = <?=$IdArea?>;
     loadProgramacion(true);
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
-    loadMaquinas();
+    loadCentros();
     loadFallas();
     loadDefectos();
     loadTurnos();
     loadEmpleados('1-7');
 	loadenfriamientos();
-	loadtratamientos();
+
    
 ">
     <div id="encabezado" class="row">
@@ -95,11 +95,20 @@ $this->title = $title;
                 <div class="row">
 				
 					
-				 <div class="col-md-2">
+		
+					<div class="col-md-2">
                         <div class="input-group">
-                            <span class="input-group-addon">numtt:</span>
-                            <input ng-show="!mostrar" class="input-group-addon"   ng-model="NoTT"/>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{tratamiento.NoTT}}"/>
+                            <span id="Maquinas" class="input-group-addon">Tipo Tratamiento:</span>
+                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="selectMaquina();loadMaquinas();" ng-model="IdCentroTrabajo" required>
+                                <option ng-selected="produccion.IdCentroTrabajo == centro.IdCentroTrabajo" value="{{centro.IdCentroTrabajo}}" ng-repeat="centro in centros">{{centro.Descripcion}}</option>
+                            </select>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idCentroTrabajo.Descripcion}}"/>
+                        </div>
+                    </div>
+					<div class="col-md-2">
+                        <div class="input-group">
+                            <span id="kwini" class="input-group-addon">Num Trat:</span>
+                            <input  class="form-control input-sm" ng-model="NoTT" value="{{tratamientos.NoTT}}"/>
                         </div>
                     </div>
 				
@@ -299,9 +308,9 @@ $this->title = $title;
                 <div class="row">
                     <div class="col-md-12">
                         <button class="btn btn-primary" ng-click="addProduccion();mostrar=false" ng-show="mostrar">Nuevo Registro</button>
-                        <button class="btn btn-primary" ng-click="findProduccion();mostrar=true" ng-show="!mostrar">Generar</button>
+                        <button class="btn btn-primary" ng-click="SaveTratamientos();mostrar=true" ng-show="!mostrar">Generar</button>
                         <button class="btn btn-success" ng-click="loadProduccion();mostrar=true" ng-show="!mostrar">Cancelar</button>
-                        <button class="btn btn-success" ng-click="updateProduccion();getChanges();saveChanges();" ng-show="mostrar">Guardar</button>
+                        <button class="btn btn-success" ng-click="SaveTratamientos();" ng-show="mostrar">Guardar</button>
                         <button class="btn btn-danger" ng-click="deleteProducciones();" ng-show="mostrar">Eliminar</button>
                         <button class="btn" ng-click="produccion.IdProduccionEstatus=2;saveProduccion();" ng-show="mostrar">Cerrar Captura</button>
                         
@@ -328,35 +337,7 @@ $this->title = $title;
         </div>
     </div>
    
-    <div class="row">
-       
-		<div class="col-md-4">
-            <?= $this->render('programacion',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-		
-        <div class="col-md-6">
-            <?= $this->render('FormProduccionDetalle',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-	
-       
-       
-    </div>
-	 <div class="row">
-	 <div class="col-md-4">
-       <?= $this->render('FormProduccionSeries',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-       <div class="col-md-4">
-       <?= $this->render('FormProduccionProbetas',[
-                'IdSubProceso'=>$IdSubProceso,
-            ]);?>
-        </div>
-     </div>
+    
        
 
     

@@ -92,7 +92,11 @@ $this->title = $title;
     IdArea = <?=$IdArea?>;
     loadProgramacion(true);
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
-    loadMaquinas();
+    <?php if($IdSubProceso != 12):?>
+        loadMaquinas();
+    <?php else:?>
+        loadCentros();
+    <?php endif?>
     loadFallas();
     loadDefectos();
     loadMaterial();
@@ -127,12 +131,12 @@ $this->title = $title;
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.Fecha}}"/>
                         </div>
                     </div>
-                    <?php if($IdSubProceso == 3):?>
+                    <?php if($IdSubProceso == 3 || $IdSubProceso == 19 || $IdSubProceso == 12):?>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="Maquinas" class="input-group-addon">Proceso:</span>
-                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="produccion.IdCentroTrabajo = IdCentroTrabajo;loadProgramacion();" ng-model="IdCentroTrabajo" required>
-                                <option ng-selected="produccion.IdCentroTrabajo == maquina.IdCentroTrabajo" value="{{maquina.IdCentroTrabajo}}" ng-repeat="maquina in maquinas">{{maquina.Descripcion}}</option>
+                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Maquinas" class="form-control input-sm" ng-change="produccion.IdCentroTrabajo = IdCentroTrabajo;loadMaquinas();loadProgramacion();" ng-model="IdCentroTrabajo" required>
+                                <option ng-selected="produccion.IdCentroTrabajo == centro.IdCentroTrabajo" value="{{centro.IdCentroTrabajo}}" ng-repeat="centro in centros">{{centro.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idCentroTrabajo.Descripcion}}"/>
                         </div>
@@ -358,6 +362,37 @@ $this->title = $title;
             <?= $this->render('FormProduccionMaterial',[
                 'subProceso'=>$IdSubProceso,
             ]);?>
+        </div>
+    </div>
+    <?php endif?>
+    <?php if($IdSubProceso == 12):?>
+    <div class="row">
+        <div class="col-md-4">
+            <?= $this->render('programacion',[
+                'IdSubProceso'=>$IdSubProceso,
+            ]);?>
+        </div>
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-8">
+                    <?= $this->render('FormProduccionDetalle',[
+                        'IdSubProceso'=>$IdSubProceso,
+                    ]);?>
+                </div>
+                <div class="col-md-4">
+                    <?= $this->render('FormProduccionRechazo',[
+                        'IdSubProceso'=>$IdSubProceso,
+                        'titulo' => 'Rechazo Moldeo',
+                    ]);?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <?= $this->render('FormTiemposMuerto',[
+                            'subProceso'=>$IdSubProceso,
+                        ]);?>
+                </div>
+            </div>
         </div>
     </div>
     <?php endif?>

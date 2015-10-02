@@ -459,6 +459,7 @@ class AngularController extends \yii\web\Controller
             unset($_GET['IdTurno']);
             $model = VAlmasRebabeo::find()->where($_GET)->asArray()->all();
         }else{
+            unset($_GET['IdSubProceso']);
             $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
         }
         
@@ -614,6 +615,7 @@ class AngularController extends \yii\web\Controller
         $model = Producciones::find()->where(['IdProduccion'=>$model->IdProduccion])
             ->with('lances')
             ->with('idMaquina')
+            ->with('idCentroTrabajo')
             ->with('idEmpleado')
             ->asArray()->one();
         
@@ -794,10 +796,9 @@ class AngularController extends \yii\web\Controller
             unset($where['IdTurno']);
         }
 
-        $programacionDia = VProgramacionesDia::find()->where($where)->asArray()->all();
-        $diario = $programacionDia[0];
-        $programacionDia = ProgramacionesDia::findOne($programacionDia[0]['IdProgramacionDia']);
-        
+        $programacionDia = VProgramacionesDia::find()->where($where)->asArray()->one();
+        $diario = $programacionDia;
+        $programacionDia = ProgramacionesDia::findOne($programacionDia['IdProgramacionDia']);
         $hechas = 0;
         $ProduccionesDetalle = VProduccion2::find()->where([
             'Fecha'=> date('Y-m-d',strtotime($produccion['idProduccion']['Fecha'])),
@@ -806,7 +807,6 @@ class AngularController extends \yii\web\Controller
             'IdTurno' => $produccion['idProduccion']['IdTurno'],
         ])->asArray()->all();
         
-        //var_dump($programacionDia);exit;
         foreach($ProduccionesDetalle as $detalle){
             $hechas += $detalle['Hechas'];
             $hechas -= $produccion['idProduccion']['IdSubProceso'] == 6 ? 0 : $detalle['Rechazadas'];

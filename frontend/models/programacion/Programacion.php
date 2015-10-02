@@ -129,15 +129,12 @@ class Programacion extends \yii\db\ActiveRecord
         return $this->hasMany(ProgramacionesAlma::className(), ['IdProgramacion' => 'IdProgramacion']);
     }
     
-    public function getProgramacionSemanal($data)
+    public function getProgramacionSemanal($IdArea,$IdProceso,$data)
     {
         //obtengo datos desde un f_GetProgramaciones mediante un SELECT
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
-        
         $command = \Yii::$app->db;
         
-        if($area == 2){
+        if($IdArea == 2){
             $where = "";//"WHERE IdAreaAct IN(1,2,3)";
             $from = "f_GetProgramacionesAcero";
         }else{
@@ -179,7 +176,7 @@ class Programacion extends \yii\db\ActiveRecord
                     WHEN  IdArea = 3 THEN (PMB + PTB + TRB) 
                     WHEN  IdArea = 2 THEN (PMA + PMA2 + PTA)
                 END AS Maq
-                FROM $from($area,$params) 
+                FROM $from($IdArea,$IdProceso,$params) 
                 $where ORDER BY Producto, Estatus, FechaEmbarque ASC";
         //echo $sql;
         $result =$command->createCommand($sql)->queryAll();
@@ -197,56 +194,9 @@ class Programacion extends \yii\db\ActiveRecord
         return [];
     }
     
-    public function getProgramacionSemanal2($data,$IdAreaProceso)
-    {
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
-        
-        if($area == 2){
-            $where = "";//"AND IdAreaAct IN(1,2,3)";
-        }else{
-            $where = "";//"WHERE IdAreaAct = 4";
-        }
-        
-        $params = implode(",",[
-            $data['semana1']['year'],
-            $data['semana1']['week'],
-            $data['semana2']['year'],
-            $data['semana2']['week'],
-            $data['semana3']['year'],
-            $data['semana3']['week'],
-            $data['semana4']['year'],
-            $data['semana4']['week']
-        ]);
-        $command = \Yii::$app->db;
-
-        $result =$command->createCommand("SELECT *, 
-            IIF( PiezasMolde != 0, (Cantidad / PiezasMolde), 0 ) AS Moldes,
-            CASE WHEN  $area = 3 THEN (PLB + PMB + CTB + PCC) END AS Cast, CASE WHEN  $area = 2 THEN (PLA + PMA + CTA + CTA2 + PLA2 + PMA2) END AS Cast1,
-            CASE WHEN  $area = 4 THEN (GPCB+GPM+GPT1+GPP+GPTA) END AS Cast2
-            FROM f_GetProgramaciones2($area,$IdAreaProceso,$params) 
-            WHERE Estatus = 'Abierto' $where ORDER BY Producto, FechaEmbarque ASC ")->queryAll();
-       
-       if(count($result)!=0){
-            return new ArrayDataProvider([
-                'allModels' => $result,
-                'key'=>['IdProgramacionSemana1','IdProgramacionSemana2','IdProgramacionSemana3','IdProgramacionSemana4'],
-                'id'=>'IdProgramacion',
-                'sort'=>array(
-                    'attributes'=>array_keys($result[0]),
-                ), 
-                'pagination'=>false,
-            ]);
-        }
-        return [];
-    }
-    
-    public function getProgramacionDiaria($data,$proceso,$idSubproceso = 6,$turno)
+    public function getProgramacionDiaria($data,$IdArea,$IdProceso,$turno)
     {   
         //obtengo datos desde un f_GetProgramaciones mediante un SELECT
-        $area = Yii::$app->session->get('area');
-        //var_dump($proceso);exit;
-        $area = $area['IdArea'];
         $year = $data['semana1']['year'];
         $week = $data['semana1']['week'];
         $fecha = strtotime($year."W".$week."1");
@@ -257,8 +207,8 @@ class Programacion extends \yii\db\ActiveRecord
             "'$fecha'"
         ]);
         $command = \Yii::$app->db;
-        //echo "SELECT * FROM f_GetProgramacionesDiaria($area,$params,$proceso,$idSubproceso,$turno)";
-        $result =$command->createCommand("SELECT * FROM f_GetProgramacionesDiaria($area,$params,$proceso,$idSubproceso,$turno)")->queryAll();
+        //echo "SELECT * FROM f_GetProgramacionesDiaria($IdArea,$IdProceso,$params,$turno)";
+        $result =$command->createCommand("SELECT * FROM f_GetProgramacionesDiaria($IdArea,$IdProceso,$params,$turno)")->queryAll();
 
         
         if(count($result)!=0){

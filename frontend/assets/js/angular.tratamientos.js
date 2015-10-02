@@ -233,8 +233,8 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             }
         });
         $scope.produccion.IdSubProceso == 2 || $scope.produccion.IdSubProceso == 3 || $scope.produccion.IdSubProceso == 4 ? $scope.loadAlmasDetalle() : $scope.loadDetalle();
-        $scope.loadConsumo();
-        $scope.loadTemperaturas();
+       
+        $scope.loadTratamientos();
         $scope.loadTiempos();
     }
 
@@ -366,12 +366,13 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             IdSubProceso:$scope.IdSubProceso,
             IdAleacion:$scope.IdAleacion,
 			Idproduccion: $scope.IdAleacion,
+			Observaciones: $scope.Observaciones,
 			
-			numTT: $scope.numTT,
 			HoraInicio: $scope.HoraInicio,
 			Horafin: $scope.Horafin,
 			
-			NoGraficaTT: $scope.IdAleacion,
+			NoTT:$scope.NoTT,
+			NoGraficaTT: null,
 			KWIni: $scope.KWIni,
 			KWFin: $scope.KWFin,
 			Temp1: $scope.Temp1, 
@@ -615,6 +616,57 @@ app.controller('tratamientos', function($scope, $filter, $modal, $http, $log, $t
             $scope.enfriamientos = data;
         });
     };
+	
+	 /********************************************************************
+     *                        PROGRAMACION
+     *******************************************************************/
+    $scope.loadProgramacion = function(timeout){
+        console.log($scope.control);
+        if($scope.control == false){
+            return $timeout(function() {$scope.loadProgramacion(true);}, 3000);
+        }
+        
+        var IdTurno = $scope.IdSubProceso === 10 ? null : $scope.produccion.IdTurno;
+        return $http.get('programacion',{params:{
+            Dia: $scope.produccion.Fecha || $scope.Fecha,
+            IdArea: $scope.IdArea,
+            IdSubProceso: $scope.IdSubProceso,
+            IdTurno: IdTurno
+            //IdMaquina: $scope.produccion.IdMaquina,
+        }}).success(function(data) {
+            $scope.programaciones = [];
+            $scope.programaciones = data;
+            if(timeout == true){
+                $timeout(function() {$scope.loadProgramacion(true);}, 50000);
+            }
+        });
+    };
+    
+    $scope.loadProgramacionEmpaque = function(){
+        return $http.get('programacion - empaque',{params:{
+                IdArea: $scope.IdArea,
+                IdSubProceso: $scope.produccion.IdSubProceso,
+                //IdMaquina: $scope.produccion.IdMaquina,
+            }}).success(function(data) {
+            $scope.programacionEmpaque = [];
+            $scope.programacionEmpaque = data;
+            $timeout(function() {$scope.loadProgramacionEmpaque();}, 50000);
+			});
+    };
+    
+    $scope.actualizarProgramacion = function(){
+        return $http.get('save-programacion',{
+            params:$scope.programaciones[$scope.indexProgramacion]
+        }).success(function(data) {
+        });
+    };
+    
+    $scope.selectProgramacion = function(index){
+        if($scope.indexProgramacion != null){
+            $scope.indexProgramacion = null;
+        }
+        $scope.indexProgramacion = index;
+    }
 	
 	/********************************************************************
      *                        utilitarios

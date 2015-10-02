@@ -248,8 +248,8 @@ if($area == 4){
             <?php } ?>
             <?php for($x=1;$x<=4;$x++): ?>
                 <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
-                <th class="<?=$class?>"><input ng-disabled="programacion.Estatus == 'Cerrado'" disabled="" style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Prioridad<?=$x?>" value="{{programacion.Prioridad<?=$x?>}}"></th>
-                <th class="<?=$class?>"><input ng-disabled="programacion.Estatus == 'Cerrado'" disabled="" style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></th>
+                <th class="<?=$class?>"><input ng-disabled="programacion.Estatus == 'Cerrado'" disabled="" style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-focus="setSelected(programacion);" ng-change="saveProgramacionSemanal(programacion,<?=$x?>);" ng-model="programacion.Prioridad<?=$x?>" value="{{programacion.Prioridad<?=$x?>}}"></th>
+                <th class="<?=$class?>"><input ng-disabled="programacion.Estatus == 'Cerrado'" disabled="" style="width: 50px;" ng-model-options="{updateOn: 'blur'}" ng-focus="setSelected(programacion);" ng-change="saveProgramacionSemanal(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></th>
                 <th class="<?=$class?>2">{{programacion.Llenadas<?=$x?>}}</th>
                 <th class="<?=$class?>2">{{(programacion.Programadas<?=$x?> / programacion.MoldesHora) | number : 1}}</th>
             <?php endfor; ?>

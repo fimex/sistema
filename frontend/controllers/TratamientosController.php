@@ -6,11 +6,14 @@ use Yii;
 use frontend\models\produccion\Producciones;
 use frontend\models\tt\TratamientosTermicos;
 use frontend\models\tt\TTTipoEnfriamientos;
+use frontend\models\produccion\ProduccionesDetalle;
+use frontend\models\programacion\VProgramacionesDia;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\Turnos;
 use common\models\catalogos\VEmpleados;
 use common\models\catalogos\VMaquinas;
 use common\models\catalogos\Areas;
+use frontend\models\produccion\TiemposMuerto;
 
 
 
@@ -126,14 +129,14 @@ class TratamientosController extends \yii\web\Controller
         );   
 		}
 		
-		public function actionTratamientos($idprod){
+		public function actionTratamientos($IdProduccion){
 			
 			$model = TratamientosTermicos::find()
 							->where([
-							'IdProduccion' => $idprod
+							'IdProduccion' => $IdProduccion
 							])
 							->asArray()
-							->all();
+							->one();
 			return json_encode( $model	);   
 		
 		}
@@ -207,7 +210,9 @@ class TratamientosController extends \yii\web\Controller
 			'IdAleacion' => isset($_GET['IdAleacion'])  ? $_GET['IdAleacion'] : null,
 			
 			
-			'numTT' => isset( $_GET['numTT'] )? $_GET['numTT'] : null  ,
+			'NoTT' => isset( $_GET['NoTT'] )? $_GET['NoTT'] : null  ,
+			'HoraInicio' => isset( $_GET['HoraInicio'] )? $_GET['HoraInicio'] : null  ,
+			'Horafin' => isset( $_GET['Horafin'] )? $_GET['Horafin'] : null  ,
 			'KWFin' => isset( $_GET['KWFin'] )? $_GET['KWFin'] : null  ,
 			'KWIni' => isset($_GET['KWIni'] ) ? $_GET['KWIni']: null ,
 			'Temp1' => isset( $_GET['Temp1'] ) ? $_GET['Temp1'] : null ,
@@ -233,23 +238,24 @@ class TratamientosController extends \yii\web\Controller
 		$produccion['IdAleacion']=$tratamientos['IdAleacion'];
 		$produccion['IdCentroTrabajo']=$_GET['IdCentroTrabajo'];
 		$produccion['IdEmpleado']=$_GET['IdEmpleado'];
-		$produccion['IdProduccion']=$_GET['IdProduccion'];
+		$produccion['IdProduccion']=isset($_GET['IdProduccion'])? $_GET['IdProduccion']: null;
 		$produccion['IdArea']=$_GET['IdArea'] ;
+		$produccion['IdProduccionEstatus']= 1*1 ;
 		
         $model->load(['Producciones' => $produccion]);
         $model->Observaciones = $_GET['Observaciones'];
         $r = $update ? $model->update() : $model->save();
-            var_dump($tratamientos);var_dump($model);exit;
        
 		
         if(!$r){
+            var_dump($model);
         }
         
-
+		$tratamientos['IdProduccion'] = $model->IdProduccion;
 		$model2 = new TratamientosTermicos;
 		$model2->load(['TratamientosTermicos' => $tratamientos]);
 		$r2 = $update ? $model2->update() : $model2->save();
-
+		var_dump($model2);
 		if(!$r){
             var_dump($model2);
         }
@@ -264,5 +270,134 @@ class TratamientosController extends \yii\web\Controller
         
         return json_encode($model);
     }
+	
+	  public function actionProduccion(){
+        $busqueda = false;
+        if(isset($_POST['IdProduccion'])){
+            $where = ['IdProduccion' => $_POST['IdProduccion']];
+        }else{
+            if(isset($_POST['busqueda'])){
+                unset($_POST['busqueda']);
+                $busqueda = true;
+            }
+            $where = $_POST;
+        }
+
+            if($busqueda == true){
+                $model = Producciones::find()
+                    ->where($where)
+                    ->with('lances')
+                    ->with('idMaquina')
+                    ->with('idCentroTrabajo')
+                    ->with('idEmpleado')
+                    ->with('idTurno')
+                    ->with('produccionesDetalles')
+                    ->with('almasProduccionDetalles')
+                    ->orderBy('Fecha Asc, IdProduccion ASC, IdMaquina Asc')
+                    ->asArray()
+                    ->all();
+                
+                $model2 = [];
+                $x=0;
+                foreach ($model as &$mod){
+                    foreach ($mod['almasProduccionDetalles'] as $alma){
+                        $model2[] = [
+                            'index' => $x,
+                            'IdProduccion' => $mod['IdProduccion'],
+                            'Fecha' => date('Y-m-d',strtotime($mod['Fecha'])),
+                            'Semana' => date('W',strtotime($mod['Fecha'])),
+                            'Empleado' => $mod['idEmpleado']['ApellidoPaterno']." ".$mod['idEmpleado']['ApellidoMaterno']." ".$mod['idEmpleado']['Nombre'],
+                            'Producto' => $alma['idProducto']['Identificacion']."/".$alma['idAlmaTipo']['Descripcion'],
+                            'Maquina' => $mod['idMaquina']['Identificador'],
+                            'Hechas' => $alma['Hechas'],
+                            'Rechazadas' => $alma['Rechazadas'],
+                        ];
+                    }
+                    
+                    foreach ($mod['produccionesDetalles'] as $detalles){
+                        $model2[] = [
+                            'index' => $x,
+                            'IdProduccion' => $mod['IdProduccion'],
+                            'Fecha' => date('Y-m-d',strtotime($mod['Fecha'])),
+                            'Semana' => date('W',strtotime($mod['Fecha'])),
+                            'Empleado' => $mod['idEmpleado']['ApellidoPaterno']." ".$mod['idEmpleado']['ApellidoMaterno']." ".$mod['idEmpleado']['Nombre'],
+                            'Producto' => $detalles['idProductos']['Identificacion'],
+                            'Maquina' => $mod['idMaquina']['Identificador'],
+                            'Hechas' => $detalles['Hechas'],
+                            'Rechazadas' => $detalles['Rechazadas'],
+                        ];
+                    }
+                    $x++;
+                }
+                $model = $model2;
+            }else{
+                $model = Producciones::find()
+                    ->where($where)
+                    ->with('lances')
+                    ->with('idMaquina')
+                    ->with('idCentroTrabajo')
+                    ->with('idEmpleado')
+                    ->with('idTurno')
+                    ->with('produccionesDetalles')
+                    ->orderBy('Fecha Asc, IdMaquina')
+                    ->asArray()
+                    ->one();
+                $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
+                $model['Semana'] = date('W',strtotime($model['Fecha']));
+            }
+        //}
+    
+        return json_encode(
+            $model
+        );
+    }
+	
+	 public function actionDetalle(){
+        if(isset($_GET['IdProduccion'])){
+            $model = ProduccionesDetalle::find()->where($_GET)
+                ->with('idProduccion')
+                ->with('idProductos')
+                ->asArray()
+                ->all();
+            
+            foreach($model as &$mod){
+                $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
+                $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
+                $mod['Class'] = "";
+            }
+            return json_encode($model);
+        }
+    }
+	
+	public function actionProgramacion(){
+        $_GET['Dia'] = date('Y-m-d',strtotime($_GET['Dia']));
+        unset($_GET['IdSubProceso']);
+        
+        $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
+       
+        
+        
+        foreach($model as &$mod){
+            $mod['Class'] = "";
+        }
+        
+        return json_encode($model);
+    }
+	
+	public function actionTiempos(){
+        if(isset($_GET['IdMaquina'])){
+            $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
+            $model = TiemposMuerto::find()->where($_GET)->orderBy('Inicio ASC')->asArray()->all();
+
+            foreach($model as &$mod){
+                $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
+                $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
+            }
+
+            return json_encode($model);
+        }
+    }
   
 }
+
+

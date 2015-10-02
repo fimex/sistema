@@ -3,6 +3,11 @@
 namespace frontend\controllers;
 
 use Yii;
+use frontend\models\produccion\Charpy;
+use frontend\models\produccion\Dureza;
+use frontend\models\produccion\Probetas;
+use frontend\models\produccion\PruebasDestructivas;
+use frontend\models\produccion\VLecturasCharpy;
 use frontend\models\produccion\TiemposMuerto;
 use frontend\models\produccion\Temperaturas;
 use frontend\models\produccion\TiempoAnalisis;
@@ -45,6 +50,9 @@ use common\models\catalogos\PartesMolde;
 use common\models\dux\Aleaciones;
 use common\models\dux\Productos;
 use common\models\catalogos\Turnos;
+
+use frontend\models\tt\TratamientosTermicos;
+use frontend\models\tt\TTTipoEnfriamientos;
 
 
 class ProduccionAceroController extends \yii\web\Controller
@@ -118,6 +126,11 @@ class ProduccionAceroController extends \yii\web\Controller
     {
         return $this->CapturaTMA(3);
     }
+
+    public function actionCharpy()
+    {
+       return $this->CapturaPruebasDestructivas(14,2,2242,1050);
+    }
     
     /*
      *    INICIA CODIGO AGREGADO POR IVAN DE SANTIAGO
@@ -155,6 +168,19 @@ class ProduccionAceroController extends \yii\web\Controller
             'IdSubProceso'=> $subProceso,
             'IdArea' => $IdArea,
             'IdAreaAct' => $IdAreaActual,
+            'IdEmpleado' => Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'],
+        ]);
+    }
+
+    public function CapturaPruebasDestructivas($IdSubProceso, $IdArea, $IdMaquina, $IdCentroTrabajo){
+        //$this->layout = 'PruebasDestructivas';
+
+        return $this->render('CapturaPruebasDestructivas',[
+            'title' => 'Pruebas de Impacto Charpy',   
+            'IdSubProceso' => $IdSubProceso,
+            'IdArea' => $IdArea, 
+            'IdMaquina' => $IdMaquina,
+            'IdCentroTrabajo' => $IdCentroTrabajo,
             'IdEmpleado' => Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'],
         ]);
     }
@@ -203,6 +229,19 @@ class ProduccionAceroController extends \yii\web\Controller
      *                    OBTENCION DE DATOS
      ************************************************************/
 
+    public function actionDataCharpy(){
+        $model = VLecturasCharpy::find()->where($_GET)->asArray()->all();
+        $i = 1;
+        $PromedioLBFT = 0;
+        /*foreach ($model as &$key) {
+            $PromedioLBFT += $key['ResultadoLBFT']/$i;
+            $key['PromedioLBFT'] = $PromedioLBFT;
+            $i++;
+        }*/
+
+        return json_encode($model);    
+    }
+
 
     public function actionProduccion(){
         if ( $_GET['IdProduccion']) {
@@ -213,6 +252,8 @@ class ProduccionAceroController extends \yii\web\Controller
                 ->with('idMaquina')
                 ->with('idCentroTrabajo')
                 ->with('idEmpleado')
+                ->with('idTratamientoTermico')
+                ->with('pruebasDestructivas')
                 ->asArray()
                 ->one();
         $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
@@ -226,14 +267,23 @@ class ProduccionAceroController extends \yii\web\Controller
     }
     
     public function actionCountProduccion(){
-        $IdSubProceso = $_GET['IdSubProceso'];
-        $IdArea = $this->areas->getCurrent();
+        $IdSubProceso = $_POST['IdSubProceso'];
+        $IdArea = $_POST['IdArea'];
+
         $model = Producciones::find()->select("IdProduccion")->where("IdArea = $IdArea AND IdSubProceso = $IdSubProceso")->orderBy('Fecha ASC')->asArray()->all();
         return json_encode(
             $model
         );
     }
 
+    public function actionCountProduccionPruebas(){
+        $IdSubProceso = $_GET['IdSubProceso'];
+        $IdArea = $this->areas->getCurrent();
+        $model = Producciones::find()->select("IdProduccion")->where($_GET)->orderBy('Fecha ASC')->asArray()->all();
+        return json_encode(
+            $model
+        );
+    }
 
     public function actionProductos(){
        $productos = new Productos();
@@ -463,6 +513,7 @@ class ProduccionAceroController extends \yii\web\Controller
     }
 
     public function actionProgramacion(){
+		 unset($_GET['IdSubProceso']); // añadido par atratamientos
         $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
         return json_encode($model);
     }
@@ -576,6 +627,66 @@ class ProduccionAceroController extends \yii\web\Controller
      *                    FUNCIONES EN GENERAL
      ************************************************************/
     
+    
+
+    function SaveColada($data,$produccion){
+       var_dump($data); exit();
+        $model = VLances::find()->where([
+            'IdArea' => $this->areas->getCurrent(),
+            'IdMaquina' => $data['IdMaquina']
+        ])->orderBy('Colada Desc')->asArray()->one(  );
+        
+        if(is_null($model)){
+            $colada = 1;
+            $lance = 1;
+        }else{
+            $colada = $model['Colada'] + 1;
+        }
+        if ($data['Cantidad']) {
+
+            $dat =[
+                'Lances'=>[
+                    'IdAleacion' => $data['IdAleacion'] *1,
+                    'IdProduccion' => $produccion['IdProduccion'] *1,
+                    'Colada' => $colada,
+                    'Lance' => 1,
+                    'HornoConsecutivo' => 1,
+                ]
+            ];
+            $lances = new Lances();
+            $lances->load($dat);
+            $lances->save(); 
+        }
+        $probetas = $this->setProbetas([
+            'IdLance' => $lances['IdLance'],
+            'Tipo' => 'Charpy',
+            'Cantidad' => 1
+        ]);
+    }
+
+    public function setProbetas($data){
+        //print_r($data);
+        $model = Probetas::find()->where([
+            'IdLance' => $data['IdLance']
+        ])->one();
+        if ($model == null) {
+            $model = new Probetas();
+            $model->load(['Probetas' => $data]);
+            $model->save();
+        }else{
+            $model->Cantidad = $model['Cantidad'] + 1;
+            $model->update();
+        }
+        return $model;
+    } 
+  
+    public function setPruebasDestructivas($data){
+        $model = new PruebasDestructivas();
+        $model->load(['PruebasDestructivas' => $data]);
+        $model->save();
+        return $model;
+    }
+
     function actionSaveSerie(){
         $serie = isset($_GET['Serie']) ? $_GET['SerieInicio'] : 0 ;
         $producto = isset($_GET['IdProducto']) ? $_GET['IdProducto'] : 0 ;
@@ -644,7 +755,6 @@ class ProduccionAceroController extends \yii\web\Controller
             return json_encode($datos);
         }else{
            $model->save();
-           var_dump($model);
         }
         
         if($model->IdSubProceso == 10){
@@ -660,17 +770,63 @@ class ProduccionAceroController extends \yii\web\Controller
                 $consumo->save();
             }
         }
+
+        if ($model->IdSubProceso == 14) {
+            //echo "entroo";
+            $this->SaveColada($data['Producciones'],$model);
+        }
+		
+		// if ($model->IdSubProceso == 18) { // tratamientos 
+            // echo "entroo";
+			
+            // $this->SaveTT($data['Tratamientos'],$model->IdProduccion);
+        // }
         
         $model = Producciones::find()->where(['IdProduccion'=>$model->IdProduccion])
             ->with('lances')
             ->with('idMaquina')
             ->with('idEmpleado')
+            ->with('idTratamientoTermico')
             ->asArray()->one();
         
         $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
         $datos[0] = $model;
         $datos[1] = 0;
         return json_encode($datos);
+    }
+	
+	function actionSavePruebas(){
+
+
+        $data['Producciones'] = json_decode($_GET['Produccion'],true);
+        $data['tratamientos'] = json_decode($_GET['PruebasDestructivas'],true);
+        //var_dump($data['PruebasDestructivas']);
+
+        
+
+        $tratamientos = new TratamienotsTermicos();
+        $tratamientos->load([
+            'tratamientos' => [
+                
+                'Espesor' => $data['PruebasDestructivas']['Espesor'],
+                'Ancho' => $data['PruebasDestructivas']['Ancho'],
+                'Largo' => $data['PruebasDestructivas']['Largo'],
+                'Profundo' => $data['PruebasDestructivas']['Profundo'],
+                'Angulo' => $data['PruebasDestructivas']['Angulo'],
+                'ResultadoLBFT' => $data['PruebasDestructivas']['ResultadoLBFT'],
+                'Temperatura' => $data['PruebasDestructivas']['Temperatura']
+            ]
+        ]);
+        $tratamientos->save();
+
+        if ($data['Producciones']['IdSubProceso'] == 14) {
+            $probetas = Probetas::find()->where('IdLance = '.$data['PruebasDestructivas']['IdLance'].'')->one();
+            $data['Producciones']['Cantidad'] = $probetas['Cantidad'];
+            $data['Producciones']['IdLance'] = $probetas['IdLance'];
+            $this->SaveColada($data['Producciones'],$pruebasD);
+        }
+
+        return json_encode($charpy);
     }
     
     function actionCerradoOk(){
@@ -1038,7 +1194,7 @@ class ProduccionAceroController extends \yii\web\Controller
         //var_dump($serie);
         return $serie;
     }
-    
+
     function setSeries($data){
         $model = Series::find()->where([
             'IdProducto' => $data['IdProducto'],
@@ -1142,7 +1298,7 @@ class ProduccionAceroController extends \yii\web\Controller
         //}
         return $resultSerie;
     }
-
+	
     function SaveLance($data,$produccion){
         
         $model = VLances::find()->where([
@@ -1289,6 +1445,82 @@ class ProduccionAceroController extends \yii\web\Controller
         //Reiniciar consecutivo
         $maquina->Consecutivo = 1;
         $maquina->update();
+    }
+	///****************Tratamientos*******************
+	
+	public function actionTtenfriamientos(){
+		$model = TTTipoEnfriamientos::find()->asArray()->all();
+
+	return json_encode($model);
+	}
+	
+	 public function actionNormalizado(){
+        return $this->CapturaProducciontt(18,2);
+    }
+	// public function actionRevenido(){
+        // return $this->CapturaProducciontt(20,2);
+    // }
+	// public function actionTemple(){
+        // return $this->CapturaProducciontt(21,2);
+    // }
+	// public function actionSolubilizado(){
+        // return $this->CapturaProducciontt(22,2);
+    // }
+    
+	 public function CapturaProducciontt($subProceso,$IdArea,$IdEmpleado = ' ')
+    {
+        $this->layout = 'produccion';
+        
+        return $this->render('CapturaProducciontt', [
+            'title' => 'Captura de Produccion',
+            'IdSubProceso'=> $subProceso,
+            'IdArea'=> $IdArea,
+            'IdEmpleado' => $IdEmpleado == ' ' ? Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'] : $IdEmpleado,
+        ]);
+    }  
+	
+	public function actionSaveTratamientos(){
+
+        $data['Producciones'] = json_decode($_GET['Produccion'],true);
+        $data['tratamientos'] = json_decode($_GET['tratamientos'],true);
+        //var_dump($data['PruebasDestructivas']);
+
+		 $data['Producciones']['IdArea'] =  isset( $data['Producciones']['IdArea'])  ?  $data['Producciones']['IdArea'] :$this->areas->getCurrent();
+		 $data['Producciones']['IdTurno'] = isset( $data['Producciones']['IdTurno']) ?  $data['Producciones']['IdTurno']:1;
+		 $data['Producciones']['Fecha'] = isset( $data['Producciones']['Fecha']) ? date('Y-m-d',strtotime( $data['Producciones']['Fecha'])):date('Y-m-d');;
+		 $data['Producciones']['IdCentroTrabajo'] = isset( $data['Producciones']['IdCentroTrabajo']) ?  $data['Producciones']['IdCentroTrabajo']:VMaquinas::find()->where(['IdMaquina'=> $data['Producciones']['IdMaquina']])->one()->IdCentroTrabajo;
+		 $data['Producciones']['IdMaquina'] = isset( $data['Producciones']['IdMaquina']) ?  $data['Producciones']['IdMaquina']:1;
+		 $data['Producciones']['IdProduccionEstatus'] = isset( $data['Producciones']['IdProduccionEstatus']) ?  $data['Producciones']['IdProduccionEstatus']:1;
+		 $data['Producciones']['IdEmpleado'] = isset( $data['Producciones']['IdEmpleado']) ?  $data['Producciones']['IdEmpleado']:Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'];
+		 $data['Producciones']['Observaciones'] = isset( $data['Producciones']['Observaciones']) ?  $data['Producciones']['Observaciones']:"";
+		
+		if(isset( $data['Producciones']['IdProduccion'])){
+            $data['Producciones']['IdProduccion'] *= 1;
+            $model = Producciones::findOne( $data['Producciones']['IdProduccion']);
+            $update = true;
+           
+        }else{
+            $model = new Producciones();
+        }
+		
+		$model->load(['Producciones' => $data['Producciones'] ]);
+        $r = $update ? $model->update() : $model->save();
+		var_dump($model);
+		$tratamientos['IdProduccion'] = $model->IdProduccion;
+		
+		$tratamientos = new TratamientosTermicos();
+		
+        $tratamientos->load(['tratamientos' =>  $data['tratamientos'] ]);
+		$r = $update ? $tratamientos->update() : $tratamientos->save();
+      
+		$model = Producciones::find()->where(['IdProduccion'=>$model->IdProduccion])
+            ->with('lances')
+            ->with('idMaquina')
+            ->with('idEmpleado')
+            ->with('TratamientosTermicos')
+            ->asArray()->one();
+	  
+        return json_encode($model);
     }
 
 }

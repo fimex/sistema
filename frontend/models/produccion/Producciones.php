@@ -8,6 +8,7 @@ use common\models\catalogos\Empleados;
 use common\models\catalogos\Maquinas;
 use common\models\catalogos\CentrosTrabajo;
 use common\models\catalogos\Turnos;
+use frontend\models\tt\TratamientosTermicos;
 
 /**
  * This is the model class for table "Producciones".
@@ -34,6 +35,7 @@ use common\models\catalogos\Turnos;
  * @property Lances[] $lances
  * @property MaterialesVaciado[] $materialesVaciados
  * @property Temperaturas[] $temperaturas
+ * @property PruebasDestructivas[] $pruebasDestructivas
  */
 class Producciones extends \yii\db\ActiveRecord
 {
@@ -92,7 +94,12 @@ class Producciones extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Areas::className(), ['IdArea' => 'IdArea']);
     }
-
+	
+	 public function getIdTratamientoTermico()
+    {
+        return $this->hasOne(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion']);
+    }
+	
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -174,6 +181,14 @@ class Producciones extends \yii\db\ActiveRecord
     public function getTemperaturas()
     {
         return $this->hasMany(Temperaturas::className(), ['IdProduccion' => 'IdProduccion']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPruebasDestructivas()
+    {
+        return $this->hasMany(PruebasDestructivas::className(), ['IdProduccion' => 'IdProduccion']);
     }
     
     public function actualizaProduccion($data)

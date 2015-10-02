@@ -273,10 +273,11 @@ class ProgramacionAngularAceroController extends Controller
     public function actionDataSemanal()
     {
         $semanas = $this->LoadSemana(!isset($_REQUEST['semana1']) ? '' : $_REQUEST['semana1']);
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
+        $IdArea = Yii::$app->session->get('area');
+        $IdArea = $IdArea['IdArea'];
+        $IdProceso = 1;
         $programacion = new Programacion();
-        $dataProvider = $programacion->getProgramacionSemanal($semanas);
+        $dataProvider = $programacion->getProgramacionSemanal($IdArea,$IdProceso,$semanas);
      
         $Producto = '';
         
@@ -310,7 +311,7 @@ class ProgramacionAngularAceroController extends Controller
             $value['Programadas3'] = $value['Programadas3'] == 0 ? '' : $value['Programadas3'];
             $value['Programadas4'] = $value['Programadas4'] == 0 ? '' : $value['Programadas4'];
             
-            if($area == 2){
+            if($IdArea == 2){
                 $value['Prioridad5'] = $value['Prioridad5'] == 0 ? '' : $value['Prioridad5'];
                 $value['Prioridad6'] = $value['Prioridad6'] == 0 ? '' : $value['Prioridad6'];
                 

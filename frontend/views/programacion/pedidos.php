@@ -2,87 +2,51 @@
 
 use yii\helpers\Html;
 use yii\helpers\URL;
-use common\models\Grid;
-
-$id = 'pedidos';
-
-echo Html::beginTag('div',['id'=>'tbPedidos']);
-
-    echo Html::a('Agregar Pedidos',"javascript:void(0)",[
-        'class'=>"easyui-linkbutton",
-        'data-options'=>"iconCls:'icon-add',plain:true",
-        'onclick'=>"addPedidos('#$id')",
-    ]);
-echo Html::endTag('div');
-
-$this->registerJS("
-    $('#$id').datagrid('enableFilter',[{
-        field:'Marca',
-        type:'combobox',
-        options:{
-            panelHeight:'150',
-            panelWidth:'250',
-            url:'/fimex/programacion/marcas',
-            onChange:function(value){
-                if (value == ''){
-                    $('#$id').datagrid('removeFilterRule', 'Marca');
-                } else {
-                    $('#$id').datagrid('addFilterRule', {
-                        field: 'Marca',
-                        op: 'equal',
-                        value: value
-                    });
-                }
-                $('#$id').datagrid('doFilter');
-            }
-        }
-    }]);
-");
-
-$this->registerJS("
-    
-    var PedidosIndex = undefined;
-    
-    function addPedidos(grid){
-        var data = $(grid).datagrid('getChecked');
-        $.post('".URL::to('/fimex/programacion/save_pedidos')."',
-                {Data: JSON.stringify(data)},
-                function(data,status){
-                    console.log(data);
-                    if(status == 'success' ){
-                        $(grid).datagrid('load');
-                        $('#programacion_semanal').datagrid('load');
-                        $('#programacion_semanal2').datagrid('load');
-                    }else{
-                        alert('Error al guardar los datos');
-                    }
-                }
-            );
-    }
-",$this::POS_END);
 ?>
-<table id="<?= $id ?>" class="easyui-datagrid datagrid-f" title="Agregar Pedidos" style="height:400px;" data-options="
-    url:'/fimex/programacion/pedidos',
-    singleSelect:false,
-    method:'post',
-    collapsible:true,
-    remoteSort:false,
-    multiSort:true,
-    loadMsg: 'Cargando datos',
-    toolbar: '#tbPedidos',
-">
-    <thead>
-        <tr>
-            <th data-options="field:'ok',checkbox:true">ok</th>
-            <th data-options="field:'IdPedido',width:50,hidden:true">Id</th>
-            <th data-options="field:'Identificacion',sortable:true,width:200">Identificacion</th>
-            <th data-options="field:'ProductoCasting',sortable:true,width:200">Casting</th>
-            <th data-options="field:'Producto',sortable:true,width:250">Producto</th>
-            <th data-options="field:'FechaEmbarque',sortable:true,width:100">Embarque</th>
-            <th data-options="field:'Aleacion',sortable:true,hidden:true,width:100">Aleacion</th>
-            <th data-options="field:'Marca',sortable:true,width:100">Cliente</th>
-            <th data-options="field:'Presentacion',sortable:true,hidden:true,width:100">Presentacion</th>
-            <th data-options="field:'Cantidad',sortable:true,width:65">Cantidad</th>
-        </tr>
-    </thead>
-</table>
+<button class="btn btn-success" ng-click="savePedidos();">Agregar Pedidos</button>
+<button class="btn btn-primary" ng-click="GetColli();">Productos Colli</button>
+<div id="pedidos" class="scrollable">
+    <table ng-table show-filter="true" fixed-table-headers="pedidos"  class="table table-striped table-bordered table-hover">
+        <thead>
+            <th><input type="checkbox" ng-click="allSelectPedido();" ng-checked="selectAll"/></th>
+            <th ng-click="orden = orden == '+OrdenCompra' ? '-OrdenCompra' : '+OrdenCompra'">Orden<br /><input class="form-control" ng-model="filtro.Orden"></th>
+            <th ng-click="orden = orden == '+Identificacion' ? '-Identificacion' : '+Identificacion'">Producto<br /><input class="form-control" ng-model="filtro.Producto"></th>
+            <th ng-click="orden = orden == '+ProductoCasting' ? '-ProductoCasting' : '+ProductoCasting'">Casting<br /><input class="form-control" ng-model="filtro.Casting"></th>
+            <th ng-click="orden = orden == '+Producto' ? '-Producto' : '+Producto'">Descripcion<input class="form-control" ng-model="filtro.Descripcion"></th>
+            <th ng-click="orden = orden == '+FechaEmbarque' ? '-FechaEmbarque' : '+FechaEmbarque'">Embarque<input class="form-control" ng-model="filtro.Embarque"></th>
+            <th ng-click="orden = orden == '+Aleacion' ? '-Aleacion' : '+Aleacion'">Aleacion<input class="form-control" ng-model="filtro.Aleacion"></th>
+            <th ng-click="orden = orden == '+Marca' ? '-Marca' : '+Marca'">
+                Cliente
+                <select class="form-control" ng-model="filtro.Cliente">
+                    <option value="">Todos</option>
+                    <option ng-repeat="cliente in clientes" value="{{cliente.value}}">{{cliente.text}}</option>
+                </select>
+            </th>
+            <th ng-click="orden = orden == '+Cantidad' ? '-Cantidad' : '+Cantidad'">Cantidad<input class="form-control" ng-model="filtro.Cantidad"></th>
+            <th ng-click="orden = orden == '+SaldoExistenciaPT' ? '-SaldoExistenciaPT' : '+SaldoExistenciaPT'">Saldo Exist<input class="form-control" ng-model="filtro.SaldoExistenciaPT"></th>
+        </thead>
+        <tbody>
+            <tr style="{{pedido.EstatusEnsamble == 1 ? 'background:#90EE90' : ''}} {{pedido.EstatusEnsamble == 2 ? 'background:#F3F781' : ''}}" ng-class="{'active' : pedido.checked}" ng-repeat="pedido in pedidos | filter:{
+                OrdenCompra:filtro.Orden,
+                Identificacion:filtro.Producto,
+                ProductoCasting:filtro.Casting,
+                Producto:filtro.Descripcion,
+                FechaEmbarque:filtro.Embarque,
+                Aleacion:filtro.Aleacion,
+                Marca:filtro.Cliente,
+                Cantidad:filtro.Cantidad,
+            }  | orderBy:orden">
+        <td><input type="checkbox" ng-click="setSelectPedido(pedido)" ng-checked="pedido.checked" /></td>
+                <td>{{pedido.OrdenCompra}}</td>
+                <td>{{pedido.Identificacion}}</td>
+                <td>{{pedido.ProductoCasting}}</td>
+                <td>{{pedido.Producto}}</td>
+                <td>{{pedido.FechaEmbarque}}</td>
+                <td>{{pedido.Aleacion}}</td>
+                <td>{{pedido.Marca}}</td>
+                <td>{{pedido.Cantidad | number:0}}</td>
+                <td>{{pedido.SaldoExistenciaPT}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
