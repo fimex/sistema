@@ -9,6 +9,7 @@ use Yii;
  *
  * @property integer $IdProgramacion
  * @property string $Identificacion
+ * @property integer $IdProducto
  * @property string $Descripcion
  * @property string $Fecha
  */
@@ -30,6 +31,7 @@ class VProductosProgramadosTT extends \yii\db\ActiveRecord
         return [
             [['IdProgramacion', 'Fecha'], 'required'],
             [['IdProgramacion'], 'integer'],
+            [['IdProducto'], 'integer'],
             [['Identificacion', 'Descripcion'], 'string'],
             [['Fecha'], 'safe']
         ];
@@ -42,6 +44,7 @@ class VProductosProgramadosTT extends \yii\db\ActiveRecord
     {
         return [
             'IdProgramacion' => 'Id Programacion',
+            'Identificacion' => 'Identificacion',
             'Identificacion' => 'Identificacion',
             'Descripcion' => 'Descripcion',
             'Fecha' => 'Fecha',

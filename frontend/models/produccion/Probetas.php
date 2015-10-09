@@ -7,7 +7,7 @@ use Yii;
 /**
  * This is the model class for table "Probetas".
  *
- * @property integer $IdProbetas
+ * @property integer $IdProbeta
  * @property integer $IdLance
  * @property string $Tipo
  * @property integer $Cantidad
@@ -43,7 +43,7 @@ class Probetas extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'IdProbetas' => 'Id Probetas',
+            'IdProbeta' => 'Id Probeta',
             'IdLance' => 'Id Lance',
             'Tipo' => 'Tipo',
             'Cantidad' => 'Cantidad',
@@ -63,6 +63,6 @@ class Probetas extends \yii\db\ActiveRecord
      */
     public function getPruebasDestructivas()
     {
-        return $this->hasMany(PruebasDestructivas::className(), ['IdProbeta' => 'IdProbetas']);
+        return $this->hasMany(PruebasDestructivas::className(), ['IdProbeta' => 'IdProbeta']);
     }
 }

@@ -4,14 +4,17 @@ namespace frontend\models\produccion;
 
 use Yii;
 
+
 /**
  * This is the model class for table "PruebasDestructivas".
  *
  * @property integer $IdPruebaDestructiva
  * @property integer $IdProduccion
  * @property string $SpecimenStandard
+ * @property integer $IdProbeta
  *
  * @property Producciones $idProduccion
+ * @property Probetas $idProbeta
  * @property Charpy[] $charpies
  * @property Tension[] $tensions
  * @property Dureza[] $durezas
@@ -32,7 +35,7 @@ class PruebasDestructivas extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProduccion'], 'integer'],
+            [['IdProduccion', 'IdProbeta'], 'integer'],
             [['SpecimenStandard'], 'string']
         ];
     }
@@ -46,9 +49,9 @@ class PruebasDestructivas extends \yii\db\ActiveRecord
             'IdPruebaDestructiva' => 'Id Prueba Destructiva',
             'IdProduccion' => 'Id Produccion',
             'SpecimenStandard' => 'Specimen Standard',
+            'IdProbeta' => 'Id Probeta',
         ];
     }
-
 
     /**
      * @return \yii\db\ActiveQuery
@@ -56,6 +59,14 @@ class PruebasDestructivas extends \yii\db\ActiveRecord
     public function getIdProduccion()
     {
         return $this->hasOne(Producciones::className(), ['IdProduccion' => 'IdProduccion']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdProbeta()
+    {
+        return $this->hasOne(Probetas::className(), ['IdProbetas' => 'IdProbeta']);
     }
 
     /**

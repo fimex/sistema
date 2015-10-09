@@ -6,6 +6,8 @@ use Yii;
 use frontend\models\programacion\Programacion;
 use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\programacion\ProgramacionesDia;
+use frontend\models\programacion\Tarimas;
+use frontend\models\programacion\VTarimas;
 use frontend\models\programacion\Pedidos;
 use common\models\catalogos\PedProg;
 use common\models\catalogos\VMaquinas;
@@ -67,6 +69,8 @@ class ProgramacionAngularController extends Controller
         $semanas['semana2'] = $this->checarSemana($semanas['semana1']);
         $semanas['semana3'] = $this->checarSemana($semanas['semana2']);
         $semanas['semana4'] = $this->checarSemana($semanas['semana3']);
+        $semanas['semana5'] = $this->checarSemana($semanas['semana4']);
+        $semanas['semana6'] = $this->checarSemana($semanas['semana5']);
         
         return $semanas;
     }
@@ -174,6 +178,16 @@ class ProgramacionAngularController extends Controller
                 'total'=>count($dataProvider->allModels),
                 'rows'=>$dataProvider->allModels,
 //                'footer'=>$dataResumen[0],
+        ]);
+    }
+    
+    public function actionTarimas($area = 2)
+    {
+        $this->layout = 'programacion';
+        
+        return $this->render('programacionTarimas',[
+            'area' => $area,
+            'reporte'=>'false'
         ]);
     }
     
@@ -1710,10 +1724,73 @@ END AS FLOAT)
             }
             $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".(isset($dat['Prioridad']) ? $dat['Prioridad'] : 'NULL').",".$dat['Programadas'].",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
             $model->setProgramacionDiaria($datosSemana);
+            
+            if(isset($dat['Tarimas'])){
+                $where = [
+                    'IdProgramacionSemana' => $dat['IdProgramacionSemana'],
+                    'Dia' => $dat['Dia'],
+                    'IdTurno' => $dat['IdTurno']
+                ];
+                $tarimas = json_decode($dat['Tarimas'],true);
+                $ciclosMolde = !isset($dat['CiclosMolde']) || $dat['CiclosMolde'] == 0 ? 1 : $dat['CiclosMolde'];
+                $programacionDia = ProgramacionesDia::find()->where($where)->one();
+                
+                foreach($tarimas as $tarima){
+                    $datosTarima = "$datosSemana,".$tarima['Loop'].",".$tarima['Tarima'].",".(isset($dat['Delete'])?1:0);
+                    $model->setProgramacionTarima($datosTarima);
+                }
+                
+                $programadas = VTarimas::find()->select('count(IdProgramacionDia) AS Programadas')->where(['IdProgramacionDia' => $programacionDia->IdProgramacionDia])->one();
+                $programacionDia->Programadas = $programadas->Programadas / $ciclosMolde;
+                $programacionDia->update();
+            }
+            
             $guardado = true;
         }
         
         return $guardado;
+    }
+    
+    public function actionDatosTarimas()
+    {
+        $_GET['semana'] = date('W', strtotime($_GET['Dia']));
+        $_GET['anio'] = date('Y', strtotime($_GET['Dia']));
+        $dias = json_decode($this->actionLoadDias($_GET['Dia']),true);
+        
+        unset($_GET['Dia']);
+        
+        $Loops = [];
+        foreach($dias as $key => &$dia){
+            //$dia = substr($dia,strpos($dia, " ")+1);
+            $Loops[$key] = [
+                'dia' => $dia
+            ];
+            
+            for($x=1;$x<=3;$x++){
+                for($y=0;$y<30;$y++){
+                    $Loops[$key]["Turno$x"][] = [
+                        'Tarima1' => '',
+                        'Tarima2' => '',
+                        'Tarima3' => '',
+                        'Tarima4' => '',
+                        'Tarima5' => '',
+                        'Tarima6' => '',
+                        'Tarima7' => '',
+                        'Tarima8' => '',
+                        'Tarima9' => ''
+                    ];
+                }
+            }
+        }
+        
+        $model = VTarimas::find()->where($_GET)->asArray()->all();
+
+        foreach($model as $mod){
+            $pos = date('N',strtotime($mod['Dia']))-1;
+            $Loops[$pos]['Turno'.$mod['IdTurno']][$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
+        }
+        //var_dump($model);
+        return json_encode($Loops);
     }
     
     public function actionSaveEnvio(){
@@ -1813,12 +1890,11 @@ END AS FLOAT)
             $programaciones->FechaCerrado = date('Y-m-d');
             $programaciones->HoraCerrado = date('H:i:s');
             $programaciones->CerradoPor = Yii::$app->user->identity->username;
-            $programaciones->CerradoPC = gethostname(); ;
+            $programaciones->CerradoPC = gethostname();
             $programaciones->update();
         }
     }
 
-    
     public function SetPedProgramacion($pedidoDat,$producto, $Area){
         $command = \Yii::$app->db;
         $Acumulado = Programaciones::find()->where("IdProgramacionEstatus = 1 AND IdProducto = $pedidoDat->IdProducto")->asArray()->all();
@@ -1968,6 +2044,4 @@ END AS FLOAT)
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
-    
-    
 }

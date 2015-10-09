@@ -48,6 +48,8 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     
     $scope.aleacionSelect = null;
     $scope.maquinaSelect = null;
+	
+	 $scope.campostt= false;
 
     $scope.maintenance = function(){
         alert("test");
@@ -211,6 +213,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         $scope.loadConsumo();
         $scope.loadTemperaturas();
         $scope.loadTiempos();
+		
     }
 
     $scope.loadEmpleados = function(depto){
@@ -936,4 +939,8 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         $scope[arr][index]['active'] = false;
         return true;
     };
+	
+
+	
+	
 });

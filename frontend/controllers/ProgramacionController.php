@@ -120,7 +120,7 @@ class ProgramacionController extends Controller
             $semana1 = $mes == 12 && date('W',strtotime($semana1)) == 1 ? [date('Y',strtotime($semana1))+1,1* date('W',strtotime($semana1)),$semana1] : [date('Y',strtotime($semana1)),1 * date('W',strtotime($semana1)),$semana1];
         }
         
-        $totSemana = $IdArea == 3 ? 4 : 6;
+        $totSemana = 6;
         $semanas['semana1'] = ['year'=>$semana1[0],'week'=>$semana1[1],'val'=>$semana1[2]];
         
         for($x=1; $x < $totSemana; $x++){

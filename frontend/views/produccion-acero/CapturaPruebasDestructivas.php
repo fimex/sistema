@@ -5,7 +5,12 @@ use yii\helpers\Html;
 use yii\bootstrap\Modal;
 use yii\helpers\URL;
 
-$this->title = $title;
+if ($IdMaquina == 2242 ) {
+    $title = 'Pruebas de Impacto Charpy';
+}
+if ($IdMaquina == 2243 ) {
+    $title = 'Pruebas Mecanicas';
+}
 ?>
 <style>
     .table{
@@ -54,12 +59,19 @@ $this->title = $title;
 <div class="container-fluid" ng-controller="PruebasDestructivas" ng-init="
     countProduccionesAceros(<?=$IdSubProceso?>,<?=$IdArea?>,<?=$IdMaquina?>,<?=$IdCentroTrabajo?>);
     IdTurno = 1;
+    IdProbeta = 1;
     IdCentroTrabajo = <?=$IdCentroTrabajo?>;
     IdMaquina = <?=$IdMaquina?>;
     IdSubProceso = <?=$IdSubProceso?>;
     IdEmpleado = <?=$IdEmpleado?>;
     loadTurnos();
     loadAleaciones();
+    <?php if($IdMaquina == 2242):?>
+        loadProbetas('Charpy');
+    <?php endif ?>
+    <?php if($IdMaquina == 2243):?>
+        loadProbetas('Tension');
+    <?php endif ?>
 ">
     <h3><?=$title?></h3>
     <div id="encabezado" class="row">
@@ -83,30 +95,14 @@ $this->title = $title;
                             </select>                    
                         </div>
                     </div>
-                </div><br>
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="input-group">
-                            <span id="Aleaciones" class="input-group-addon">Aleacion:</span>
-                            <select ng-show="!mostrar" id="aleacion" aria-describedby="Aleaciones"  class="form-control" ng-model="IdAleacion" required>
-                                <option ng-selected="produccion.lances.IdAleacion == a.IdAleacion" ng-repeat="a in aleaciones" ng-value="{{a.IdAleacion}}">{{a.Identificador}}</option>
-                            </select>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.idAleacion.Identificador}}"/>
-                        </div>
-                    </div>
-                    <!--<div class="col-md-2">
-                        <div class="input-group">
-                            <span id="colada" class="input-group-addon">Colada:</span>
-                            <input ng-show="!mostrar" class="form-control" ng-model="produccion.lances.Colada" ng-value="{{produccion.lances.Colada}}"/>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.Colada}}"/>
-                        </div>
-                    </div>-->
+                    <?php if ($IdMaquina == 2242):?>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="specimen" class="input-group-addon">Specimen Standard:</span>
                             <input class="form-control" value="ASTM-E23"/>
                         </div>
                     </div>
+                    <?php endif ?>
                 </div><br>
                 <div class="row">
                     <div class="col-md-12">
@@ -116,7 +112,6 @@ $this->title = $title;
                         <button class="btn btn-primary" ng-click="saveProduccion();mostrar=true" ng-show="!mostrar">Generar</button>
                         <button class="btn btn-success" ng-click="loadProduccion();mostrar=true" ng-show="!mostrar">Cancelar</button>
                         <button class="btn btn-success" ng-click="updateProduccion();" ng-show="mostrar">Guardar</button>
-                        <button class="btn" ng-click="produccion.IdProduccionEstatus=2;saveProduccion();" ng-show="mostrar">Cerrar Captura</button>
                         <button title="Siguiente Registro" class="btn btn-primary" ng-click="Next();" ng-disabled="!mostrar">></button>
                         <button title="Ultimo Registro" class="btn btn-primary" ng-click="Last();" ng-disabled="!mostrar">>|</button>
                     </div>
@@ -125,6 +120,7 @@ $this->title = $title;
         </div>
     </div>
     <div class="row"><hr /></div>
+    <?php if($IdMaquina == 2242):?>
     <div class="row">
         <div class="col-md-8">
             <div class="row" style="width:110%">
@@ -137,4 +133,17 @@ $this->title = $title;
             </div>
         </div>
     </div>
+    <?php endif ?>
+    <?php if($IdMaquina == 2243):?>
+    <div class="row" >
+        <div class="col-md-4" style="width:80%">
+            <?= $this->render('FormPruebasMecanicas',[
+                'IdSubProceso'=>$IdSubProceso,
+                'IdArea' => $IdArea,
+                'IdMaquina' => $IdMaquina,
+            ]);?>
+        </div>
+     
+    </div>
+    <?php endif ?>
 </div>

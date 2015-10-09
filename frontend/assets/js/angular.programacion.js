@@ -92,7 +92,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     };
     
     $scope.loadMarcas = function(){
-        return $http.get('marcas').success(function(data) {
+        return $http.get('marcas').success(function(data){
             $scope.clientes = [];
             $scope.clientes = data;
         });
@@ -104,17 +104,16 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             if(item.checked)
                 $scope.selectedPedido.push(item.IdPedido);
         });
-
-        return $http.get('save-pedidos',{params:$scope.selectedPedido}
-        ).success(function(data) {
-            $scope.loadSemanas();
-        }).error(function(data) {
-            $scope.loadSemanas();
-        });
         
-        return $http.get('save-pedidos',{params:$scope.selectedPedido}).success(function(data) {
+        console.log($scope.selectedPedido);
+        return $http.get('save-pedidos',{
+            params:{
+                pedidos:JSON.stringify($scope.selectedPedido),
+                IdArea:$scope.IdArea
+            }
+        }).success(function(data){
             $scope.loadSemanas();
-        }).error(function(data) {
+        }).error(function(data){
             $scope.loadSemanas();
         });
     };
@@ -135,11 +134,12 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         });
     };
     
-    $scope.loadDias = function(){
+    $scope.loadDias = function(tarimas){
         return $http.get('load-dias',{params:{semana:$scope.semanaActual}}).success(function(data){
             $scope.dias = [];
             $scope.dias = data;
-            $scope.loadProgramacionDiaria();
+            console.log(tarimas);
+            $scope.loadProgramacionDiaria(tarimas);
             $scope.loadResumenDiario();
             $scope.loadMaquinas();
         });
@@ -239,7 +239,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         }
     };
 
-    $scope.loadProgramacionDiaria = function(){
+    $scope.loadProgramacionDiaria = function(tarimas){
         return $http.get('data-diaria',{params:{
                 semana:$scope.semanaActual,
                 IdProceso:$scope.IdProceso,
@@ -249,7 +249,10 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             $scope.programaciones = [];
             $scope.programaciones = data.rows;
             $scope.diaActual = $scope.diaActual === undefined ? 1 : $scope.diaActual;
-            $scope.loadTarimas();
+            console.log(tarimas);
+            if(tarimas == true){
+                $scope.loadTarimas();
+            }
             
             for(var x=0;x < $scope.programaciones.length;x++){
                 index = $scope.aleaciones.indexOf($scope.programaciones[x].Aleacion);
@@ -367,12 +370,27 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     
     $scope.loadTarimas = function(){
         return $http.get('datos-tarimas',{params:{
-            Dia:$scope.programaciones[0]['Dia'+$scope.diaActual],
-            reporte:$scope.reporte
+            Dia:$scope.programaciones[0]['Dia'+$scope.diaActual]
         }}).success(function(data){
             $scope.loops = [];
             $scope.loops = data;
         });
+    };
+    
+    $scope.MostrarLoop = function(Loop){
+        if($scope.reporte){
+            console.log(Loop);
+            for(var x=1;x<=9; x++){
+                console.log(Loop['Tarima'+x]);
+                if(Loop['Tarima'+x] != ''){
+                    console.log('entro');
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        return true;
     };
     
     $scope.onDragComplete=function(data,evt){
@@ -382,7 +400,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         console.log(data);
         if(data.TotalProgramado < data.ProgramadasSemana){
             console.log(tarimas);
-            var ciclos = parseInt(data.CiclosMolde);
+            console.log($scope.loops);
+            var ciclos = parseInt(data.CiclosMolde) == 0 ? 1 : parseInt(data.CiclosMolde);
             var x;
             var y;
             data.Tarimas = [];
@@ -390,42 +409,45 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             for(y=0;y<tarimas.length;y++){
                 var tarima = tarimas[y].Tarima;
                 var loop = tarimas[y].Loop;
+                var Dia = tarimas[y].Dia;
+                var Turno = tarimas[y].Turno;
                 
                 for(x=0;x<ciclos;x++){
-                    $scope.loops[loop]['Tarima'+tarima] = [];
-                    $scope.loops[loop]['Tarima'+tarima] = data;
-                    $scope.loops[loop]['Tarima'+tarima].visible = true;
+                    $scope.loops[Dia][Turno][loop]['Tarima'+tarima] = [];
+                    $scope.loops[Dia][Turno][loop]['Tarima'+tarima] = data;
+                    $scope.loops[Dia][Turno][loop]['Tarima'+tarima].visible = true;
                     
-                    console.log($scope.loops[loop]['Tarima'+tarima],$scope.loops[loop],tarima);
+                    console.log($scope.loops[Dia][Turno][loop]['Tarima'+tarima],$scope.loops[Dia],tarima);
                     
                     data.Tarimas.push({Loop:loop,Tarima:tarima});
+                    Dia2 = Dia
                     
                     tarima = x == (ciclos-1) ? '' : prompt("En que tarima desea colocar el siguiente ciclo");
                 }
             }
             console.log(data);
-            $scope.saveTarima(data);
+            $scope.saveTarima(data,Dia2+1);
         }
     };
     
-    $scope.saveTarima = function(data){
+    $scope.saveTarima = function(data,dia){
         var cantidad = 0;
 
-        data['Programadas'+$scope.diaActual] = cantidad;
-        $scope.saveProgramacionDiaria(data,$scope.diaActual);
+        data['Programadas'+dia] = cantidad;
+        $scope.saveProgramacionDiaria(data,dia);
     };
     
-    $scope.rellenar=function(loop,tarima){
+    $scope.rellenar=function(dia,turno,loop,tarima){
         var loop2 = prompt("Loop Actual: "+ (loop+1) +" Hasta que loop desea rellenar");
-        var data = $scope.loops[loop]['Tarima'+tarima];
+        var data = $scope.loops[dia][turno][loop]['Tarima'+tarima];
         var tarimas = [];
         var x;
         
         data.TotalProgramado = parseInt(data.TotalProgramado);
-        data['Maquina'+$scope.diaActual] = data.Maquina;
-        data['Dia'+$scope.diaActual] = data.Dia;
-        data['Programadas'+$scope.diaActual] = data['Programadas'];
-        data['CiclosMolde'] = data.CiclosMolde;
+        data['Maquina'+(dia+1)] = data.Maquina;
+        data['Dia'+(dia+1)] = data.Dia;
+        data['Programadas'+(dia+1)] = data['Programadas'];
+        data['CiclosMolde'] = data.CiclosMolde == 0 ? 1 : data.CiclosMolde;
         
         console.log(data);
         
@@ -433,6 +455,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
             loop2 = parseInt(loop2);
             for(x=loop + 1;x<loop2;x++){
                 tarimas.push({
+                    Dia:dia,
+                    Turno:turno,
                     Loop:x,
                     Tarima:tarima
                 });

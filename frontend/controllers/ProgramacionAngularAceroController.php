@@ -1897,7 +1897,7 @@ class ProgramacionAngularAceroController extends Controller
         $dat['Prioridad'] = $dat['Prioridad'] != '' ? $dat['Prioridad'] : 'NULL';
         $dat['Programadas'] = $dat['Programadas'] != '' ? $dat['Programadas'] : 'NULL';
         //var_dump($dat);exit;
-        $datosSemana1 = $dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
+        $datosSemana1 = "1,".$dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         return $model->setProgramacionSemanal($datosSemana1);
     }
     
@@ -1907,39 +1907,7 @@ class ProgramacionAngularAceroController extends Controller
         $model->setDatosDux();
     }
     
-    public function actionDatosTarimas()
-    {
-        //$_GET['semana'] = date('W',  strtotime($_GET['Dia']));
-        $tarimas = [];
-        //var_dump($_GET);
-        for($x=0;$x<131;$x++){
-            $tarimas[] = [
-                'Tarima1' => '',
-                'Tarima2' => '',
-                'Tarima3' => '',
-                'Tarima4' => '',
-                'Tarima5' => '',
-                'Tarima6' => '',
-                'Tarima7' => '',
-                'Tarima8' => '',
-                'Tarima9' => ''
-            ];
-        }
-        
-        if($_GET['reporte'] != 'false'){
-            $model = VTarimas::find()->where("")->asArray()->all();
-        }else{
-            unset($_GET['reporte']);
-            $model = VTarimas::find()->where($_GET)->asArray()->all();
-        }
-
-        foreach($model as $mod){
-            //$mod['visible'] = true;
-            $tarimas[$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
-        }
-        //var_dump($model);
-        return json_encode($tarimas);
-    }
+    
     
     public function actionActualizacion()
     {
@@ -1990,6 +1958,40 @@ class ProgramacionAngularAceroController extends Controller
         }
         
         return $guardado;
+    }
+    
+    public function actionDatosTarimas()
+    {
+        //$_GET['semana'] = date('W',  strtotime($_GET['Dia']));
+        $tarimas = [];
+        //var_dump($_GET);
+        for($x=0;$x<131;$x++){
+            $tarimas[] = [
+                'Tarima1' => '',
+                'Tarima2' => '',
+                'Tarima3' => '',
+                'Tarima4' => '',
+                'Tarima5' => '',
+                'Tarima6' => '',
+                'Tarima7' => '',
+                'Tarima8' => '',
+                'Tarima9' => ''
+            ];
+        }
+        
+        if($_GET['reporte'] != 'false'){
+            $model = VTarimas::find()->where("")->asArray()->all();
+        }else{
+            unset($_GET['reporte']);
+            $model = VTarimas::find()->where($_GET)->asArray()->all();
+        }
+
+        foreach($model as $mod){
+            //$mod['visible'] = true;
+            $tarimas[$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
+        }
+        //var_dump($model);
+        return json_encode($tarimas);
     }
     
     public function actionSaveEnvio(){

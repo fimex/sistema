@@ -1,6 +1,6 @@
 <div class="panel panel-primary">
     <!-- Default panel contents -->
-    <div class="panel-heading">Carga de tratamiento</div>
+    <div class="panel-heading">Carga de Productos en horno</div>
     <div class="panel-body">
         <button class="btn btn-success" ng-show="mostrar" ng-click="addDetalle()">Agregar </button>
     </div>
@@ -20,13 +20,13 @@
                     ng-class="{'info': indexDetalle == $index, 'warning': detalle.change == true}"
                     ng-click="selectDetalle($index);"
                     ng-repeat="detalle in detalles">
-                    <td class="col-md-4">
-					<select aria-describedby="productos" class="form-control" ng-model="detalle.IdProductos" required>
-                        <option ng-selected="detalle.IdProducto == programado.IdProducto" value="{{programado.IdProducto}}" ng-repeat="programado in programadosTT"> {{programado.Identificacion}}   {{programado.Descripcion}} </option>
+                    <td class="col-md-5">
+					<select aria-describedby="productos" class="form-control" ng-change="SetIdProgramacion(detalles[$index].IdProductos)" ng-model="detalle.IdProductos" required>
+                        <option ng-selected="detalle.IdProductos == programado.IdProducto" value="{{programado.IdProducto}}" ng-repeat="programado in programadosTT"> {{programado.Identificacion}}   {{programado.Descripcion}} </option>
                     </select>     
 					</td>
                     
-                    <td class="captura"><input  ng-model-options="{updateOn: 'blur'}" ng-model="detalle.FechaMoldeo"  value="{{detalle.FechaMoldeo}}"</td>
+                    <td class=" col-md-3"><input  ng-model-options="{updateOn: 'blur'}" ng-model="detalle.FechaMoldeo"  value="{{detalle.FechaMoldeo}}"</td>
                                        
                     <td class="captura"><input  ng-model-options="{updateOn: 'blur'}"  ng-model="detalle.Hechas" value="{{detalle.Hechas}}"/></td>
                     

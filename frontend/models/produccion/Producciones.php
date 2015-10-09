@@ -29,6 +29,7 @@ use frontend\models\tt\TratamientosTermicos;
  * @property Empleados $idEmpleado
  * @property Maquinas $idMaquina
  * @property Turnos $idTurno
+ * @property TratamientosTermicos $TratamientosTermicos
  * @property ProduccionesEstatus $idProduccionEstatus
  * @property SubProcesos $idSubProceso
  * @property ProduccionesDetalle[] $produccionesDetalles
@@ -95,9 +96,13 @@ class Producciones extends \yii\db\ActiveRecord
         return $this->hasOne(Areas::className(), ['IdArea' => 'IdArea']);
     }
 	
-	 public function getIdTratamientoTermico()
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+	 public function getIdTratamientosTermicos()
     {
-        return $this->hasOne(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion']);
+         return $this->hasOne(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion'])
+					 ->with('idAprobo','idOperador','idSuperviso','idTipoEnfriamiento');
     }
 	
     /**

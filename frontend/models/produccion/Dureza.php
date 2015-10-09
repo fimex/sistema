@@ -9,8 +9,6 @@ use Yii;
  *
  * @property integer $IdDureza
  * @property integer $IdPruebaDestructiva
- * @property integer $DurezaBrinelHB
- * @property integer $DurezaRockwellHRC
  * @property double $DiametroHuella
  *
  * @property PruebasDestructivas $idPruebaDestructiva
@@ -31,7 +29,7 @@ class Dureza extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdPruebaDestructiva', 'DurezaBrinelHB', 'DurezaRockwellHRC'], 'integer'],
+            [['IdPruebaDestructiva'], 'integer'],
             [['DiametroHuella'], 'number']
         ];
     }
@@ -44,8 +42,6 @@ class Dureza extends \yii\db\ActiveRecord
         return [
             'IdDureza' => 'Id Dureza',
             'IdPruebaDestructiva' => 'Id Prueba Destructiva',
-            'DurezaBrinelHB' => 'Dureza Brinel Hb',
-            'DurezaRockwellHRC' => 'Dureza Rockwell Hrc',
             'DiametroHuella' => 'Diametro Huella',
         ];
     }

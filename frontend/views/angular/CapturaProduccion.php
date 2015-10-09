@@ -407,6 +407,12 @@ $this->title = $title;
                     <th>Fecha
                         <br /><input class="form-control" ng-model="filtro.Fecha">
                     </th>
+                    <th>Turno
+                        <br /><input class="form-control" ng-model="filtro.Turno">
+                    </th>
+                    <th ng-show="IdSubProceso == 10">Lance
+                        <br /><input class="form-control" ng-model="filtro.Lance">
+                    </th>
                     <th>Empleado
                         <br /><input class="form-control" ng-model="filtro.Empleado">
                     </th>
@@ -427,6 +433,8 @@ $this->title = $title;
                     <td><button class="btn" ng-click="show(busqueda.index);">Ver</button></td>
                     <td>{{busqueda.Semana}}</td>
                     <td>{{busqueda.Fecha | date:'dd-MMM-yyyy'}}</td>
+                    <td>{{busqueda.Turno}}</td>
+                    <td ng-show="IdSubProceso == 10">{{busqueda.Lance}}</td>
                     <td>{{busqueda.Empleado}}</td>
                     <td>{{busqueda.Maquina}}</td>
                     <td>{{busqueda.Producto}}</td>

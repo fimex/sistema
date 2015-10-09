@@ -7,17 +7,15 @@ use Yii;
 /**
  * This is the model class for table "v_LecturasCharpy".
  *
- * @property integer $IdProbetas
- * @property integer $IdLance
- * @property string $Tipo
- * @property integer $IdProbeta
- * @property string $SpecimenStandard
+ * @property integer $IdCharpy
  * @property integer $IdPruebaDestructiva
+ * @property integer $IdProduccion
+ * @property string $SpecimenStandard
  * @property double $Espesor
  * @property double $Ancho
  * @property double $Largo
- * @property double $Profundo
  * @property integer $Angulo
+ * @property double $Profundo
  * @property double $ResultadoLBFT
  * @property double $Temperatura
  */
@@ -37,9 +35,9 @@ class VLecturasCharpy extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProbetas', 'IdLance', 'IdProbeta', 'IdPruebaDestructiva'], 'required'],
-            [['IdProbetas', 'IdLance', 'IdProbeta', 'IdPruebaDestructiva', 'Angulo'], 'integer'],
-            [['Tipo', 'SpecimenStandard'], 'string'],
+            [['IdCharpy', 'IdPruebaDestructiva', 'IdProduccion'], 'required'],
+            [['IdCharpy', 'IdPruebaDestructiva', 'IdProduccion', 'Angulo'], 'integer'],
+            [['SpecimenStandard'], 'string'],
             [['Espesor', 'Ancho', 'Largo', 'Profundo', 'ResultadoLBFT', 'Temperatura'], 'number']
         ];
     }
@@ -50,17 +48,15 @@ class VLecturasCharpy extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'IdProbetas' => 'Id Probetas',
-            'IdLance' => 'Id Lance',
-            'Tipo' => 'Tipo',
-            'IdProbeta' => 'Id Probeta',
-            'SpecimenStandard' => 'Specimen Standard',
+            'IdCharpy' => 'Id Charpy',
             'IdPruebaDestructiva' => 'Id Prueba Destructiva',
+            'IdProduccion' => 'Id Produccion',
+            'SpecimenStandard' => 'Specimen Standard',
             'Espesor' => 'Espesor',
             'Ancho' => 'Ancho',
             'Largo' => 'Largo',
-            'Profundo' => 'Profundo',
             'Angulo' => 'Angulo',
+            'Profundo' => 'Profundo',
             'ResultadoLBFT' => 'Resultado Lbft',
             'Temperatura' => 'Temperatura',
         ];

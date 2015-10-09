@@ -3,6 +3,8 @@
 namespace frontend\models\tt;
 
 use Yii;
+use common\models\catalogos\Empleados;
+use frontend\models\tt\TTTipoEnfriamientos;
 
 /**
  * This is the model class for table "TratamientosTermicos".
@@ -31,6 +33,10 @@ use Yii;
  * @property integer $idSuperviso
  *
  * @property Producciones $idProduccion
+ * @property Empleados $idAprobo
+ * @property Empleados $idOperador
+ * @property Empleados $idSuperviso
+ * @property TTTipoEnfriamientos $idTipoEnfriamiento
  */
 class TratamientosTermicos extends \yii\db\ActiveRecord
 {
@@ -93,4 +99,38 @@ class TratamientosTermicos extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Producciones::className(), ['IdProduccion' => 'IdProduccion']);
     }
+	
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdAprobo()
+    {
+        return $this->hasOne(Empleados::className(), ['IdEmpleado' => 'idAprobo']);
+    }
+	
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdOperador()
+    {
+        return $this->hasOne(Empleados::className(), ['IdEmpleado' => 'idOperador']);
+    }
+	
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdSuperviso()
+    {
+        return $this->hasOne(Empleados::className(), ['IdEmpleado' => 'idSuperviso']);
+    }
+	
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdTipoEnfriamiento()
+    {
+        return $this->hasOne(TTTipoEnfriamientos::className(), ['IdTipoEnfriamiento' => 'IdTipoEnfriamiento']);
+    }
+	
+	
 }

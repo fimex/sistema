@@ -16,6 +16,7 @@ use Yii;
  * @property integer $Angulo
  * @property double $ResultadoLBFT
  * @property double $Temperatura
+ * @property string $Resultado
  *
  * @property PruebasDestructivas $idPruebaDestructiva
  */
@@ -37,7 +38,8 @@ class Charpy extends \yii\db\ActiveRecord
         return [
             [['IdPruebaDestructiva'], 'required'],
             [['IdPruebaDestructiva', 'Angulo'], 'integer'],
-            [['Espesor', 'Ancho', 'Largo', 'Profundo', 'ResultadoLBFT', 'Temperatura'], 'number']
+            [['Espesor', 'Ancho', 'Largo', 'Profundo', 'ResultadoLBFT', 'Temperatura'], 'number'],
+            [['Resultado'], 'string']
         ];
     }
 
@@ -56,6 +58,7 @@ class Charpy extends \yii\db\ActiveRecord
             'Angulo' => 'Angulo',
             'ResultadoLBFT' => 'Resultado Lbft',
             'Temperatura' => 'Temperatura',
+            'Resultado' => 'Resultado',
         ];
     }
 

@@ -187,8 +187,8 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionFallas(){
-        $IdSubProceso = $_GET['IdSubProceso'];
-        $IdArea = $_GET['IdArea'];
+        $IdSubProceso = $_REQUEST['IdSubProceso'];
+        $IdArea = $_REQUEST['IdArea'];
         $model = \common\models\catalogos\CausasTipo::find()->with('causas')->asArray()->all();
         
         foreach($model as $key => $mod){
@@ -227,13 +227,13 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionCentrosTrabajo(){
-        $model = CentrosTrabajo::find()->where($_GET)->asArray()->all();
+        $model = CentrosTrabajo::find()->where($_REQUEST)->asArray()->all();
         return json_encode($model);
     }
     
     public function actionMaquinas(){
-        if(isset($_GET)){
-            $model = VMaquinas::find()->where($_GET)->asArray()->all();
+        if(isset($_REQUEST)){
+            $model = VMaquinas::find()->where($_REQUEST)->asArray()->all();
             return json_encode($model);
         }
     }
@@ -271,19 +271,23 @@ class AngularController extends \yii\web\Controller
     
     public function actionProduccion(){
         $busqueda = false;
-        if(isset($_POST['IdProduccion'])){
-            $where = ['IdProduccion' => $_POST['IdProduccion']];
+        if(isset($_REQUEST['IdProduccion'])){
+            $where = ['IdProduccion' => $_REQUEST['IdProduccion']];
         }else{
-            if(isset($_POST['busqueda'])){
-                unset($_POST['busqueda']);
+            if(isset($_REQUEST['busqueda'])){
+                unset($_REQUEST['busqueda']);
                 $busqueda = true;
             }
-            $where = $_POST;
+            $where = $_REQUEST;
         }
 
             if($busqueda == true){
                 $model = Producciones::find()
+                    ->leftJoin('Lances','Producciones.IdProduccion = Lances.IdProduccion')
+                    //->leftJoin('ProduccionesDetalle','Producciones.IdProduccion = ProduccionesDetalle.IdProduccion')
+                    //->leftJoin('AlmasProduccionDetalles','Producciones.IdProduccion = AlmasProduccionDetalles.IdProduccion')
                     ->where($where)
+                    ->orderBy($_REQUEST['IdSubProceso'] == 10 ? 'Fecha ASC, Lance ASC' : 'Fecha ASC, Producciones.IdProduccion ASC')
                     ->with('lances')
                     ->with('idMaquina')
                     ->with('idCentroTrabajo')
@@ -291,6 +295,7 @@ class AngularController extends \yii\web\Controller
                     ->with('idTurno')
                     ->with('produccionesDetalles')
                     ->with('almasProduccionDetalles')
+					->with('idTratamientoTermico')
                     ->orderBy('Fecha Asc, IdProduccion ASC, IdMaquina Asc')
                     ->asArray()
                     ->all();
@@ -303,6 +308,8 @@ class AngularController extends \yii\web\Controller
                             'index' => $x,
                             'IdProduccion' => $mod['IdProduccion'],
                             'Fecha' => date('Y-m-d',strtotime($mod['Fecha'])),
+                            'Lance' => isset($mod['lances']['Lance']) ? $mod['lances']['Lance'] : '',
+                            'Turno' => $mod['idTurno']['Descripcion'],
                             'Semana' => date('W',strtotime($mod['Fecha'])),
                             'Empleado' => $mod['idEmpleado']['ApellidoPaterno']." ".$mod['idEmpleado']['ApellidoMaterno']." ".$mod['idEmpleado']['Nombre'],
                             'Producto' => $alma['idProducto']['Identificacion']."/".$alma['idAlmaTipo']['Descripcion'],
@@ -317,6 +324,8 @@ class AngularController extends \yii\web\Controller
                             'index' => $x,
                             'IdProduccion' => $mod['IdProduccion'],
                             'Fecha' => date('Y-m-d',strtotime($mod['Fecha'])),
+                            'Lance' => isset($mod['lances']['Lance']) ? $mod['lances']['Lance'] : '',
+                            'Turno' => $mod['idTurno']['Descripcion'],
                             'Semana' => date('W',strtotime($mod['Fecha'])),
                             'Empleado' => $mod['idEmpleado']['ApellidoPaterno']." ".$mod['idEmpleado']['ApellidoMaterno']." ".$mod['idEmpleado']['Nombre'],
                             'Producto' => $detalles['idProductos']['Identificacion'],
@@ -367,8 +376,8 @@ class AngularController extends \yii\web\Controller
     
     public function actionCountProduccion(){
         $request = Yii::$app->request;
-        $IdSubProceso = $_POST['IdSubProceso'];
-        $IdArea = isset($_POST['IdArea']) ? $_POST['IdArea'] : $this->areas->getCurrent();
+        $IdSubProceso = $_REQUEST['IdSubProceso'];
+        $IdArea = isset($_REQUEST['IdArea']) ? $_REQUEST['IdArea'] : $this->areas->getCurrent();
 
         $model = Producciones::find()
             ->select("Producciones.IdProduccion")
@@ -384,8 +393,8 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionDetalle(){
-        if(isset($_GET['IdProduccion'])){
-            $model = ProduccionesDetalle::find()->where($_GET)
+        if(isset($_REQUEST['IdProduccion'])){
+            $model = ProduccionesDetalle::find()->where($_REQUEST)
                 ->with('idProduccion')
                 ->with('idProductos')
                 ->asArray()
@@ -401,7 +410,7 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionAlmasDetalle(){
-        $model = AlmasProduccionDetalle::find()->where($_GET)->with('idProducto')->with('idAlmaTipo')->with('idProduccion')->asArray()->all();
+        $model = AlmasProduccionDetalle::find()->where($_REQUEST)->with('idProducto')->with('idAlmaTipo')->with('idProduccion')->asArray()->all();
         foreach($model as &$mod){
             $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
             $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
@@ -411,8 +420,8 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionTemperaturas($IdTemperatura = ''){
-        if(isset($_GET['IdProduccion']) || $IdTemperatura != ''){
-            $params = $IdTemperatura != '' ? ['IdTemperatura' => $IdTemperatura] : $_GET;
+        if(isset($_REQUEST['IdProduccion']) || $IdTemperatura != ''){
+            $params = $IdTemperatura != '' ? ['IdTemperatura' => $IdTemperatura] : $_REQUEST;
             if( $IdTemperatura != ''){
                 $model = Temperaturas::find()->where($params)->orderBy('Fecha')->asArray()->one();
                         
@@ -436,8 +445,8 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionRechazos(){
-        if(isset($_GET['IdProduccionDetalle']) || isset($_GET['IdAlmaProduccionDetalle'])){
-            $model = isset($_GET['IdAlmaProduccionDetalle']) ? AlmasProduccionDefecto::find()->where($_GET)->asArray()->all() : ProduccionesDefecto::find()->where($_GET)->asArray()->all();
+        if(isset($_REQUEST['IdProduccionDetalle']) || isset($_REQUEST['IdAlmaProduccionDetalle'])){
+            $model = isset($_REQUEST['IdAlmaProduccionDetalle']) ? AlmasProduccionDefecto::find()->where($_REQUEST)->asArray()->all() : ProduccionesDefecto::find()->where($_REQUEST)->asArray()->all();
             foreach($model as &$mod){
                 $mod['Rechazadas'] *= 1;
             }
@@ -446,21 +455,21 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionProgramacion(){
-        $_GET['Dia'] = date('Y-m-d',strtotime($_GET['Dia']));
-        unset($_GET['IdMaquina']);
+        $_REQUEST['Dia'] = date('Y-m-d',strtotime($_REQUEST['Dia']));
+        unset($_REQUEST['IdMaquina']);
         
-        if($_GET['IdSubProceso'] == 2 || $_GET['IdSubProceso'] == 4){
-            unset($_GET['IdSubProceso']);
-            unset($_GET['IdTurno']);
-            $model = VProgramacionesAlmaDia::find()->where($_GET)->asArray()->all();
-        }elseif($_GET['IdSubProceso'] == 3){
-            unset($_GET['IdSubProceso']);
-            unset($_GET['Dia']);
-            unset($_GET['IdTurno']);
-            $model = VAlmasRebabeo::find()->where($_GET)->asArray()->all();
+        if($_REQUEST['IdSubProceso'] == 2 || $_REQUEST['IdSubProceso'] == 4){
+            unset($_REQUEST['IdSubProceso']);
+            unset($_REQUEST['IdTurno']);
+            $model = VProgramacionesAlmaDia::find()->where($_REQUEST)->asArray()->all();
+        }elseif($_REQUEST['IdSubProceso'] == 3){
+            unset($_REQUEST['IdSubProceso']);
+            unset($_REQUEST['Dia']);
+            unset($_REQUEST['IdTurno']);
+            $model = VAlmasRebabeo::find()->where($_REQUEST)->asArray()->all();
         }else{
-            unset($_GET['IdSubProceso']);
-            $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
+            unset($_REQUEST['IdSubProceso']);
+            $model = VProgramacionesDia::find()->where($_REQUEST)->asArray()->all();
         }
         
         
@@ -472,15 +481,15 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionProgramacionEmpaque(){
-        $_GET['Dia'] = date('Y-m-d',strtotime($_GET['Dia']));
+        $_REQUEST['Dia'] = date('Y-m-d',strtotime($_REQUEST['Dia']));
         
-            unset($_GET['IdMaquina']);
-        if($_GET['IdSubProceso']==2){
-            unset($_GET['IdSubProceso']);
-            $model = VProgramacionesAlmaDia::find()->where($_GET)->asArray()->all();
+            unset($_REQUEST['IdMaquina']);
+        if($_REQUEST['IdSubProceso']==2){
+            unset($_REQUEST['IdSubProceso']);
+            $model = VProgramacionesAlmaDia::find()->where($_REQUEST)->asArray()->all();
         }else{
-            unset($_GET['IdSubProceso']);
-            $model = VProgramacionesDia::find()->where($_GET)->asArray()->all();
+            unset($_REQUEST['IdSubProceso']);
+            $model = VProgramacionesDia::find()->where($_REQUEST)->asArray()->all();
         }
         
         
@@ -492,9 +501,9 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionTiempos(){
-        if(isset($_GET['IdMaquina'])){
-            $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
-            $model = TiemposMuerto::find()->where($_GET)->orderBy('Inicio ASC')->asArray()->all();
+        if(isset($_REQUEST['IdMaquina'])){
+            $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+            $model = TiemposMuerto::find()->where($_REQUEST)->orderBy('Inicio ASC')->asArray()->all();
 
             foreach($model as &$mod){
                 $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
@@ -506,8 +515,8 @@ class AngularController extends \yii\web\Controller
     }
     
     public function actionConsumo(){
-        if(isset($_GET['IdProduccion'])){
-            $model = MaterialesVaciado::find()->where($_GET)->asArray()->all();
+        if(isset($_REQUEST['IdProduccion'])){
+            $model = MaterialesVaciado::find()->where($_REQUEST)->asArray()->all();
             foreach ($model as &$mod){
                 $mod['Cantidad'] *=1; 
             }
@@ -521,70 +530,70 @@ class AngularController extends \yii\web\Controller
 
 
     public function actionDeleteProducciones(){
-            $almas = AlmasProduccionDetalle::find()->where("IdProduccion = ".$_GET['IdProduccion']." ")->asArray()->all();
-            $temperaturas  = Temperaturas::find()->where("IdProduccion = ".$_GET['IdProduccion']." ")->asArray()->all();
+            $almas = AlmasProduccionDetalle::find()->where("IdProduccion = ".$_REQUEST['IdProduccion']." ")->asArray()->all();
+            $temperaturas  = Temperaturas::find()->where("IdProduccion = ".$_REQUEST['IdProduccion']." ")->asArray()->all();
 
         if ($almas == null || $temperaturas == null) {
-            $model = Producciones::findOne($_GET['IdProduccion'])->delete();
+            $model = Producciones::findOne($_REQUEST['IdProduccion'])->delete();
         }
     }
     
     function actionFindProduccion(){
-        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
-        return json_encode(Producciones::find()->where($_GET)->asArray()->one());
+        $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+        return json_encode(Producciones::find()->where($_REQUEST)->asArray()->one());
     }
     
     public function actionSaveProduccion(){
         $update = false;
 
-        if(!isset($_GET['IdArea'])){
-            $_GET['IdArea'] = $this->areas->getCurrent();
+        if(!isset($_REQUEST['IdArea'])){
+            $_REQUEST['IdArea'] = $this->areas->getCurrent();
         }
         
-        if(!isset($_GET['IdTurno'])){
-            $_GET['IdTurno'] = 1;
+        if(!isset($_REQUEST['IdTurno'])){
+            $_REQUEST['IdTurno'] = 1;
         }
 
-        if(!isset($_GET['Fecha'])){
-            $_GET['Fecha'] = date('Y-m-d');
+        if(!isset($_REQUEST['Fecha'])){
+            $_REQUEST['Fecha'] = date('Y-m-d');
         }
         
-        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
+        $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
 
-        if(!isset($_GET['IdCentroTrabajo'])){
-            $_GET['IdCentroTrabajo'] = VMaquinas::find()->where(['IdMaquina'=>$_GET['IdMaquina']])->one()->IdCentroTrabajo;
+        if(!isset($_REQUEST['IdCentroTrabajo'])){
+            $_REQUEST['IdCentroTrabajo'] = VMaquinas::find()->where(['IdMaquina'=>$_REQUEST['IdMaquina']])->one()->IdCentroTrabajo;
         }
         
-        if(!isset($_GET['IdMaquina'])){
-            $_GET['IdMaquina'] = 1;
+        if(!isset($_REQUEST['IdMaquina'])){
+            $_REQUEST['IdMaquina'] = 1;
         }
         
-        if(!isset($_GET['IdProduccionEstatus'])){
-            $_GET['IdProduccionEstatus'] = 1;
+        if(!isset($_REQUEST['IdProduccionEstatus'])){
+            $_REQUEST['IdProduccionEstatus'] = 1;
         }
         
-        if(!isset($_GET['IdEmpleado'])){
-            $_GET['IdEmpleado'] = Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'];
+        if(!isset($_REQUEST['IdEmpleado'])){
+            $_REQUEST['IdEmpleado'] = Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'];
         }
         
-        if(!isset($_GET['Observaciones'])){
-            $_GET['Observaciones'] = "";
+        if(!isset($_REQUEST['Observaciones'])){
+            $_REQUEST['Observaciones'] = "";
         }
         
-        if(isset($_GET['IdProduccion'])){
-            $_GET['IdProduccion'] *= 1;
-            $model = Producciones::findOne($_GET['IdProduccion']);
+        if(isset($_REQUEST['IdProduccion'])){
+            $_REQUEST['IdProduccion'] *= 1;
+            $model = Producciones::findOne($_REQUEST['IdProduccion']);
             $update = true;
             if($model->IdSubProceso == 10){
-                $dataLance = json_decode($_GET['lances'],true);
+                $dataLance = json_decode($_REQUEST['lances'],true);
                 $dataLance['IdProduccion'] *= 1;
             }
         }else{
             $model = new Producciones();
         }
         
-        $model->load(['Producciones' => $_GET]);
-        $model->Observaciones = $_GET['Observaciones'];
+        $model->load(['Producciones' => $_REQUEST]);
+        $model->Observaciones = $_REQUEST['Observaciones'];
         $r = $update ? $model->update() : $model->save();
         
         if(!$r){
@@ -593,7 +602,7 @@ class AngularController extends \yii\web\Controller
         
         if($model->IdSubProceso == 10){
             if($update == false){
-                $this->SaveLance($_GET,$model);
+                $this->SaveLance($_REQUEST,$model);
                 $materiales = json_decode($this->actionMaterial($model->IdSubProceso, $model->IdArea));
 
                 foreach($materiales as $material){
@@ -626,11 +635,11 @@ class AngularController extends \yii\web\Controller
 
     function actionSaveHornos(){
         $model = new MantenimientoHornos();
-        $maquina = \frontend\models\produccion\Maquinas::findOne($_GET['IdMaquina']);
-        $_GET['Fecha'] = date('Y-m-d', strtotime($_GET['Fecha']));
-        $_GET['Consecutivo'] = $maquina->Consecutivo;
+        $maquina = \frontend\models\produccion\Maquinas::findOne($_REQUEST['IdMaquina']);
+        $_REQUEST['Fecha'] = date('Y-m-d', strtotime($_REQUEST['Fecha']));
+        $_REQUEST['Consecutivo'] = $maquina->Consecutivo;
         
-        $model->load(['MantenimientoHornos'=>$_GET]);
+        $model->load(['MantenimientoHornos'=>$_REQUEST]);
         $model->save();
         
         //Reiniciar consecutivo
@@ -675,27 +684,27 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionSaveDetalle(){
-        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
-        $_GET['Inicio'] = isset($_GET['Inicio']) ? $_GET['Inicio'] : '00:00';
-        $_GET['Fin'] = isset($_GET['Fin']) ? $_GET['Fin'] : '00:00';
-        $_GET['Inicio'] = str_replace('.',':',$_GET['Inicio']);
-        $_GET['Fin'] = str_replace('.',':',$_GET['Fin']);
-        $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
-        $_GET['Fin'] = (strtotime($_GET['Fin']) >= strtotime($_GET['Inicio']) ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
-        $_GET['Eficiencia'] = isset($_GET['Eficiencia']) ? $_GET['Eficiencia'] : 1;
-        //var_dump($_GET);exit;
+        $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+        $_REQUEST['Inicio'] = isset($_REQUEST['Inicio']) ? $_REQUEST['Inicio'] : '00:00';
+        $_REQUEST['Fin'] = isset($_REQUEST['Fin']) ? $_REQUEST['Fin'] : '00:00';
+        $_REQUEST['Inicio'] = str_replace('.',':',$_REQUEST['Inicio']);
+        $_REQUEST['Fin'] = str_replace('.',':',$_REQUEST['Fin']);
+        $_REQUEST['Inicio'] = $_REQUEST['Fecha'] . " " . $_REQUEST['Inicio'];
+        $_REQUEST['Fin'] = (strtotime($_REQUEST['Fin']) >= strtotime($_REQUEST['Inicio']) ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
+        $_REQUEST['Eficiencia'] = isset($_REQUEST['Eficiencia']) ? $_REQUEST['Eficiencia'] : 1;
+        //var_dump($_REQUEST);exit;
         $model = new ProduccionesDetalle();
         $IdDetalle = 'ProduccionesDetalle';
         
-        if(!isset($_GET['IdProduccionDetalle'])){
+        if(!isset($_REQUEST['IdProduccionDetalle'])){
             $model->load([
-                "$IdDetalle"=>$_GET
+                "$IdDetalle"=>$_REQUEST
             ]);
             $model->save();
         }else{
-            $model = $model::findOne($_GET['IdProduccionDetalle']);
+            $model = $model::findOne($_REQUEST['IdProduccionDetalle']);
             $model->load([
-                "$IdDetalle"=>$_GET
+                "$IdDetalle"=>$_REQUEST
             ]);
             $model->update();
         }
@@ -711,26 +720,26 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionSaveAlmasDetalle(){
-        $_GET['Fecha'] = date('Y-m-d',strtotime($_GET['Fecha']));
-        $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
-        $_GET['PiezasHora'] = isset($_GET['PiezasHora']) ? $_GET['PiezasHora'] : 0;
-        $_GET['Fin'] = (strtotime($_GET['Fin']) >= strtotime($_GET['Inicio']) ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
-        $_GET['Eficiencia'] = isset($_GET['Eficiencia']) ? $_GET['Eficiencia'] : 1;
-        $_GET['Hechas'] *= 1;
-        $_GET['IdProduccion'] *= 1;
-        $_GET['IdProgramacionAlma'] *= 1;
-        $_GET['PiezasCaja'] *= 1;
-        $_GET['PiezasMolde'] *= 1;
-        $_GET['PiezasHora'] = isset($_GET['PiezasHora']) ? $_GET['PiezasHora'] : 0;$_GET['PiezasHora'] *= 1;
-        $_GET['Programadas'] *= 1;
-        $_GET['Rechazadas'] *= 1;
-        //var_dump($_GET);exit;
+        $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+        $_REQUEST['Inicio'] = $_REQUEST['Fecha'] . " " . $_REQUEST['Inicio'];
+        $_REQUEST['PiezasHora'] = isset($_REQUEST['PiezasHora']) ? $_REQUEST['PiezasHora'] : 0;
+        $_REQUEST['Fin'] = (strtotime($_REQUEST['Fin']) >= strtotime($_REQUEST['Inicio']) ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
+        $_REQUEST['Eficiencia'] = isset($_REQUEST['Eficiencia']) ? $_REQUEST['Eficiencia'] : 1;
+        $_REQUEST['Hechas'] *= 1;
+        $_REQUEST['IdProduccion'] *= 1;
+        $_REQUEST['IdProgramacionAlma'] *= 1;
+        $_REQUEST['PiezasCaja'] *= 1;
+        $_REQUEST['PiezasMolde'] *= 1;
+        $_REQUEST['PiezasHora'] = isset($_REQUEST['PiezasHora']) ? $_REQUEST['PiezasHora'] : 0;$_REQUEST['PiezasHora'] *= 1;
+        $_REQUEST['Programadas'] *= 1;
+        $_REQUEST['Rechazadas'] *= 1;
+        //var_dump($_REQUEST);exit;
         $model = new AlmasProduccionDetalle();
         $IdDetalle = 'AlmasProduccionDetalle';
-        if(!isset($_GET['IdAlmaProduccionDetalle'])){
-        // var_dump($_GET);exit;
+        if(!isset($_REQUEST['IdAlmaProduccionDetalle'])){
+        // var_dump($_REQUEST);exit;
             $model->load([
-                "$IdDetalle"=>$_GET
+                "$IdDetalle"=>$_REQUEST
             ]);
 			// $resp = $model->save();
 			// var_dump($resp);
@@ -739,9 +748,9 @@ class AngularController extends \yii\web\Controller
                 return false;
             }
         }else{
-            $model = $model::findOne($_GET['IdAlmaProduccionDetalle']);
+            $model = $model::findOne($_REQUEST['IdAlmaProduccionDetalle']);
             $model->load([
-                "$IdDetalle"=>$_GET
+                "$IdDetalle"=>$_REQUEST
             ]);
             if(!$model->update()){
                 var_dump($model);
@@ -764,26 +773,26 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionDeleteProduccion(){
-        $model = Producciones::findOne($_GET['IdProduccion'])->delete();
+        $model = Producciones::findOne($_REQUEST['IdProduccion'])->delete();
     }
     
     function actionDeleteDetalle(){
-        $model2 = ProduccionesDetalle::find()->where(['IdProduccionDetalle' => $_GET['IdProduccionDetalle']])->with('idProductos')->with('idProduccion')->asArray()->one();
+        $model2 = ProduccionesDetalle::find()->where(['IdProduccionDetalle' => $_REQUEST['IdProduccionDetalle']])->with('idProductos')->with('idProduccion')->asArray()->one();
         //var_dump($model2);exit;
-        $model = ProduccionesDetalle::findOne($_GET['IdProduccionDetalle'])->delete();
+        $model = ProduccionesDetalle::findOne($_REQUEST['IdProduccionDetalle'])->delete();
         $this->actualizaHechas($model2);
     }
     
     function actionDeleteTemperatura(){
-        $model2 = Temperaturas::find()->where(['IdTemperatura' => $_GET['IdTemperatura']])->asArray()->one();
+        $model2 = Temperaturas::find()->where(['IdTemperatura' => $_REQUEST['IdTemperatura']])->asArray()->one();
         //var_dump($model2);exit;
-        $model = Temperaturas::findOne($_GET['IdTemperatura'])->delete();
+        $model = Temperaturas::findOne($_REQUEST['IdTemperatura'])->delete();
     }
     
     function actionDeleteAlmasDetalle(){
-        $model2 = AlmasProduccionDetalle::find()->where(['IdAlmaProduccionDetalle' => $_GET['IdAlmaProduccionDetalle']])->with('idProducto')->with('idAlmaTipo')->with('idProduccion')->asArray()->one();
+        $model2 = AlmasProduccionDetalle::find()->where(['IdAlmaProduccionDetalle' => $_REQUEST['IdAlmaProduccionDetalle']])->with('idProducto')->with('idAlmaTipo')->with('idProduccion')->asArray()->one();
         //var_dump($model2);exit;
-        $model = AlmasProduccionDetalle::findOne($_GET['IdAlmaProduccionDetalle'])->delete();
+        $model = AlmasProduccionDetalle::findOne($_REQUEST['IdAlmaProduccionDetalle'])->delete();
         //$this->actualizaHechas($model2);
     }
     
@@ -793,7 +802,7 @@ class AngularController extends \yii\web\Controller
         $where['IdTurno'] = $produccion['idProduccion']['IdTurno'];
         
         if($produccion['idProduccion']['IdSubProceso'] == 10){
-            unset($where['IdTurno']);
+            //unset($where['IdTurno']);
         }
 
         $programacionDia = VProgramacionesDia::find()->where($where)->asArray()->one();
@@ -828,20 +837,20 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionSaveTiempo(){
-        $_GET['Inicio'] = $_GET['Fecha'] . " " . $_GET['Inicio'];
-        $_GET['Inicio'] = str_replace('.',':',$_GET['Inicio']);
-        $_GET['Fin'] = str_replace('.',':',$_GET['Fin']);
-        $_GET['Fin'] = ($_GET['Fin'] > $_GET['Inicio'] ? $_GET['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_GET['Fecha'])))) . " " . $_GET['Fin'];
+        $_REQUEST['Inicio'] = $_REQUEST['Fecha'] . " " . $_REQUEST['Inicio'];
+        $_REQUEST['Inicio'] = str_replace('.',':',$_REQUEST['Inicio']);
+        $_REQUEST['Fin'] = str_replace('.',':',$_REQUEST['Fin']);
+        $_REQUEST['Fin'] = ($_REQUEST['Fin'] > $_REQUEST['Inicio'] ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
         
-        if(!isset($_GET['IdTiempoMuerto'])){
+        if(!isset($_REQUEST['IdTiempoMuerto'])){
             $model = new TiemposMuerto();
             $model->load([
-                'TiemposMuerto'=>$_GET
+                'TiemposMuerto'=>$_REQUEST
             ]);
         }else{
-            $model = TiemposMuerto::findOne($_GET['IdTiempoMuerto']);
+            $model = TiemposMuerto::findOne($_REQUEST['IdTiempoMuerto']);
             $model->load([
-                'TiemposMuerto'=>$_GET
+                'TiemposMuerto'=>$_REQUEST
             ]);
         }
 
@@ -856,13 +865,13 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionDeleteTiempo(){
-        $model = TiemposMuerto::findOne($_GET['IdTiempoMuerto'])->delete();
+        $model = TiemposMuerto::findOne($_REQUEST['IdTiempoMuerto'])->delete();
     }
     function actionSaveProgramacion(){
-        $IdProgramacion = $_GET['IdProgramacion'];
-        $IdProgramacionSemana = $_GET['IdProgramacionSemana'];
-        $IdProgramacionDia = $_GET['IdProgramacionDia'];
-        $Fecha = $_GET['Fecha'];
+        $IdProgramacion = $_REQUEST['IdProgramacion'];
+        $IdProgramacionSemana = $_REQUEST['IdProgramacionSemana'];
+        $IdProgramacionDia = $_REQUEST['IdProgramacionDia'];
+        $Fecha = $_REQUEST['Fecha'];
         
         $Programacion = new Programacion();
         $ProduccionesDetalle = ProduccionesDetalle::find()->where(['IdProgramacion'=>$IdProgramacion,])->with('idProduccion')->asArray()->all();
@@ -875,18 +884,18 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionSaveRechazo(){
-        if(!isset($_GET['IdProduccionDefecto'])){
+        if(!isset($_REQUEST['IdProduccionDefecto'])){
             $model = new ProduccionesDefecto();
             $model->load([
-                'ProduccionesDefecto'=>$_GET
+                'ProduccionesDefecto'=>$_REQUEST
             ]);
         }else{
-            $model = ProduccionesDefecto::findOne($_GET['IdProduccionDefecto']);
+            $model = ProduccionesDefecto::findOne($_REQUEST['IdProduccionDefecto']);
             $model->load([
-                'ProduccionesDefecto'=>$_GET
+                'ProduccionesDefecto'=>$_REQUEST
             ]);
         }
-        $model->IdDefectoTipo = $_GET['IdDefectoTipo'];
+        $model->IdDefectoTipo = $_REQUEST['IdDefectoTipo'];
         
         if(!$model->save()){
             return false;
@@ -903,8 +912,8 @@ class AngularController extends \yii\web\Controller
         );
     }
     function actionDelRechazo(){
-        $model = ProduccionesDefecto::findOne($_GET['IdProduccionDefecto']);
-        $elimina = ProduccionesDefecto::findOne($_GET['IdProduccionDefecto'])->delete();
+        $model = ProduccionesDefecto::findOne($_REQUEST['IdProduccionDefecto']);
+        $elimina = ProduccionesDefecto::findOne($_REQUEST['IdProduccionDefecto'])->delete();
         $totalRechazo = ProduccionesDefecto::find()->select('SUM(Rechazadas) AS Rechazadas')->where(['IdProduccionDetalle'=>$model->IdProduccionDetalle])->asArray()->one();
         if($totalRechazo['Rechazadas'] == NULL || $totalRechazo['Rechazadas'] == null || $totalRechazo['Rechazadas'] == "") $totalRechazo['Rechazadas'] = 0;
         $detalle = ProduccionesDetalle::findOne($model->IdProduccionDetalle);
@@ -912,15 +921,15 @@ class AngularController extends \yii\web\Controller
         $detalle->save();
     }
     function actionSaveAlmasRechazo(){
-        if(!isset($_GET['IdAlmaProduccionDefecto'])){
+        if(!isset($_REQUEST['IdAlmaProduccionDefecto'])){
             $model = new AlmasProduccionDefecto();
             $model->load([
-                'AlmasProduccionDefecto'=>$_GET
+                'AlmasProduccionDefecto'=>$_REQUEST
             ]);
         }else{
-            $model = AlmasProduccionDefecto::findOne($_GET['IdAlmaProduccionDefecto']);
+            $model = AlmasProduccionDefecto::findOne($_REQUEST['IdAlmaProduccionDefecto']);
             $model->load([
-                'AlmasProduccionDefecto'=>$_GET
+                'AlmasProduccionDefecto'=>$_REQUEST
             ]);
         }
         $model->save();
@@ -933,7 +942,7 @@ class AngularController extends \yii\web\Controller
     
     function actionTotalRechazo($IdAlmaProduccionDetalle = ''){
         
-        $IdAlmaProduccionDetalle = isset($_GET['IdAlmaProduccionDetalle']) ? $_GET['IdAlmaProduccionDetalle'] : $IdAlmaProduccionDetalle;
+        $IdAlmaProduccionDetalle = isset($_REQUEST['IdAlmaProduccionDetalle']) ? $_REQUEST['IdAlmaProduccionDetalle'] : $IdAlmaProduccionDetalle;
         
         if($IdAlmaProduccionDetalle != ''){
             $totalRechazo = AlmasProduccionDefecto::find()->select('sum(Rechazadas) AS Rechazadas')->where(['IdAlmaProduccionDetalle'=>$IdAlmaProduccionDetalle])->asArray()->one();
@@ -951,25 +960,25 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionDeleteAlmaRechazo(){
-        if(!isset($_GET['IdAlmaProduccionDefecto'])){
+        if(!isset($_REQUEST['IdAlmaProduccionDefecto'])){
             return false;
         }
-        $model = AlmasProduccionDefecto::findOne($_GET['IdAlmaProduccionDefecto']);
+        $model = AlmasProduccionDefecto::findOne($_REQUEST['IdAlmaProduccionDefecto']);
         $detalle = $model->IdAlmaProduccionDetalle;
         $model->delete();
         return true;
     }
     
     function actionSaveConsumo(){
-        if(!isset($_GET['IdMaterialVaciado'])){
+        if(!isset($_REQUEST['IdMaterialVaciado'])){
             $model = new MaterialesVaciado();
             $model->load([
-                'MaterialesVaciado'=>$_GET
+                'MaterialesVaciado'=>$_REQUEST
             ]);
         }else{
-            $model = MaterialesVaciado::findOne($_GET['IdMaterialVaciado']);
+            $model = MaterialesVaciado::findOne($_REQUEST['IdMaterialVaciado']);
             $model->load([
-                'MaterialesVaciado'=>$_GET
+                'MaterialesVaciado'=>$_REQUEST
             ]);
         }
         if(!$model->save()){
@@ -982,25 +991,25 @@ class AngularController extends \yii\web\Controller
     }
     
     function actionSaveTemperatura(){
-        $_GET['Fecha'] = str_replace('.',':',$_GET['Fecha']);
-        $_GET['Fecha'] = $_GET['Fecha2'] . " " . $_GET['Fecha'];
-        $_GET['IdMaquina'] *= 1;
-        $_GET['IdProduccion'] *= 1;
-        $_GET['Temperatura'] *= 1;
-        $_GET['Temperatura2'] *= 1;
+        $_REQUEST['Fecha'] = str_replace('.',':',$_REQUEST['Fecha']);
+        $_REQUEST['Fecha'] = $_REQUEST['Fecha2'] . " " . $_REQUEST['Fecha'];
+        $_REQUEST['IdMaquina'] *= 1;
+        $_REQUEST['IdProduccion'] *= 1;
+        $_REQUEST['Temperatura'] *= 1;
+        $_REQUEST['Temperatura2'] *= 1;
         
-        if(!isset($_GET['IdTemperatura'])){
+        if(!isset($_REQUEST['IdTemperatura'])){
             $model = new Temperaturas();
             $model->load([
-                'Temperaturas'=>$_GET
+                'Temperaturas'=>$_REQUEST
             ]);
         }else{
-            $model = Temperaturas::findOne($_GET['IdTemperatura']);
+            $model = Temperaturas::findOne($_REQUEST['IdTemperatura']);
             if(is_null($model)){
                 return false;
             }
             $model->load([
-                'Temperaturas'=>$_GET
+                'Temperaturas'=>$_REQUEST
             ]);
         }
         if(!$model->save()){
