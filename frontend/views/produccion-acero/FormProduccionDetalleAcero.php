@@ -6,7 +6,7 @@
 <div class="panel panel-primary">
     <!-- Default panel contents -->
     <div class="panel-heading">Captura de produccion</div>
-    <div id="detalle" class="scrollable">
+    <div id="detalle">
         <table ng-table class="table table-condensed table-striped table-bordered">
                 <tr>
                     <th class="width-40" colspan="2" ></th>
@@ -17,6 +17,8 @@
                     <th colspan="4" class="text-center"  >Ciclos</th>
                     <th rowspan="{{programacionAceros.length + 2}}"></th>
                     <th colspan="2" class="text-center"  >Moldes</th>
+                    <th rowspan="{{programacionAceros.length + 2}}"></th>
+                    <th colspan="4" class="text-center" ng-show="IdSubProceso == 8">Pintado</th>
                     <th rowspan="{{programacionAceros.length + 2}}"></th>
                     <th colspan="4" class="text-center"  >Cerrados</th>
                     <th rowspan="{{programacionAceros.length + 2}}"></th>
@@ -30,13 +32,15 @@
                     <th class="width-50">No Parte</th>
                     <th>Aleacion</th>
                     <th>Serie</th>
-                    <th>Cic</th>
+                    <th>CxM</th>
                     <th class="width-80">Cic Req</th>   
                     <th colspan="2" class="width-30">OK</th>
                     <th colspan="2" class="width-30">Rech</th>
                     <!-- Ciclos llenados -->
-                    <th class="width-40">Llenados</th>
-                    <th class="width-40">Cerrados</th>
+                    <th class="width-40">OK</th>
+                    <th class="width-40">RECH</th>
+                    <th colspan="2" class="width-40" ng-show="IdSubProceso == 8">Ok</th>
+                    <th colspan="2" class="width-30" ng-show="IdSubProceso == 8">Rech</th>
                     <th colspan="2" class="width-40">Ok</th>
                     <th colspan="2" class="width-30">Rech</th>
                     <th class="width-40">Ok</th>
@@ -45,30 +49,39 @@
                 <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
-                    <th>{{IdAreaAct != 2 ? detalle.Programadas - (((detalle.OKMoldeo * 1) + (detalle.REPMoldeo - detalle.RECCerrado))/detalle.CiclosMolde) : detalle.Programadas - (((detalle.OKVarel*1 - detalle.RECVarel*1) + (detalle.REPVarel - detalle.RECCerrado))/detalle.CiclosMolde)}}</th>
-                    <th>{{detalle.Programadas - detalle.OKCerrado - detalle.RECCerrado}}</th>
+                    <th>{{detalle.Programadas - detalle.Llenadas}}</th>
+                    <th>{{detalle.OKMoldeo - detalle.Cerradas}}</th>
                     <td class="col-md-3">{{detalle.Producto}}</td>
 
                     <th>{{detalle.Aleacion}}</th>
-                    <th>{{detalle.SerieInicio || 'N/A'}}</th>
-                    <th>{{detalle.CiclosMolde}}</th>
-                    <th>{{ IdAreaAct != 2 ? (detalle.CiclosMolde * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado) : (detalle.CiclosMolde * detalle.Programadas) - (detalle.OKVarel*1) + (detalle.RECVarel*1) + (detalle.REPVarel - detalle.RECCerrado) }}</th>
-                   
-                    <th>{{ IdAreaAct != 2 ? detalle.OKMoldeo  : (detalle.OKVarel - detalle.RECVarel)}}</th>
-                    <th><button type="button" ng-show="IdSubProceso == 6 || IdSubProceso == 7 || IdSubProceso == 17" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm ">+</button></th>
-                    <th>{{ IdAreaAct != 2 ? detalle.RECMoldeo : detalle.RECVarel || 0 }}</th>
-                    <th><button type="button" ng-show="IdSubProceso == 6 || IdSubProceso == 7 || IdSubProceso == 17" ng-click="ModelMoldeo($index,3); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm ">-</button></th>
+                    <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">{{detalle.SerieInicio || '--'}}</th>
+                    <th>{{detalle.CiclosMoldeA}}</th>
+                    <th>{{ IdAreaAct != 2 ? (detalle.CiclosMoldeA * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado) : (detalle.CiclosMolde * detalle.Programadas) - (detalle.OKVarel*1) + (detalle.RECVarel*1) + (detalle.REPVarel - detalle.RECCerrado) }}</th>
                     
-                    <th>{{ IdAreaAct != 2 ? (((detalle.OKMoldeo * 1) + (detalle.REPMoldeo - detalle.RECCerrado))/detalle.CiclosMolde) : (((detalle.OKVarel * 1) + (detalle.REPVarel - detalle.RECCerrado - detalle.RECVarel))/detalle.CiclosMolde) }}</th>
+                    <th colspan="4" ng-show="!detalle.SerieInicio && detalle.LlevaSerie">Configurar serie para poder capturar</th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)"><button type="button" ng-show="(IdSubProceso == 6 || IdSubProceso == 7 || IdSubProceso == 17)" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct != 2 ? detalle.OKMoldeo  : (detalle.OKVarel - detalle.RECVarel)}}</th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
+                    <button type="button" ng-show="IdSubProceso == 6" ng-click="ModelMoldeo($index,3); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                    <button type="button" ng-show="IdSubProceso == 7 || IdSubProceso == 17" ng-click="ModelMoldeo($index,3); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct != 2 ? detalle.RECMoldeo : detalle.RECVarel || 0 }}</th>
+                    
+                    <th>{{detalle.Llenadas | currency:"":1}}</th>
                     <th>{{detalle.OKCerrado || 0}}</th>
-
-                    <th>{{detalle.OKCerrado || 0 }}</th>
-                    <th><button type="button" ng-show="IdSubProceso == 9" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm ">+</button></th>
-                    <th>{{detalle.RECCerrado || 0 }}</th>
-                    <th><button type="button" ng-show="IdSubProceso == 9" ng-click="ModelMoldeo($index,3);" class="btn btn-danger btn-sm ">-</button></th>
                     
-                    <th>{{detalle.VaciadoOK || 0 }}</th>
-                    <th>{{detalle.VaciadoREC || 0 }}</th>
+                    <th ng-show="IdSubProceso == 8 && (detalle.Llenada - detalle.Cerradas) > 0 "><button type="button" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
+                    <th ng-show="IdSubProceso == 8">{{detalle.OKPintura || 0}}</th>
+                    <th ng-show="IdSubProceso == 8 && (detalle.Llenada - detalle.Cerradas) > 0 "><button type="button" ng-click="ModelMoldeo($index,3);" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>
+                    <th ng-show="IdSubProceso == 8">{{detalle.RECPintura || 0}}</th>
+
+                    <th><button type="button" ng-show="(IdSubProceso == 9) && (detalle.SerieInicio && detalle.LlevaSerie == 'Si')" ng-click="ModelMoldeo($index,1);" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                    <button type="button" ng-show="(IdSubProceso == 9) && (detalle.LlevaSerie != 'Si')" ng-click="saveDetalleAcero($index,1);" class="btn btn-info btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
+                    <th>{{detalle.Cerradas | currency:"":1}}</th>
+                    <th><button type="button" ng-show="IdSubProceso == 9" ng-disabled="(detalle.Llenada - detalle.Cerradas) > 0" ng-click="ModelMoldeo($index,3);" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>
+                    <th>{{detalle.RECCerrado || 0}}</th>
+                    
+                    <th>{{detalle.VaciadoOK || 0}}</th>
+                    <th>{{detalle.VaciadoREC || 0}}</th>
                 </tr>
         </table>
 
@@ -79,7 +92,7 @@
         <!--########################### Ciclos Ok Varel ########################-->
         <modal title="" visible="showModal">
             <h3>{{title}}</h3>
-            <div style="height:300px;" >
+            <div style="height: 500px;">
                 <div class="form-group">
                     <label for="producto">No Parte: </label> <label style="color:green;" >{{programacionAceros[index].Producto}}</label>
                     <input type="hidden" class="form-control" ng-model="idproducto" value="idproducto" id="Producto" />
@@ -87,40 +100,42 @@
 
                 <div style="float:left; width:30%;">
                     <label>Parte del Molde</label><br>
-                    <div ng-repeat="parte in partes">
+                    <div ng-repeat="parte in partes" ng-show="((IdSubProceso == 6 || IdSubProceso == 7))">
                         <label ng-if="IdAreaAct != '2' || parte.Identificador != 'Cabeza'">
-                            <?php if($IdAreaAct != 2): ?><input checked="true" type="radio" name="Parte" ng-model="IdParteMolde" ng-click="selectParte(parte.IdParteMolde);"  ng-value="parte.IdParteMolde"> {{parte.Identificador}} <?php endif ?>
+                            <?php if($IdAreaAct != 2): ?>
+                                <input checked="true" type="checkbox" name="Parte" ng-model="IdParteMolde" ng-click="selectParte(parte.IdParteMolde);"  ng-value="parte.IdParteMolde"> {{parte.Identificador}} <?php endif ?>
                             <?php if($IdAreaAct == 2): ?>
                                 <!--<input type="checkbox" name="Parte" ng-model="IdParteMolde" ng-click="selectParte(parte.IdParteMolde);" ng-checked="true" ng-value="parte.IdParteMolde" id="{{parte.Identificador}}1" > {{parte.Identificador}} -->
                                 <label ng-if="parte.Num <= programacionAceros[index].CiclosMolde " >{{parte.Num }}<input type="checkbox" ng-checked="true"  name="Parte" ng-model="IdParteMolde" ng-click="selectParte(parte.IdParteMolde);" ng-value="parte.IdParteMolde" id="{{parte.Identificador}}" > {{parte.Identificador}} </label>
                             <?php endif ?>
                         </label><br/>
                     </div>
-
                 </div>
 
                 <div style="float:left; width:60%;" >
                     <label style="text-align:center;" ng-show="programacionAceros[index].SerieInicio" >
                         Serie: 
-                        <label ng-show="((IdSubProceso == 6 || IdSubProceso == 7)) && programacionAceros[index].IdParteMolde == IdParteMolde"style="color:green; font-size:15pt;">{{programacionAceros[index].SerieInicio}}</label>
-                        <select ng-show="((IdSubProceso != 6 || IdSubProceso != 7)) && programacionAceros[index].IdParteMolde == IdParteMolde" ng-model="indexSerie" ng-change="selectSerie(indexSerie)">
+                        <label ng-show="((IdSubProceso == 6 && programacionAceros[index].IdParteMolde == IdParteMolde)) || IdSubProceso == 7"style="color:green; font-size:15pt;">{{programacionAceros[index].SerieInicio}}</label>
+
+                        <select ng-show="((IdSubProceso != 6 && IdSubProceso != 7))" ng-model="indexSerie" ng-change="selectSerie(indexSerie)">
                             <option ng-value="$index" ng-repeat="serie in listadoseries">{{serie.Serie}}</option>
                         </select>
                     </label>
-                    <div class="checkbox">
+
+                    <div ng-show="IdSubProceso != 9" class="checkbox">
                         <label>
                             <input id="Reposicion" name="Reposicion" ng-model="Reposicion" ng-change="selectReposicion(Reposicion);" type="checkbox" ng-true-value="'SI'" ng-false-value="'NO'"> Reposici&oacute;n
                         </label>
                     </div>
                     <fieldset id="btn-ciclo">
-                        <button class="btn btn-success" data-dismiss="modal" ng-click="saveDetalleAcero();" class="btn btn-default">Agreagar</button>
+                        <button class="btn btn-success" data-dismiss="modal" ng-click="saveDetalleAcero(index,estatus);" class="btn btn-default">Agreagar</button>
                     </fieldset>
                 </div>
             </div>
         </modal>
         <!--########################### Ciclos Rechazos Varel y Especial ########################-->
         <modal title="Ciclos Rechazados" visible="showModalR">
-            <div style="height:400px; " >
+            <div style="height: 500px;">
                 <div class="form-group">
                     <label for="producto">No Parte: </label> <label style="" >{{programacionAceros[index].Producto}}</label>
                     <input type="hidden" class="form-control" ng-model="idproducto" value="{{programacionAceros[index].IdProducto}}" id="Producto" />
@@ -151,7 +166,7 @@
                     <!--<button class="btn btn-success" data-dismiss="modal" ng-click="saveDetalleAcero(index, idproducto, serieproducto.SerieInicio, serieproducto.IdConfiguracionSerie, serieproducto.IdParteMolde,'R',FechaMoldeo,'',6,series.Serie,Descripcion);" class="btn btn-default">Agreagar</button>-->
                     <fieldset id="btn-rechazoV" >
                         <!--<button class="btn btn-danger" id="" data-dismiss="modal" ng-click="saveDetalleAcero(index, idproducto, serieproducto.SerieInicio, serieproducto.IdConfiguracionSerie, serieproducto.IdParteMolde,area,FechaMoldeo2,'NO',6,series.Serie,Descripcion);" class="btn btn-default">Rechazar</button>-->
-                        <button class="btn btn-danger" id="" data-dismiss="modal" ng-click="saveDetalleAcero();" class="btn btn-default">Rechazar</button>
+                        <button class="btn btn-danger" id="" data-dismiss="modal" ng-click="saveDetalleAcero(index,estatus);" class="btn btn-default">Rechazar</button>
                     </fieldset>
                 </div>
             </div>

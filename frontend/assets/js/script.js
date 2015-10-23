@@ -19,3 +19,10 @@ function getkey (event,objeto) {
 		};
 	};
 }
+
+function sumarDias(dias,fecha){
+    dias = fecha == undefined ? dias : dias + 1;
+    fecha = fecha == undefined ? new Date() : new Date(fecha);
+    fecha.setTime(fecha.getTime()+parseInt(dias*24*60*60*1000));
+    return fecha.getFullYear() + "-" + (fecha.getMonth() < 10 ? '0' : '') + (fecha.getMonth()) + "-" + (fecha.getDate() < 10 ? '0' : '') + (fecha.getDate());
+}

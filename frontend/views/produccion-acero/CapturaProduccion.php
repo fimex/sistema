@@ -65,7 +65,6 @@ if ($IdAreaAct == 1){
     IdSubProceso = <?=$IdSubProceso?>;
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
     loadMaquinas();
-    loadPartesMolde();
     loadMaterial();
     <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
         loadEmpleados(['1-2']);
@@ -82,7 +81,7 @@ if ($IdAreaAct == 1){
     <?php endif;?>
     <div id="encabezado" class="row">
         <div class="col-md-10">
-            <form class="form-horizontal" name="editableForm" onaftersave="saveProduccion()">
+            <form class="form-horizontal" id="formuploadajax" enctype="multipart/form-data" name="editableForm" onaftersave="saveProduccion()">
                 <div class="row">
                     <div class="col-md-2">
                         <div class="input-group">

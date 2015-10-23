@@ -208,7 +208,7 @@ class Programacion extends \yii\db\ActiveRecord
         ]);
         $command = \Yii::$app->db;
         //echo "SELECT * FROM f_GetProgramacionesDiaria($IdArea,$IdProceso,$params,$turno)";
-        $result =$command->createCommand("SELECT * FROM f_GetProgramacionesDiaria($IdArea,$IdProceso,$params,$turno)")->queryAll();
+        $result =$command->createCommand("SELECT * FROM f_GetProgramacionesDiaria($IdArea,$IdProceso,$params,$turno) Order By Posicion ASC, Producto ASC")->queryAll();
 
         
         if(count($result)!=0){

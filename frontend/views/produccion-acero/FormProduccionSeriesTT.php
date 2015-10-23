@@ -16,14 +16,14 @@
                 <tr ng-repeat="serie in series">
           
                     <td>
-						<select aria-describedby="series" class="form-control"  ng-model="serie.serie" required>
-							<option ng-selected="serie.serie == lserie.serie" value="{{serie.serie}}" ng-repeat="serie in lseries"> {{serie.serie}}   </option>
+						<select aria-describedby="series" class="form-control"  ng-model="serie.IdSerie" required>
+							<option ng-selected="serie.IdSerie == s.IdSerie" value="{{s.IdSerie}}" ng-repeat="s in lseries"> {{s.Serie}}   </option>
 						</select>
 					</td>
                     <td><input class="form-control"  ng-model-options="{updateOn: 'blur'}" ng-model="serie.status" value="{{rechazo.Rechazadas}}" diasabled /></th>
                  <td>
 					 <button class="btn btn-success btn-xs" ng-click="saveSeriett($index)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
-                     <button ng-if="detalle.IdProduccionDetalle != null" class="btn btn-danger btn-xs" ng-click="deleteDetalle($index)"><span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                     <button  class="btn btn-danger btn-xs" ng-click="deleteseriesDetalle($index)"><span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span></button>
 				 </td>
                 </tr>
             </tbody>

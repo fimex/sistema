@@ -402,26 +402,44 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         });
     };
     
+    /*$scope.Eficiencia = function(index){
+        if($scope.detalles[index].IdProduccion == $scope.produccion.IdProduccion){
+            var fechaIni = new Date($scope.produccion.Fecha+" "+$scope.detalles[index].Inicio);
+            minutos = parseInt(($scope.detalles[index].Programadas / $scope.detalles[index].CiclosMolde)/60);
+            FechaEstimada = new Date(fechaIni.getFullYear(),fechaIni.getMonth(),fechaIni.getDate(),fechaIni.getHours(),fechaIni.getMinutes()+minutos,fechaIni.getSeconds());
+            $scope.detalles[index].TiempoEstimado = FechaEstimada;
+            console.log(FechaEstimada);
+            
+            $scope.detalles[index].CalculoEficiencia = 0;
+            console.log($scope.detalles[index]);
+            $timeout(function() {$scope.Eficiencia(index);}, 10000);
+        }
+    };*/
+    
     $scope.addDetalle = function(){
         if($scope.produccion.IdProduccion != null){
-            $scope.inserted = {
-                Fecha: $scope.produccion.Fecha,
-                IdProduccionDetalle: null,
-                IdProduccion:$scope.produccion.IdProduccion,
-                IdProgramacion:$scope.programaciones[$scope.indexProgramacion].IdProgramacion,
-                IdProductos:$scope.programaciones[$scope.indexProgramacion].IdProductoCasting,
-                Inicio:null,
-                Fin:null,
-                CiclosMolde: $scope.programaciones[$scope.indexProgramacion].CiclosMolde,
-                PiezasMolde: $scope.programaciones[$scope.indexProgramacion].PiezasMolde,
-                Programadas: $scope.programaciones[$scope.indexProgramacion].Programadas,
-                Hechas: 0,
-                Rechazadas: 0,
-                Eficiencia: $scope.produccion.IdMaquina.Eficiencia,
-                idProductos: {Identificacion:$scope.programaciones[$scope.indexProgramacion].ProductoCasting}
-            };
-            $scope.detalles.push($scope.inserted);
-            $scope.saveDetalle($scope.detalles.length - 1);
+            if($scope.produccion.IdTurno == $scope.programaciones[$scope.indexProgramacion].IdTurno){
+                $scope.inserted = {
+                    Fecha: $scope.produccion.Fecha,
+                    IdProduccionDetalle: null,
+                    IdProduccion:$scope.produccion.IdProduccion,
+                    IdProgramacion:$scope.programaciones[$scope.indexProgramacion].IdProgramacion,
+                    IdProductos:$scope.programaciones[$scope.indexProgramacion].IdProductoCasting,
+                    Inicio:null,
+                    Fin:null,
+                    CiclosMolde: $scope.programaciones[$scope.indexProgramacion].CiclosMolde,
+                    PiezasMolde: $scope.programaciones[$scope.indexProgramacion].PiezasMolde,
+                    Programadas: $scope.programaciones[$scope.indexProgramacion].Programadas,
+                    Hechas: 0,
+                    Rechazadas: 0,
+                    Eficiencia: $scope.produccion.IdMaquina.Eficiencia,
+                    idProductos: {Identificacion:$scope.programaciones[$scope.indexProgramacion].ProductoCasting}
+                };
+                $scope.detalles.push($scope.inserted);
+                $scope.saveDetalle($scope.detalles.length - 1);
+            }else{
+                return $scope.addAlert('Solo puede agregar produccion del mismo Turno','warning');
+            }
         }
     };
     

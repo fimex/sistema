@@ -388,22 +388,25 @@ class ReportesController extends Controller
             $model = Producciones::find()
                 ->where("IdSubProceso = $IdSubProceso".$where)
                 ->with('materialesVaciados')
+                ->with('idTurno')
                 ->asArray()->all();
             $fechas = '';
 
             foreach ($model as &$mod){
                 $fecha = date('Y-m-d',strtotime($mod['Fecha']));
-                $fechas[$fecha]['Fecha'] = $fecha;
+                $turno = $mod['idTurno']['Descripcion'];
+                $fechas["$fecha-$turno"]['Fecha'] = $fecha;
+                $fechas["$fecha-$turno"]['Turno'] = $turno;
                 foreach ($mod['materialesVaciados'] as &$material){
                     //var_dump($material);
                     $IdMaterial = $material['IdMaterial'];
                     
-                    if(!isset($fechas[$fecha]['Material'][$IdMaterial])){
-                        $fechas[$fecha]['Material'][$IdMaterial]['Cantidad'] = 0;
+                    if(!isset($fechas["$fecha-$turno"]['Material'][$IdMaterial])){
+                        $fechas["$fecha-$turno"]['Material'][$IdMaterial]['Cantidad'] = 0;
                     }
-                    $fechas[$fecha]['Material'][$IdMaterial]['Identificador'] = $material['idMaterial']['Identificador'];
-                    $fechas[$fecha]['Material'][$IdMaterial]['Material'] = $material['idMaterial']['Descripcion'];
-                    $fechas[$fecha]['Material'][$IdMaterial]['Cantidad'] += $material['Cantidad'];
+                    $fechas["$fecha-$turno"]['Material'][$IdMaterial]['Identificador'] = $material['idMaterial']['Identificador'];
+                    $fechas["$fecha-$turno"]['Material'][$IdMaterial]['Material'] = $material['idMaterial']['Descripcion'];
+                    $fechas["$fecha-$turno"]['Material'][$IdMaterial]['Cantidad'] += $material['Cantidad'];
                 }
             }
             return json_encode($fechas);

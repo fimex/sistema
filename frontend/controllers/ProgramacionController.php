@@ -3,11 +3,12 @@
 namespace frontend\controllers;
 
 use Yii;
+use frontend\models\programacion\VPedidos;
 use frontend\models\programacion\Programacion;
 use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\programacion\ProgramacionesDia;
 use frontend\models\programacion\Pedidos;
-use common\models\catalogos\PedProg;
+use frontend\models\programacion\PedProg;
 use common\models\catalogos\VMaquinas;
 use common\models\catalogos\Turnos;
 use common\models\catalogos\SubProcesos;
@@ -211,37 +212,37 @@ class ProgramacionController extends Controller
         
        // echo "-------------------------------------------------------------------" 1749;
        
-            if(Yii::$app->user->identity->role == 1){
-                foreach($dataProvider->allModels as &$dat){
-                    $dat['Programadas']*=1;
-                    $dat['Programadas1']*=1;
-                    $dat['Programadas2']*=1;
-                    $dat['Programadas3']*=1;
-                    $dat['Programadas4']*=1;
-                    $dat['Programadas5']*=1;
-                    $dat['Programadas6']*=1;
-                    $dat['MoldesHora']*=1;
-                    $dat['TotalProgramado']*=1;
-                    $dat['Hechas']*=1;
-                    if($area == 3){
-                        $dat['Maquina1'] = $dat['Maquina1'] == null ? 1700 : ($dat['Maquina1']*1);
-                        $dat['Maquina2'] = $dat['Maquina2'] == null ? 1700 : ($dat['Maquina2']*1);
-                        $dat['Maquina3'] = $dat['Maquina3'] == null ? 1700 : ($dat['Maquina3']*1);
-                        $dat['Maquina4'] = $dat['Maquina4'] == null ? 1700 : ($dat['Maquina4']*1);
-                        $dat['Maquina5'] = $dat['Maquina5'] == null ? 1700 : ($dat['Maquina5']*1);
-                        $dat['Maquina6'] = $dat['Maquina6'] == null ? 1700 : ($dat['Maquina6']*1);
-                        $dat['Maquina7'] = $dat['Maquina7'] == null ? 1700 : ($dat['Maquina7']*1);
-                    }else{
-                        $dat['Maquina1'] = $dat['Maquina1'] == null ? 1755 : ($dat['Maquina1']*1);
-                        $dat['Maquina2'] = $dat['Maquina2'] == null ? 1755 : ($dat['Maquina2']*1);
-                        $dat['Maquina3'] = $dat['Maquina3'] == null ? 1755 : ($dat['Maquina3']*1);
-                        $dat['Maquina4'] = $dat['Maquina4'] == null ? 1755 : ($dat['Maquina4']*1);
-                        $dat['Maquina5'] = $dat['Maquina5'] == null ? 1755 : ($dat['Maquina5']*1);
-                        $dat['Maquina6'] = $dat['Maquina6'] == null ? 1755 : ($dat['Maquina6']*1);
-                        $dat['Maquina7'] = $dat['Maquina7'] == null ? 1755 : ($dat['Maquina7']*1);
-                    }
+        if(Yii::$app->user->identity->role == 1){
+            foreach($dataProvider->allModels as &$dat){
+                $dat['Programadas']*=1;
+                $dat['Programadas1']*=1;
+                $dat['Programadas2']*=1;
+                $dat['Programadas3']*=1;
+                $dat['Programadas4']*=1;
+                $dat['Programadas5']*=1;
+                $dat['Programadas6']*=1;
+                $dat['MoldesHora']*=1;
+                $dat['TotalProgramado']*=1;
+                $dat['Hechas']*=1;
+                if($area == 3){
+                    $dat['Maquina1'] = $dat['Maquina1'] == null ? 1700 : ($dat['Maquina1']*1);
+                    $dat['Maquina2'] = $dat['Maquina2'] == null ? 1700 : ($dat['Maquina2']*1);
+                    $dat['Maquina3'] = $dat['Maquina3'] == null ? 1700 : ($dat['Maquina3']*1);
+                    $dat['Maquina4'] = $dat['Maquina4'] == null ? 1700 : ($dat['Maquina4']*1);
+                    $dat['Maquina5'] = $dat['Maquina5'] == null ? 1700 : ($dat['Maquina5']*1);
+                    $dat['Maquina6'] = $dat['Maquina6'] == null ? 1700 : ($dat['Maquina6']*1);
+                    $dat['Maquina7'] = $dat['Maquina7'] == null ? 1700 : ($dat['Maquina7']*1);
+                }else{
+                    $dat['Maquina1'] = $dat['Maquina1'] == null ? 1755 : ($dat['Maquina1']*1);
+                    $dat['Maquina2'] = $dat['Maquina2'] == null ? 1755 : ($dat['Maquina2']*1);
+                    $dat['Maquina3'] = $dat['Maquina3'] == null ? 1755 : ($dat['Maquina3']*1);
+                    $dat['Maquina4'] = $dat['Maquina4'] == null ? 1755 : ($dat['Maquina4']*1);
+                    $dat['Maquina5'] = $dat['Maquina5'] == null ? 1755 : ($dat['Maquina5']*1);
+                    $dat['Maquina6'] = $dat['Maquina6'] == null ? 1755 : ($dat['Maquina6']*1);
+                    $dat['Maquina7'] = $dat['Maquina7'] == null ? 1755 : ($dat['Maquina7']*1);
                 }
             }
+        }
         
         //var_dump($dataProvider);
         //exit;
@@ -706,5 +707,272 @@ class ProgramacionController extends Controller
         //var_dump($dat);exit;
         $datosSemana1 = $dat['IdProceso'].",".$dat['IdProgramacion'].",".$dat['Anio'].",".$dat['Semana'].",".$dat['Prioridad'].",".$dat['Programadas'];
         return $model->setProgramacionSemanal($datosSemana1);
+    }
+    
+    public function getProgramacion($pedido,$where = [],$agrupado=0){
+        $Programacion = $agrupado ==1 ? Programaciones::find()->where($where)->one() : null;
+        
+        
+        if(is_null($Programacion)){
+            $Programacion = new Programaciones();
+
+            $Programacion->load([
+                'Programaciones' => [
+                    'IdPedido' => $pedido->IdPedido,
+                    'IdArea' => $pedido->IdPresentacion,
+                    'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
+                    'IdProgramacionEstatus' => 1,
+                    'IdProducto' => $where['IdProducto'],
+                    'Programadas' => 0
+                ]
+            ]);
+            $Programacion->save();
+            
+            $Programacion = Programaciones::find()->where($where)->one();
+        }
+        return $Programacion;
+    }
+    
+    public function actionSavePedidos(){
+        $area = $_REQUEST['IdArea'];
+        $data = json_decode($_REQUEST['pedidos'],true);
+        $area = Areas::findOne("$area");
+        
+        foreach($data as $dat){
+            
+            $Pedido = VPedidos::find()->where(['IdPedido' => $dat])->one();
+            $Producto = Productos::findOne($Pedido->IdProducto);
+
+            if ($Producto->Ensamble == 1) { //Explosion de valvulas
+                $Producto = $this->ExplosionValvulas($Producto['IdProducto']);
+            }else{
+                $Productos = Productos::find()->where(['IdProducto' => $Pedido->IdProducto])->asArray()->all();
+            }
+            
+            foreach($Productos as $Prod){
+                $producto = Productos::findOne($Prod['IdProducto']);
+                $where = [
+                    'IdProgramacionEstatus' => 1,
+                    'IdProducto' => $producto->IdProducto
+                ];
+                
+                $Programacion = $this->getProgramacion($Pedido,$where,$area['AgruparPedidos']);
+                
+                $PedProg = PedProg::find()->where([
+                    'IdPedido' => $Pedido->IdPedido,
+                    'IdProgramacion' => $Programacion->IdProgramacion
+                ])->one();
+                
+                if(is_null($PedProg)){
+                    $PedProg = new PedProg();
+                    
+                    $PedProg->load([
+                        'PedProg' => [
+                            'IdPedido' => $Pedido->IdPedido,
+                            'IdProgramacion' => $Programacion->IdProgramacion,
+                            'OrdenCompra' => $Pedido->OrdenCompra,
+                            'FechaMovimiento' => date('Y-m-d G:i:s')
+                        ]
+                    ]);
+                    $PedProg->save();
+                }
+                
+                $this->ProgramarAlmas($Programacion, $producto);
+            }
+        }
+    }
+
+    public function ProgramarAlmas($Programacion,$producto){
+        $almas = Almas::find()->where(['IdProducto' => $producto->IdProducto])->asArray()->all();
+        $almas = count($almas) == 0 ? Almas::find()->where(['IdProducto' => $producto->IdProductoCasting])->asArray()->all() : $almas;
+
+        if(count($almas)>0){
+            foreach($almas as $alma){
+                $almasProgramadas = ProgramacionesAlma::find()->where([
+                    'IdProgramacion' => $Programacion->IdProgramacion,
+                    'IdAlmas' => $alma['IdAlma'],
+
+                ])->one();
+
+                if(is_null($almasProgramadas)){
+                    $almasProgramadas = new ProgramacionesAlma();
+                    $almas_prog['ProgramacionesAlma'] = [
+                        'IdProgramacion' => $Programacion->IdProgramacion,
+                        'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
+                        'IdProgramacionEstatus' => 1,
+                        'IdAlmas' => $alma['IdAlma'],
+                        'Programadas' => 0,
+                        'Hechas' => 0,
+                    ];
+                    $almasProgramadas->load($almas_prog);
+                    $almasProgramadas->save();
+                }
+            }
+        }
+    }
+    
+    public function ExplosionValvulas($producto){
+        
+        $explosion = ProductosEnsamble::find()->select('')->where('IdProducto = '.$producto['IdProducto'].' AND SeCompra = 0')->asArray()->all();
+
+        foreach ($explosion as $key){
+            $prod = Productos::findOne($key['IdComponente']);
+            $prod->Ensamble = 2;
+            $prod->update();
+        }
+        
+        return $explosion;
+    }
+
+
+
+    public function actionUpdatePedidos(){
+      
+        $model = new Programaciones();
+        $data = $_GET;
+
+        foreach ($data as $datos) {
+
+            $programaciones = $model->findOne($datos);
+            $programaciones->IdProgramacionEstatus = 2003;
+            $programaciones->FechaCerrado = date('Y-m-d');
+            $programaciones->HoraCerrado = date('H:i:s');
+            $programaciones->CerradoPor = Yii::$app->user->identity->username;
+            $programaciones->CerradoPC = gethostname();
+            $programaciones->update();
+        }
+    }
+
+    public function SetPedProgramacion($pedido,$producto,$Area){
+        
+        $Programacion = Programaciones::find()->where([
+            'IdProgramacionEstatus' => 1,
+            'IdProducto' => $pedido->IdProducto
+        ])->asArray()->one();
+        
+        $PedProg = PedProg::find()->where([
+            'IdPedido' => $pedido->IdPedido,
+            //'IdProgramacion' => $pedido->IdPedido
+        ])->asArray()->one();
+        //var_dump($Programacion);
+        var_dump($PedProg);
+        exit;
+        if(count($PedProg) == 0){
+        
+            $area = Areas::findOne("$Area");
+
+            if($area['AgruparPedidos'] == 1){
+                //var_dump($Acumulado);
+                if(isset($Acumulado['IdProgramacion'])){
+
+                    $programacion = Programaciones::findOne($Acumulado['IdProgramacion']);
+                    $programacion->Cantidad = $Acumulado['Cantidad'] + $pedidoDat->Cantidad;
+                    $programacion->update();
+
+                    $command->createCommand()->insert('PedProg', [
+                        'IdPedido' => $pedidoDat->IdPedido,
+                        'IdProgramacion' => $Acumulado['IdProgramacion'],
+                        'OrdenCompra' => $pedidoDat->OrdenCompra,
+                        'FechaMovimiento' => date('Y-m-d H:i:s'),
+                    ])->execute();
+                }else{
+                    $model = PedProg::findOne($pedidoDat->IdPedido);
+
+                    if($model == null){
+                        $model = new Programaciones();
+                        $model->IdPedido = $pedidoDat->IdPedido;
+                        $model->IdArea = $area['IdArea'];
+                        $model->IdEmpleado = Yii::$app->user->identity->IdEmpleado;
+                        $model->IdProgramacionEstatus = 1;
+                        $model->IdProducto = $pedidoDat->IdProducto;
+                        $model->Programadas = 0;
+                        $model->Hechas = 0;
+                        $model->Cantidad = intval(strval($pedidoDat->Cantidad*1));
+                        $model->save();
+
+                        $casting = $producto->IdProductoCasting == 1 ? $producto->IdProducto : $producto->IdProductoCasting;
+                        $almas = Almas::find()->where("IdProducto = $casting")->asArray()->one();
+
+                        if(count($almas)>0){
+                            $programacion = Programacion::find()->where("IdPedido = " . $model->IdPedido . "")->asArray()->all();
+                            $producto = Productos::findOne(Productos::findOne($model->IdProducto)->IdProducto);
+                            foreach($almas as $alma){
+                                $almasProgramadas = new ProgramacionesAlma();
+                                $almas_prog['ProgramacionesAlma'] = [
+                                    'IdProgramacion' => $programacion['IdProgramacion'],
+                                    'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
+                                    'IdProgramacionEstatus' => 1,
+                                    'IdAlmas' => $alma['IdAlma'],
+                                    'Programadas' => 0,
+                                    'Hechas' => 0,
+                                ];
+                                $almasProgramadas->load($almas_prog);
+                                $almasProgramadas->save();
+                            }
+                        }
+
+                        //$lastId_La = Programaciones::find()->limit('1')->orderBy('IdProgramacion desc')->one();
+                        $lastId_La = Programaciones::find()->where('IdProducto = '.$pedidoDat->IdProducto.'AND IdPedido = '.$pedidoDat->IdPedido.'')->one();
+
+                        $command->createCommand()->insert('PedProg', [
+                            'IdPedido' => $pedidoDat->IdPedido,
+                            'IdProgramacion' => $lastId_La['IdProgramacion'],
+                            'OrdenCompra' => $pedidoDat->OrdenCompra,
+                            'FechaMovimiento' => date('Y-m-d H:i:s'),
+                        ])->execute();
+                    }
+                }
+            }else{
+                $model = PedProg::findOne($pedidoDat->IdPedido);
+                $ped = Pedidos::find()->where('IdProducto = '.$pedidoDat->IdProducto.'AND IdPedido = '.$pedidoDat->IdPedido.'')->asArray()->all();
+
+                //exit();
+                if(isset($ped[0]['EstatusEnsamble']) == null){
+                    $model = new Programaciones();
+                    $model->IdPedido= $pedidoDat->IdPedido;
+                    $model->IdArea = $area['IdArea'];
+                    $model->IdEmpleado = Yii::$app->user->identity->IdEmpleado;
+                    $model->IdProgramacionEstatus = 1;
+                    $model->IdProducto = $pedidoDat->IdProducto;
+                    $model->Programadas = 0;
+                    $model->Hechas = 0;
+                    $model->Cantidad = intval(strval($pedidoDat->Cantidad*1));
+                    $model->save();
+                    //echo "COmponenete si ".$pedidoDat->IdProducto;
+
+                    $casting = $producto->IdProductoCasting == 1 ? $producto->IdProducto : $producto->IdProductoCasting;
+                    $almas = Almas::find()->where("IdProducto = $casting")->asArray()->all();
+
+                    if(count($almas)>0){
+                        $programacion = Programacion::find()->where("IdPedido = " . $model->IdPedido . "")->asArray()->all();
+                        $producto = Productos::findOne(Productos::findOne($model->IdProducto)->IdProducto);
+
+                        foreach($almas as $alma){
+                            $almasProgramadas = new ProgramacionesAlma();
+                            $almas_prog['ProgramacionesAlma'] = [
+                                'IdProgramacion' => $programacion[0]['IdProgramacion'],
+                                'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
+                                'IdProgramacionEstatus' => 1,
+                                'IdAlmas' => $alma['IdAlma'],
+                                'Programadas' => 0,
+                                'Hechas' => 0,
+                            ];
+                            $almasProgramadas->load($almas_prog);
+                            $almasProgramadas->save();
+                        }
+                    }
+
+                    $lastId_La = Programaciones::find()->where('IdProducto = '.$pedidoDat->IdProducto.'AND IdPedido = '.$pedidoDat->IdPedido.'')->one();
+                    //var_dump($lastId_La);
+                    //var_dump($pedidoDat);exit;
+                    $command->createCommand()->insert('PedProg', [
+                        'IdPedido' => $pedidoDat->IdPedido,
+                        'IdProgramacion' => $lastId_La->IdProgramacion,
+                        'OrdenCompra' => $pedidoDat->OrdenCompra,
+                        'FechaMovimiento' => date('Y-m-d H:i:s'),
+                    ])->execute();
+                }
+            }
+        }
     }
 }

@@ -19,7 +19,7 @@ app.controller('vaciado_cont', function ($scope, $http){
 
 });*/
 
-app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $log, $timeout, $window){
+app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $log, $timeout, $window, $upload){
     $scope.Fecha = new Date();
     $scope.IdProduccion = null;
     $scope.IdProduccionEstatus = 1;
@@ -35,21 +35,29 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.tiempos = [];
     $scope.lenghtPartes = [];
 	$scope.mostrar = true;
+    $scope.uploadResult = [];
 	
 	$scope.countProduccionesAceros = function(IdSubProceso,IdArea){
-        return $http.get('count-produccion',{params:{IdSubProceso:IdSubProceso, IdArea:IdArea,}}).success(function(data){
-            $scope.producciones = [];
-            $scope.producciones = data;
-            if ($scope.producciones == '') {
-                $scope.producciones.IdProduccion = '';
-            };
-           
-            if($scope.index == undefined){
-                $scope.index = $scope.producciones.length - 1;
-                $scope.loadProduccion();
-				// $scope.loadDetallett();
-            }
+
+        return $http.get('count-produccion',{params:{
+                IdSubProceso:IdSubProceso, 
+                IdArea:IdArea
+            }}).success(function(data){
+                $scope.producciones = [];
+                $scope.producciones = data;
+
+                if ($scope.producciones == '') {
+                    $scope.producciones.IdProduccion = '';
+                };
+               
+                if($scope.index === undefined){
+                   
+                    $scope.index = $scope.producciones.length - 1;
+                    $scope.loadProduccion();
+    				//$scope.loadDetallett();   
+                }
         });
+        
     };
 
     $scope.Prev = function(){
@@ -91,26 +99,44 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     }
 	
     $scope.loadProduccion = function(){
-		if ($scope.IdSubProceso == 18 || $scope.IdSubProceso == 14 ){
-			idproduccion =  $scope.producciones[$scope.index].IdProduccion;
-			}
+        if ($scope.IdSubProceso == 18 || $scope.IdSubProceso == 14 ){
+            idproduccion =  $scope.producciones[$scope.index].IdProduccion;
+        }
+
         return $http.get('data-produccion',{params:{
             IdArea: $scope.IdArea,
             Fecha: $scope.Fecha,
-            IdMaquina: $scope.IdMaquina,
-            IdEmpleado: $scope.IdEmpleado,
+            //IdMaquina: $scope.IdMaquina,
+            //IdEmpleado: $scope.IdEmpleado,
             IdTurno: $scope.IdTurno,
-			IdProduccion: idproduccion
-        }}).success(function(data){
+            IdProduccion: $scope.producciones[$scope.index].IdProduccion
+        }}).success(function(data){       
             $scope.IdProduccion = data.IdProduccion;
             $scope.IdProduccionEstatus = data.IdProduccionEstatus;
             $scope.produccion = data;
-			$scope.loadDetallett();
+            $scope.loadDetallett();
+            $scope.loadProbetas();
         }).error(function(){
             
         });
     };
-    
+
+    $scope.UpdateProduccion = function(){
+        console.log($scope.produccion);
+
+        return $http.get('data-produccion',{params:{
+            IdArea: $scope.produccion,
+        }}).success(function(data){       
+            $scope.IdProduccion = data.IdProduccion;
+            $scope.IdProduccionEstatus = data.IdProduccionEstatus;
+            $scope.produccion = data;
+            $scope.loadDetallett();
+            $scope.loadProbetas();
+        }).error(function(){
+            
+        });
+    };
+
     $scope.loadProgramaciones = function(){
 
         $scope.programacionAceros = [];
@@ -121,6 +147,16 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
            
         }}).success(function(data){
             $scope.programacionAceros = data;
+            /************************************************************************
+            Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
+            ************************************************************************/
+            for(x=0;x<$scope.programacionAceros.length;x++){
+                if($scope.programacionAceros[x].CiclosMolde == 1)
+                    $scope.programacionAceros[x].OKMoldeo = $scope.programacionAceros[x].OKMoldeo/2;
+            }
+            /************************************************************************
+            Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
+            ************************************************************************/
             $scope.loadProduccion();
             $scope.getDatos();
             $scope.loadPartesMolde();
@@ -153,14 +189,14 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     
     $scope.ModelMoldeo = function(index,tipo){
         $scope.index = index;
+        $scope.estatus = tipo;
         ciclo = $scope.programacionAceros[index].CiclosMolde;
         if($scope.programacionAceros[index].LlevaSerie == 'Si' && ($scope.IdSubProceso != 6 || $scope.IdSubProceso != 7)){
-            $scope.MostrarSeries($scope.programacionAceros[index].IdProducto,6);
+            $scope.MostrarSeries($scope.programacionAceros[index].IdProducto,6); 
         }
         
-        $scope.estatus = tipo;
         $scope.title = $scope.estatus == 3 ? 'Ciclos Rechazados' : 'Captura de Ciclos';
-        $scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : $scope.showModal = !$scope.showModal;
+        $scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
     };
     
     $scope.MostrarSeries = function(IdProducto,IdSubProceso){
@@ -174,22 +210,26 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
 
     
-    $scope.saveDetalleAcero = function(){
+    $scope.saveDetalleAcero = function(index,tipo){
+        $scope.index = index;
+        $scope.estatus = tipo;
         if ($scope.IdSubProceso != 9) {
             if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
                 return alert("Debes de ingresar la fecha del moldeo");
             };
         };
         i = 1;
+        console.log('hola');
         $scope.IdParteMolde = [];
-        if($scope.programacionAceros[$scope.index].CiclosMolde < 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
-            $scope.IdParteMolde = 16;
+        if($scope.programacionAceros[$scope.index].CiclosMolde <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
+            $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMolde == (.5) ? [1,2,1,2] : [1,2];
         }else{           
             $('input[name="Parte"]:checked').each(function() {
                 $scope.IdParteMolde[i] = $(this).val();
                 i++;
             });
         }
+        console.log($scope.estatus);
 
         if($scope.estatus == 3){
             $scope.IdParteMolde = [];
@@ -207,7 +247,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.programacionAceros[$scope.index].FechaMoldeo2 = $scope.FechaMoldeo2;
         $scope.programacionAceros[$scope.index].IdEstatus = $scope.Reposicion == 'SI' ? 2 : $scope.estatus;
         $scope.programacionAceros[$scope.index].Linea = $scope.Linea || null;
-        $scope.programacionAceros[$scope.index].MoldesPorCiclo = CiclosMolde;
         $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.IdParteMolde;
         $scope.programacionAceros[$scope.index].SerieInicio = $scope.indexSerie == null ? $scope.programacionAceros[$scope.index].SerieInicio : $scope.listadoseries[$scope.indexSerie].Serie;
         
@@ -233,11 +272,14 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             window.name = 'NG_ENABLE_DEBUG_INFO!' + window.name;
 
         });
+
+        console.log(2);
     };
 
 
     $scope.getSerie = function(IdParte,IdProducto,estatus,IdSubProceso){
         $scope.ModelParte = IdParte;
+        if (IdSubProceso == 9) { IdSubProceso = 6; };
         return $http.get('get-serie',{params:{
         IdParteMolde:IdParte,
         IdProducto:IdProducto
@@ -387,6 +429,13 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     *                        OBTENER DATOS
     *******************************************************************/
 
+    $scope.loadEmpleados = function(depto){
+        return $http.get('/fimex/angular/empleados',{params:{depto:depto}})
+        .success(function(data){
+            $scope.empleados = data;
+        });
+    };
+    
     $scope.openTiemposMuertos = function(){
       
     };
@@ -447,9 +496,11 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         });
     };	
 	
-	$scope.SaveTratamientos = function(index){
+	$scope.SaveTratamientos = function(){
+        var imagen = document.getElementById('imagen').value;
+        console.log($scope.produccion.idTratamientosTermicos.NoTT);
+        //console.log($scope.tratamientos[index]);
         
-       // console.log($scope.tratamientos[index]);
         return $http.get('save-tratamientos', {params:{
            Produccion:{
                 IdArea: $scope.IdArea,
@@ -458,39 +509,110 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 IdCentroTrabajo:$scope.IdCentroTrabajo,
                 IdSubProceso: $scope.IdSubProceso,
                 IdTurno: $scope.IdTurno,
-                //IdProduccion:  $scope.producciones[$scope.index].IdProduccion,
 				Observaciones: $scope.Observaciones,
 				IdMaquina: $scope.IdMaquina,
             },
             tratamientos:{
-				HoraInicio: $scope.HoraInicio,
-				HoraFin: $scope.HoraFin,
-				NoTT:$scope.NoTT,
+				HoraInicio: $scope.produccion.idTratamientosTermicos.HoraInicio,
+				HoraFin: $scope.produccion.idTratamientosTermicos.HoraFin,
+				NoTT:$scope.produccion.idTratamientosTermicos.NoTT,
 				NoGraficaTT: null,
-				KWIni: $scope.KWIni,
-				KWFin: $scope.KWFin,
-				Temp1: $scope.Temp1, 
-				Temp2: $scope.Temp2,
-				TempEntradaDeposito: $scope.TempEntradaDeposito,
-				TempSalidaDeposito: $scope.TempSalidaDeposito,
-				TempPzDepositoIn: $scope.TempPzDepositoIn,
-				TempPzDepositoOut: $scope.TempPzDepositoOut,
-				IdTipoEnfriamiento: $scope.IdTipoEnfriamiento,
-				TiempoEnfriamiento: $scope.TiempoEnfriamiento,
-				TotalKG: $scope.TotalKG,
-				Ecofuel: $scope.Ecofuel,
-				ArchivoGrafica: $scope.ArchivoGrafica,
-				idOperador: $scope.idOperador,
-				idAprobo: $scope.idAprobo,
-				idSuperviso: $scope.idSuperviso
-				
+				KWIni: $scope.produccion.idTratamientosTermicos.KWIni,
+				KWFin: $scope.produccion.idTratamientosTermicos.KWFin,
+				Temp1: $scope.produccion.idTratamientosTermicos.Temp1, 
+				Temp2: $scope.produccion.idTratamientosTermicos.Temp2,
+				TempEntradaDeposito: $scope.produccion.idTratamientosTermicos.TempEntradaDeposito,
+				TempSalidaDeposito: $scope.produccion.idTratamientosTermicos.TempSalidaDeposito,
+				TempPzDepositoIn: $scope.produccion.idTratamientosTermicos.TempPzDepositoIn,
+				TempPzDepositoOut: $scope.produccion.idTratamientosTermicos.TempPzDepositoOut,
+				IdTipoEnfriamiento: $scope.produccion.idTratamientosTermicos.IdTipoEnfriamiento,
+				TiempoEnfriamiento: $scope.produccion.idTratamientosTermicos.TiempoEnfriamiento,
+				TotalKG: $scope.produccion.idTratamientosTermicos.TotalKG,
+				Ecofuel: $scope.produccion.idTratamientosTermicos.Ecofuel,
+				idOperador: $scope.produccion.idTratamientosTermicos.idOperador,
+				idAprobo: $scope.produccion.idTratamientosTermicos.idAprobo,
+				idSuperviso: $scope.produccion.idTratamientosTermicos.idSuperviso,
+                Imagen: imagen
 			}
         }}).success(function(data){
 			$scope.produccion = data;
             $scope.index = undefined;
             $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea);
-           alert('Guardado');
+            //alert('Guardado');
         })
+    };
+
+    $scope.updateTratamientos = function (){
+        var imagen = document.getElementById('imagen').value;
+        return $http.get('save-tratamientos',{params:{
+             Produccion:{
+                IdArea: $scope.IdArea,
+                Fecha: $scope.Fecha, 
+                IdEmpleado: $scope.IdEmpleado,
+                IdCentroTrabajo:$scope.IdCentroTrabajo,
+                IdSubProceso: $scope.IdSubProceso,
+                IdTurno: $scope.IdTurno,
+                Observaciones: $scope.Observaciones,
+                IdMaquina: $scope.IdMaquina,
+                IdProduccion: $scope.produccion.IdProduccion
+            },
+            tratamientos:{
+                IdTratamientoTermico: $scope.produccion.idTratamientosTermicos.IdTratamientoTermico,
+                HoraInicio: $scope.produccion.idTratamientosTermicos.HoraInicio,
+                HoraFin: $scope.produccion.idTratamientosTermicos.HoraFin,
+                NoTT:$scope.produccion.idTratamientosTermicos.NoTT,
+                NoGraficaTT: null,
+                KWIni: $scope.produccion.idTratamientosTermicos.KWIni,
+                KWFin: $scope.produccion.idTratamientosTermicos.KWFin,
+                Temp1: $scope.produccion.idTratamientosTermicos.Temp1, 
+                Temp2: $scope.produccion.idTratamientosTermicos.Temp2,
+                TempEntradaDeposito: $scope.produccion.idTratamientosTermicos.TempEntradaDeposito,
+                TempSalidaDeposito: $scope.produccion.idTratamientosTermicos.TempSalidaDeposito,
+                TempPzDepositoIn: $scope.produccion.idTratamientosTermicos.TempPzDepositoIn,
+                TempPzDepositoOut: $scope.produccion.idTratamientosTermicos.TempPzDepositoOut,
+                IdTipoEnfriamiento: $scope.produccion.idTratamientosTermicos.IdTipoEnfriamiento,
+                TiempoEnfriamiento: $scope.produccion.idTratamientosTermicos.TiempoEnfriamiento,
+                TotalKG: $scope.produccion.idTratamientosTermicos.TotalKG,
+                Ecofuel: $scope.produccion.idTratamientosTermicos.Ecofuel,
+                idOperador: $scope.produccion.idTratamientosTermicos.idOperador.IdEmpleado,
+                idAprobo: $scope.produccion.idTratamientosTermicos.idAprobo.IdEmpleado,
+                idSuperviso: $scope.produccion.idTratamientosTermicos.idSuperviso.IdEmpleado,
+                Imagen: imagen
+            }
+
+        }}).success(function(data){
+            $scope.produccion = data;
+            $scope.index = undefined;
+            $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea);
+        });
+    };
+
+    $scope.addTratamientos = function(){
+        var defaultForm = {
+            HoraInicio: null,
+            HoraFin: null,
+            NoTT: null,
+            NoGraficaTT: null,
+            KWIni: null,
+            KWFin: null,
+            Temp1: null,
+            Temp2: null,
+            TempEntradaDeposito: null,
+            TempSalidaDeposito: null,
+            TempPzDepositoIn: null,
+            TempPzDepositoOut: null,
+            IdTipoEnfriamiento: null,
+            TiempoEnfriamiento: null,
+            TotalKG: null,
+            Ecofuel: null,
+            idOperador: null,
+            idAprobo: null,
+            idSuperviso: null,
+          };
+
+        $scope.editableForm.$setPristine();
+        $scope.produccion.idTratamientosTermicos = defaultForm;
+      
     };
 	//*************tratamientos DETALLE*********************************
 	
@@ -562,15 +684,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.saveDetalle = function(index){
+        console.log($scope.detalles[index].IdProgramacion);
         if($scope.controlClick('detalles',index)){
-            $scope.detalles[index].IdProgramacion  =$scope.IdProgramacion;
+            if($scope.detalles[index].IdProgramacion == null)
+                $scope.detalles[index].IdProgramacion  =$scope.IdProgramacion;
+				
             return $http.get('save-detallett',{
-				params:$scope.detalles[index]
-				}).success(
-				function(data) {
-					$scope.detalles[index] = data;
-					 $scope.loadDetallett();
-					});
+                params:$scope.detalles[index]
+            }).success(function(data) {
+                $scope.detalles[index] = data;
+                $scope.loadDetallett();
+            });
         }
     };
 	
@@ -612,6 +736,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.indexDetalle = index;
         $scope.detalles[$scope.indexDetalle].Class = "info";
 		$scope.loadSeriestt();
+		$scope.loadLseries($scope.detalles[$scope.indexDetalle].IdProductos);
         //$scope.loadRechazos();
         //$scope.loadAlmasRechazos();
     };
@@ -620,14 +745,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.series = [];
 	$scope.lseries = [];
 	
-		$scope.loadSeriestt = function(){
-        return $http.get('lseries',{params:{
-                IdProduto: $scope.detalles[$scope.indexDetalle].IdProduccionDetalle
-            }}).success(function(data){
-            $scope.series = [];
-            $scope.series = data;
-        });
-    };
+		
 	
 	$scope.loadSeriestt = function(){
         return $http.get('seriestt',{params:{
@@ -642,15 +760,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.addSerie= function(){
 		
 		if ($scope.indexDetalle == null){
-			alert("selecciones una linea de Carga tratamientos"); return; 
+			alert("selecciones un prooducto "); return; 
 			
 		}
 		
         if($scope.produccion.IdProduccion != null){
             $scope.inserted = {
+				IdSeriesDetalle: null,
                 Comentarios: null,
-                IdProduccionDetalle: null,
-                IdSerie:null
+                IdProduccionDetalle: $scope.detalles[$scope.indexDetalle].IdProduccionDetalle,
+                IdSerie:null,
+				Estatus:'B',
             };
             $scope.series.push($scope.inserted);
 			$scope.loadLseries($scope.detalles[$scope.indexDetalle].IdProductos);
@@ -672,8 +792,9 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	
 	 $scope.saveSeriett = function(index){
         if($scope.controlClick('series',index)){
-            $scope.detalles[index].IdProgramacion  =$scope.IdProgramacion;
-            return $http.get('save-seriestt',{
+		 
+            //$scope.detalles[index].IdProgramacion  =$scope.IdProgramacion;
+            return $http.get('saveseriestt',{
 				params:$scope.series[index]
 				}).success(
 				function(data) {
@@ -683,11 +804,27 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }
     };
 	
-    $scope.loadProbetas = function(prueba){
-        return $http.get('probetas',{params:{
-            Tipo:prueba
+	$scope.deleteseriesDetalle = function(index){
+        if($scope.confirm()){
+            var dat = $scope.series[index];
+            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('deleteseriestt',{params:dat}).success(function(data) {
+                //$scope.loadDetalle();
+               $scope.loadSeriestt();
+            }).error(function(){
+            return $scope.addAlert('Error al intentar guardar la captura de producto','danger');
+        });
+        }
+    };
+	//probetas ******************************************************+
+    $scope.probetadetalles = [];
+	$scope.loadProbetas = function(){
+        //console.log($scope.produccion.IdProduccion+ ' 22');
+        return $http.get('probetastt',{params:{
+              IdProduccion: $scope.produccion.IdProduccion
         }}).success(function(data){
-            $scope.probetas = data;
+			 $scope.probetadetalles =[];
+            $scope.probetadetalles = data;
         });
     };
 	
@@ -702,11 +839,12 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.addProbetaDetalle = function(){
       
             $scope.inserted = {
+				idTratamientoProbetas: null,
                 IdLance: null,
 				idProduccion: $scope.produccion.IdProduccion,
                 Cantidad:null,
                };
-			$scope.probetadetalles = [];
+			
             $scope.probetadetalles.push($scope.inserted);
           
         
@@ -720,12 +858,46 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 				}).success(
 				function(data) {
 					$scope.probetadetalles[index] = data;
-					 $scope.loadDetallett();
+					 $scope.loadProbetas();
 					});
         }
     };
-
 	
+	$scope.deleteProbetaDetalle = function(index){
+        if($scope.confirm()){
+            var dat = $scope.probetadetalles[index];
+            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('deleteprobetasdetallett',{params:dat}).success(function(data) {
+                //$scope.loadDetalle();
+               $scope.loadProbetas();
+            }).error(function(){
+            return $scope.addAlert('Error al intentar guardar la captura de producto','danger');
+        });
+        }
+    };
+	
+	//subir imagentt
+	$scope.onFileSelect = function(files) {
+    //$files: an array of files selected, each file has name, size, and type.
+
+		for (var i = 0; i < files.length; i++) {
+		    var file = files;
+            console.log(file);
+            $upload.upload({
+                url: 'uploadtt',
+                file: file,
+                progress: function(e){}
+            }).then(function(response) {
+            // file is uploaded successfully
+                $timeout(function() {
+                    $scope.uploadResult.push(response.data);
+                    console.log($scope.uploadResult);
+                });
+            });
+		}
+	}
+	
+
 });// ****************************************** FIN controlador ProduccionAceros
 
 app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $log, $timeout){
@@ -898,7 +1070,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
     }
 
     $scope.loadEmpleados = function(depto){
-        return $http.get('empleados',{params:{depto:depto}})
+        return $http.get('/fimex/angular/empleados',{params:{depto:depto}})
         .success(function(data){
             $scope.empleados = data;
         });
@@ -946,7 +1118,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
                 Dia: $scope.mostrar ? $scope.produccion.Fecha : $scope.Fecha,
                 IdArea: $scope.produccion.IdArea,
                 IdSubProceso: $scope.produccion.IdSubProceso,
-                IdMaquina: $scope.produccion.IdMaquina,
+                IdMaquina: $scope.produccion.IdMaquina
         }})
         .success(function(data){
             $scope.detalles[index]=data;
@@ -959,10 +1131,9 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         });
     };
 	
-	$soope.addProduccion = function(){
-		
-		produccion = null;
-	}
+    $scope.addProduccion = function(){
+            produccion = null;
+    };
 
 
     /********************************************************************
@@ -1415,7 +1586,6 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
                 Dia: $scope.mostrar ? $scope.produccion.Fecha : $scope.Fecha,
                 IdArea: $scope.produccion.IdArea,
                 IdSubProceso: $scope.produccion.IdSubProceso,
-                IdMaquina: $scope.produccion.IdMaquina,
             }}).success(function(data) {
             $scope.programaciones = [];
             $scope.programaciones = data;

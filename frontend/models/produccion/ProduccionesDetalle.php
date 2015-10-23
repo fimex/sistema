@@ -18,9 +18,10 @@ use frontend\models\produccion\TiemposMuerto;
  * @property integer $CiclosMolde
  * @property integer $PiezasMolde
  * @property integer $Programadas
- * @property integer $Hechas
- * @property integer $Rechazadas
+ * @property string $Hechas
+ * @property string $Rechazadas
  * @property string $Eficiencia
+ * @property string $FechaMoldeo
  *
  * @property SeriesDetalles[] $seriesDetalles
  * @property Productos $idProductos
@@ -47,9 +48,11 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccion', 'IdProgramacion', 'IdProductos', 'Eficiencia'], 'required'],
-            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas', 'Hechas', 'Rechazadas'], 'integer'],
+            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas'], 'integer'],
             [['Inicio', 'Fin'], 'safe'],
-            [['Eficiencia'], 'number']
+			[['FechaMoldeo'], 'string'],
+            [['Eficiencia','Hechas','Rechazadas'], 'number']
+            
         ];
     }
 

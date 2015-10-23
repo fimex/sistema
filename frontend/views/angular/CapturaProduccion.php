@@ -1,4 +1,4 @@
-
+﻿
 <?php
 /* @var $this yii\web\View */
 use yii\helpers\Html;
@@ -85,14 +85,14 @@ $this->title = $title;
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
 <div class="container-fluid" ng-controller="Produccion" ng-init="
-    Fecha = '<?=date('Y-m-d G:i:s');?>';
+    Fecha = '<?=strtotime(date('G:i:s')) < strtotime('06:00') ? date('Y-m-d', strtotime('-1 day',strtotime(date('Y-m-d')))) : date('Y-m-d');?>';
     IdTurno = 1;
     countProducciones(<?=$IdSubProceso?>,<?=$IdArea?>);
     IdSubProceso = <?=$IdSubProceso?>;
     IdArea = <?=$IdArea?>;
     loadProgramacion(true);
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
-    <?php if($IdSubProceso != 12):?>
+    loadCentros();<?php if($IdSubProceso != 12):?>
         loadMaquinas();
     <?php else:?>
         loadCentros();
@@ -127,7 +127,7 @@ $this->title = $title;
                     <div class="col-md-2">
                         <div class="input-group">
                             <span class="input-group-addon">Fecha:</span>
-                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;loadProgramacion();" ng-model="Fecha" format-date/>
+                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;loadProgramacion();" max="<?=strtotime(date('G:i:s')) < strtotime('06:00') ? date('Y-m-d', strtotime('-1 day',strtotime(date('Y-m-d')))) : date('Y-m-d');?>" ng-model="Fecha" format-date/>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.Fecha}}"/>
                         </div>
                     </div>

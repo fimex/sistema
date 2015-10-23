@@ -1,4 +1,4 @@
-var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable'],function($httpProvider) {
+var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','angularFileUpload'],function($httpProvider) {
   // Use x-www-form-urlencoded Content-Type
   $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
  

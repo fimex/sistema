@@ -50,12 +50,13 @@ $this->title = $title;
     
     #detalle, #rechazo, #TMuerto, #Temperaturas{
         height:280px;
+        overflow: auto;
     }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros" ng-init="
     IdTurno = 1;
     IdSubProceso = <?=$IdSubProceso?>;
-    IdAreaAct = <?= $IdAreaAct?>;
+    IdAreaAct = <?= is_null($IdAreaAct) ? 'null' : $IdAreaAct ?>;
     IdMaquina = <?= $IdAreaAct == 1 ? 1751 : ($IdAreaAct == 2 ? 1610 : 1630) ?>;
     IdArea = <?= $IdArea?>;
     IdEmpleado = <?=$IdEmpleado?>;
@@ -64,6 +65,18 @@ $this->title = $title;
     loadTurnos();
     loadTiempos(); 
     loadFallas();
+    <?php if($IdSubProceso == 6): ?>
+        loadEmpleados('1-2');
+    <?php endif; ?>
+    <?php if($IdSubProceso == 7): ?>
+        loadEmpleados('1-3');
+    <?php endif; ?>
+    <?php if($IdSubProceso == 8): ?>
+        IdMaquina = 1632;
+    <?php endif; ?>
+    <?php if($IdSubProceso == 9 || $IdSubProceso == 8): ?>
+        loadEmpleados(['1-2','1-3']);
+    <?php endif; ?>
 ">
     <h3><?=$title?></h3>
     <div id="encabezado" class="row">
@@ -81,9 +94,15 @@ $this->title = $title;
                         </div>
                         <div class="input-group">
                             <span class="input-group-addon">Turno:</span>
-                            <select ng-disabled="mostrar" id="turnos" aria-describedby="Turnos" ng-change="loadProgramaciones()" class="form-control" ng-model="IdTurno" required>
+                            <select id="turnos" aria-describedby="Turnos" ng-change="loadProgramaciones()" class="form-control" ng-model="IdTurno" required>
                                 <option ng-selected="IdTurno == turno.IdTurno" value="{{turno.IdTurno}}" ng-repeat="turno in turnos">{{turno.IdTurno}} - {{turno.Descripcion}}</option>
                             </select>                    
+                        </div>
+                        <div class="input-group">
+                            <span id="Empleados" class="input-group-addon">Empleado:</span>
+                            <select ng-show="mostrar" aria-describedby="Empleados" class="form-control input-sm" ng-model="IdEmpleado" required>
+                                <option ng-selected="produccion.IdEmpleado == e.IdEmpleado" ng-repeat="e in empleados" ng-value="{{e.IdEmpleado}}">{{e.NombreCompleto}}</option>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-2" >

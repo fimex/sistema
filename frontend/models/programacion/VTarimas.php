@@ -5,15 +5,33 @@ namespace frontend\models\programacion;
 use Yii;
 
 /**
- * This is the model class for table "v_Tarimas".
+ * This is the model class for table "v_tarimas".
  *
  * @property integer $Anio
  * @property integer $Semana
- * @property string $Dia
  * @property integer $IdProgramacionDia
  * @property integer $Loop
  * @property integer $Tarima
  * @property string $Color
+ * @property string $Producto
+ * @property string $visible
+ * @property integer $IdAreaProceso
+ * @property integer $IdCentroTrabajo
+ * @property integer $Maquina
+ * @property integer $IdTurno
+ * @property integer $Programadas
+ * @property integer $IdProgramacionSemana
+ * @property integer $Prioridad
+ * @property integer $ProgramadasSemana
+ * @property string $CiclosMolde
+ * @property string $Aleacion
+ * @property string $PesoAraniaA
+ * @property string $PesoArania
+ * @property integer $TotalProgramado
+ * @property integer $IdTarima
+ * @property string $Dia
+ * @property integer $Posicion
+ * @property string $CiclosMoldeA
  */
 class VTarimas extends \yii\db\ActiveRecord
 {
@@ -22,7 +40,7 @@ class VTarimas extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'v_Tarimas';
+        return 'v_tarimas';
     }
 
     /**
@@ -31,10 +49,11 @@ class VTarimas extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Anio', 'Semana', 'Dia', 'IdProgramacionDia', 'Loop', 'Tarima'], 'required'],
-            [['Anio', 'Semana', 'IdProgramacionDia', 'Loop', 'Tarima'], 'integer'],
-            [['Dia'], 'safe'],
-            [['Color'], 'string']
+            [['Anio', 'Semana', 'IdProgramacionDia', 'Loop', 'Tarima', 'visible', 'IdCentroTrabajo', 'Maquina', 'IdTurno', 'Programadas', 'IdProgramacionSemana', 'PesoAraniaA', 'PesoArania', 'IdTarima', 'Dia'], 'required'],
+            [['Anio', 'Semana', 'IdProgramacionDia', 'Loop', 'Tarima', 'IdAreaProceso', 'IdCentroTrabajo', 'Maquina', 'IdTurno', 'Programadas', 'IdProgramacionSemana', 'Prioridad', 'ProgramadasSemana', 'TotalProgramado', 'IdTarima', 'Posicion'], 'integer'],
+            [['Color', 'Producto', 'visible', 'Aleacion'], 'string'],
+            [['CiclosMolde', 'PesoAraniaA', 'PesoArania', 'CiclosMoldeA'], 'number'],
+            [['Dia'], 'safe']
         ];
     }
 
@@ -46,11 +65,29 @@ class VTarimas extends \yii\db\ActiveRecord
         return [
             'Anio' => 'Anio',
             'Semana' => 'Semana',
-            'Dia' => 'Dia',
             'IdProgramacionDia' => 'Id Programacion Dia',
             'Loop' => 'Loop',
             'Tarima' => 'Tarima',
             'Color' => 'Color',
+            'Producto' => 'Producto',
+            'visible' => 'Visible',
+            'IdAreaProceso' => 'Id Area Proceso',
+            'IdCentroTrabajo' => 'Id Centro Trabajo',
+            'Maquina' => 'Maquina',
+            'IdTurno' => 'Id Turno',
+            'Programadas' => 'Programadas',
+            'IdProgramacionSemana' => 'Id Programacion Semana',
+            'Prioridad' => 'Prioridad',
+            'ProgramadasSemana' => 'Programadas Semana',
+            'CiclosMolde' => 'Ciclos Molde',
+            'Aleacion' => 'Aleacion',
+            'PesoAraniaA' => 'Peso Arania A',
+            'PesoArania' => 'Peso Arania',
+            'TotalProgramado' => 'Total Programado',
+            'IdTarima' => 'Id Tarima',
+            'Dia' => 'Dia',
+            'Posicion' => 'Posicion',
+            'CiclosMoldeA' => 'Ciclos Molde A',
         ];
     }
 }

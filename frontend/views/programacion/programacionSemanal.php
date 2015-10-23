@@ -218,7 +218,7 @@ if($IdArea == 4){
                     <br />
                     <input class="form-control" ng-model="filtro.casting" />
                 </th>
-                <th style="max-width: 200px" rowspan="2">
+                <th style="min-width: 200px" rowspan="2">
                     No Parte<br />
                     <span ng-click="orden('Producto',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Producto',1);"></span>
                     <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Producto',2);"></span>

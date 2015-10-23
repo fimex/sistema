@@ -19,6 +19,7 @@ use yii\helpers\URL;
                 <tr>
                     <th>Pr</th>
                     <th>Producto</th>
+                    <th>Aleacion</th>
                     <th>Prog</th>
                     <th>Mold</th>
                     <th>Vac</th>
@@ -33,6 +34,7 @@ use yii\helpers\URL;
                 >
                     <th>{{programacion.Prioridad}}</th>
                     <th>{{programacion.ProductoCasting}}</th>
+                    <th>{{programacion.Aleacion}}</th>
                     <th>{{programacion.Programadas}}</th>
                     <th>{{programacion.Llenadas}}</th>
                     <th>{{programacion.Vaciadas}}</th>

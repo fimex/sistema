@@ -67,9 +67,7 @@ $this->title = $title;
     <button class="btn btn-primary" ng-click="mostrarPedido = !mostrarPedido;"><span ng-if="!mostrarPedido">Mostrar Pedidos</span><span ng-if="mostrarPedido">Ocultar Pedidos</span></button>
     <?php endif;?>
     <button class="btn btn-primary" ng-model="filtro.orden2" ng-click="filtro.orden2 = filtro.orden2 == '!P-' ? '' : '!P-'"><span ng-if="filtro.orden2 == '!P-'">Mostrar Pruebas</span><span ng-if="filtro.orden2 != '!P-'">Ocultar Pruebas</span></button>
-    <?php if($IdArea == 3){ ?>
-        <button class="btn btn-success" ng-click="cerrarPedido();">Cerrar Pedido</button>
-    <?php } ?>
+    <button class="btn btn-success" ng-click="cerrarPedido();">Cerrar Pedido</button>
     Mostrar Pedidos: <select  ng-model="filtro.Estatus">
         <option value="">Todos</option>
         <option value="Abierto">Abiertos</option>

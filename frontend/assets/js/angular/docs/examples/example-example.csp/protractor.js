@@ -49,8 +49,8 @@ beforeEach(function() {
 // as Safari does not load the page with Protractor's injected scripts,
 // and Firefox webdriver always disables content security policy (#6358)
 if (browser.params.browser !== 'chrome') {
-  return;
-}
+    return;
+};
 
 it('should not report errors when the page is loaded', function() {
   // clear errors so we are not dependent on previous tests

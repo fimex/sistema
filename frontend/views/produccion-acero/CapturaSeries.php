@@ -69,15 +69,15 @@ $this->title = $title;
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="series in ProductosSeries" >
+                    <tr ng-repeat="series in ProductosSeries">
                         <th>{{series.IdConfiguracionSerie}}</th>
                         <th>
-                            <select class="form-control"  ng-init="series.IdProducto" ng-model="series.IdProducto" >
+                            <select class="form-control"  ng-init="series.IdProducto" ng-model="series.IdProducto" ng-disabled="series.IdConfiguracionSerie">
                                 <option ng-selected="series.IdProducto == producto.IdProducto" ng-init="producto.Identificacion" value="{{producto.IdProducto}}" ng-repeat="producto in productos">{{ producto.Identificacion }}</option>
                             </select>
                         </th>
                         <th style="width: 100px;"><input class="form-control" style="width: 100px;" ng-model-options="{updateOn: 'blur'}" ng-model="series.SerieInicio" value="{{series.SerieInicio}}"/>
-                        <input class="form-control" type="hidden" ng-model="producto.Identificacion" value="{{producto.Identificacion}}" >
+                        <input class="form-control" type="hidden" ng-model="producto.Identificacion" value="{{producto.Identificacion}}">
                         </th>
                         <th><button class="btn btn-danger" ng-click="saveSerie($index)">Guargar</button></th>
                     </tr>

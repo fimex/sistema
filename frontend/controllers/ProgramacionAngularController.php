@@ -1726,23 +1726,21 @@ END AS FLOAT)
             $model->setProgramacionDiaria($datosSemana);
             
             if(isset($dat['Tarimas'])){
-                $where = [
-                    'IdProgramacionSemana' => $dat['IdProgramacionSemana'],
-                    'Dia' => $dat['Dia'],
-                    'IdTurno' => $dat['IdTurno']
-                ];
+                
                 $tarimas = json_decode($dat['Tarimas'],true);
-                $ciclosMolde = !isset($dat['CiclosMolde']) || $dat['CiclosMolde'] == 0 ? 1 : $dat['CiclosMolde'];
-                $programacionDia = ProgramacionesDia::find()->where($where)->one();
                 
                 foreach($tarimas as $tarima){
-                    $datosTarima = "$datosSemana,".$tarima['Loop'].",".$tarima['Tarima'].",".(isset($dat['Delete'])?1:0);
+                    $datosTarima = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".(isset($dat['Prioridad']) ? $dat['Prioridad'] : 'NULL').",".$dat['Programadas'].",".$tarima['IdTurno'].",$maquina,$IdCentroTrabajo,".$tarima['Loop'].",".$tarima['Tarima'].",".(isset($dat['Delete'])?1:0);
                     $model->setProgramacionTarima($datosTarima);
                 }
                 
-                $programadas = VTarimas::find()->select('count(IdProgramacionDia) AS Programadas')->where(['IdProgramacionDia' => $programacionDia->IdProgramacionDia])->one();
-                $programacionDia->Programadas = $programadas->Programadas / $ciclosMolde;
-                $programacionDia->update();
+                $programadas = VTarimas::find()->select('IdProgramacionDia,CiclosMoldeA,count(IdProgramacionDia) AS Programadas')->groupBy('IdProgramacionDia,CiclosMoldeA')->where(['Dia' => $dat['Dia']])->all();
+
+                foreach($programadas as $prog){
+                    $programacionDia = ProgramacionesDia::findOne($prog['IdProgramacionDia']);
+                    $programacionDia->Programadas = intval($prog['Programadas'] / $prog['CiclosMoldeA']);
+                    $programacionDia->update();
+                }
             }
             
             $guardado = true;
@@ -1766,20 +1764,18 @@ END AS FLOAT)
                 'dia' => $dia
             ];
             
-            for($x=1;$x<=3;$x++){
-                for($y=0;$y<30;$y++){
-                    $Loops[$key]["Turno$x"][] = [
-                        'Tarima1' => '',
-                        'Tarima2' => '',
-                        'Tarima3' => '',
-                        'Tarima4' => '',
-                        'Tarima5' => '',
-                        'Tarima6' => '',
-                        'Tarima7' => '',
-                        'Tarima8' => '',
-                        'Tarima9' => ''
-                    ];
-                }
+            for($y=0;$y<60;$y++){
+                $Loops[$key]['Loops'][] = [
+                    'Tarima1' => '',
+                    'Tarima2' => '',
+                    'Tarima3' => '',
+                    'Tarima4' => '',
+                    'Tarima5' => '',
+                    'Tarima6' => '',
+                    'Tarima7' => '',
+                    'Tarima8' => '',
+                    'Tarima9' => ''
+                ];
             }
         }
         
@@ -1787,7 +1783,7 @@ END AS FLOAT)
 
         foreach($model as $mod){
             $pos = date('N',strtotime($mod['Dia']))-1;
-            $Loops[$pos]['Turno'.$mod['IdTurno']][$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
+            $Loops[$pos]['Loops'][$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
         }
         //var_dump($model);
         return json_encode($Loops);
@@ -1804,8 +1800,9 @@ END AS FLOAT)
         $model = new Programacion();
         $pedido = new Pedidos();
         
-        $area = Yii::$app->session->get('area');
-        $data = $_REQUEST;
+        $area = $_REQUEST['IdArea'];
+        $data = json_decode($_REQUEST['pedidos'],true);
+        
         $CantidadPT = 0;
         foreach($data as $dat){
             $pedidoDat = $pedido->findOne($dat);
@@ -1847,11 +1844,11 @@ END AS FLOAT)
                         $saldo->EstatusEnsamble = 2;
                         $saldo->update();
 
-                        $this->ExplosionValvulas($pedidoDat,$producto,$area['IdArea'],$SaldoPT);
+                        $this->ExplosionValvulas($pedidoDat,$producto,$area,$SaldoPT);
                     }
                 }
             }else{
-                $this->SetPedProgramacion($pedidoDat,$producto,$area['IdArea']);
+                $this->SetPedProgramacion($pedidoDat,$producto,$area);
             }
         }
         return true;
@@ -1897,22 +1894,22 @@ END AS FLOAT)
 
     public function SetPedProgramacion($pedidoDat,$producto, $Area){
         $command = \Yii::$app->db;
-        $Acumulado = Programaciones::find()->where("IdProgramacionEstatus = 1 AND IdProducto = $pedidoDat->IdProducto")->asArray()->all();
+        $Acumulado = Programaciones::find()->where("IdProgramacionEstatus = 1 AND IdProducto = $pedidoDat->IdProducto")->asArray()->one();
         $area = Areas::findOne("$Area");
 
         //print_r($pedidoDat);
         //exit();
         if($area['AgruparPedidos'] == 1){
             //var_dump($Acumulado);
-            if(isset($Acumulado[0]['IdProgramacion'])){
+            if(isset($Acumulado['IdProgramacion'])){
 
-                $programacion = Programaciones::findOne($Acumulado[0]['IdProgramacion']);
-                $programacion->Cantidad = $Acumulado[0]['Cantidad'] + $pedidoDat->Cantidad;
+                $programacion = Programaciones::findOne($Acumulado['IdProgramacion']);
+                $programacion->Cantidad = $Acumulado['Cantidad'] + $pedidoDat->Cantidad;
                 $programacion->update();
 
                 $command->createCommand()->insert('PedProg', [
                     'IdPedido' => $pedidoDat->IdPedido,
-                    'IdProgramacion' => $Acumulado[0]['IdProgramacion'],
+                    'IdProgramacion' => $Acumulado['IdProgramacion'],
                     'OrdenCompra' => $pedidoDat->OrdenCompra,
                     'FechaMovimiento' => date('Y-m-d H:i:s'),
                 ])->execute();

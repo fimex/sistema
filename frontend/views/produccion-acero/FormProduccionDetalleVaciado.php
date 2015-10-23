@@ -50,37 +50,19 @@
                     <th>{{detalle.Aleacion}}</th>
 
                     <th>
-                        <label ng-if="detalle.LlevaSerie == 'Si'" >
-                            <input ng-disabled="true" type="text" name="Vaciadas" id="Vaciadas" ng-model="detalle.Hechas" ng-value="{{detalle.Hechas}}" >
-                        </label>
-                        <label ng-if="detalle.LlevaSerie != 'Si'" >
-                            <input ng-disabled="false" type="text" name="Vaciadas" id="Vaciadas" ng-model="detalle.Hechas" ng-value="{{detalle.Hechas}}" >
-                        </label>
+                        <input ng-disabled="detalle.LlevaSerie == 'Si'" type="text" name="Vaciadas" id="Vaciadas" ng-model="detalle.Hechas" ng-value="{{detalle.Hechas}}" >
                     </th>  
                     <th>
-                        <label ng-if="detalle.LlevaSerie == 'Si'" >
-                            <button class="btn btn-primary" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,1,1);">Series</button>
-                        </label>
-                        <label ng-if="detalle.LlevaSerie != 'Si'" >
-                            <button class="btn btn-success btn-xs" ng-click="saveDetalleVaciado($index,0,1)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
-                        </label>
+                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,1,1);">Series</button>
+                        <button class="btn btn-success btn-xs" ng-show="detalle.LlevaSerie != 'Si'" ng-click="saveDetalleVaciado($index,0,1)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
                     </th>
                   
                     <th>
-                        <label ng-if="detalle.LlevaSerie == 'Si'" >
-                            <input ng-disabled="true" type="text" name="RechazosV" id="RechazosV" ng-model="detalle.Rechazadas" ng-value="{{detalle.Rechazadas}}" >
-                        </label>
-                        <label ng-if="detalle.LlevaSerie != 'Si'" >
-                            <input ng-disabled="false" type="text" name="RechazosV" id="RechazosV" ng-model="detalle.Rechazadas" ng-value="{{detalle.Rechazadas}}" >
-                        </label>
+                        <input ng-disabled="detalle.LlevaSerie == 'Si'" type="text" name="RechazosV" id="RechazosV" ng-model="detalle.Rechazadas" ng-value="{{detalle.Rechazadas}}" >
                     </th>
                     <th>
-                        <label ng-if="detalle.LlevaSerie == 'Si'" >
-                            <button class="btn btn-primary" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
-                        </label>
-                        <label ng-if="detalle.LlevaSerie != 'Si'" >
-                            <button class="btn btn-success btn-xs" ng-click="saveDetalleVaciado($index,0,0)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
-                        </label>
+                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
+                        <button class="btn btn-success btn-xs" ng-show="detalle.LlevaSerie != 'Si'" ng-click="saveDetalleVaciado($index,0,0)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
                     </th>  
 
                     <th>{{ 1*detalle.Hechas * detalle.PiezasMolde}}</th>

@@ -14,10 +14,10 @@
 				<!--<th></th>-->
 			</tr>
 			<tr ng-repeat="dureza in datosdureza" >
-				<th>   
+				<th> 					
 					<select aria-describedby="Probetas" class="form-control" ng-model="dureza.IdProbeta" required>
                         <option ng-selected="dureza.IdProbeta == probeta.IdProbeta" value="{{probeta.IdProbeta}}" ng-repeat="probeta in probetas">Colada {{probeta.Colada}} - Lance {{probeta.Lance}}</option>
-                    </select>     
+                    </select>
                 </th>
 				<th><input class="form-control" type="text" ng-model-options="{updateOn: 'blur'}" ng-model="dureza.DiametroHuella" value="{{dureza.DiametroHuella | number:0}}"/></th>
 				<th>{{ dureza.Dureza }}</th>

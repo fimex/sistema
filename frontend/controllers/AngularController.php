@@ -287,7 +287,7 @@ class AngularController extends \yii\web\Controller
                     //->leftJoin('ProduccionesDetalle','Producciones.IdProduccion = ProduccionesDetalle.IdProduccion')
                     //->leftJoin('AlmasProduccionDetalles','Producciones.IdProduccion = AlmasProduccionDetalles.IdProduccion')
                     ->where($where)
-                    ->orderBy($_REQUEST['IdSubProceso'] == 10 ? 'Fecha ASC, Lance ASC' : 'Fecha ASC, Producciones.IdProduccion ASC')
+                    ->orderBy($_REQUEST['IdSubProceso'] == 10 ? 'Fecha ASC, Lance ASC' : 'Fecha ASC, Producciones.IdProduccion ASC, IdMaquina Asc')
                     ->with('lances')
                     ->with('idMaquina')
                     ->with('idCentroTrabajo')
@@ -295,8 +295,7 @@ class AngularController extends \yii\web\Controller
                     ->with('idTurno')
                     ->with('produccionesDetalles')
                     ->with('almasProduccionDetalles')
-					->with('idTratamientoTermico')
-                    ->orderBy('Fecha Asc, IdProduccion ASC, IdMaquina Asc')
+                    ->with('idTratamientosTermicos')
                     ->asArray()
                     ->all();
                 
@@ -404,6 +403,8 @@ class AngularController extends \yii\web\Controller
                 $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
                 $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
                 $mod['Class'] = "";
+                $mod['Hechas'] *= 1;
+                $mod['Rechazadas'] *= 1;
             }
             return json_encode($model);
         }
@@ -692,6 +693,9 @@ class AngularController extends \yii\web\Controller
         $_REQUEST['Inicio'] = $_REQUEST['Fecha'] . " " . $_REQUEST['Inicio'];
         $_REQUEST['Fin'] = (strtotime($_REQUEST['Fin']) >= strtotime($_REQUEST['Inicio']) ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
         $_REQUEST['Eficiencia'] = isset($_REQUEST['Eficiencia']) ? $_REQUEST['Eficiencia'] : 1;
+        $_REQUEST['CiclosMolde'] *= 1;
+        $_REQUEST['Hechas'] *= 1;
+        $_REQUEST['Rechazadas'] *= 1;
         //var_dump($_REQUEST);exit;
         $model = new ProduccionesDetalle();
         $IdDetalle = 'ProduccionesDetalle';
@@ -707,10 +711,13 @@ class AngularController extends \yii\web\Controller
                 "$IdDetalle"=>$_REQUEST
             ]);
             $model->update();
+            //var_dump($model);
         }
         $model = ProduccionesDetalle::find()->where(["IdProduccionDetalle" => $model->IdProduccionDetalle])->with('idProductos')->with('idProduccion')->asArray()->one();
         $model['Inicio'] = date('H:i',strtotime($model['Inicio']));
         $model['Fin'] = date('H:i',strtotime($model['Fin']));
+        $model['Hechas'] *= 1;
+        $model['Rechazadas'] *= 1;
         
         $this->actualizaHechas($model);
 

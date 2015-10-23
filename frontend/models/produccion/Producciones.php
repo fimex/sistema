@@ -21,15 +21,17 @@ use frontend\models\tt\TratamientosTermicos;
  * @property string $Fecha
  * @property integer $IdSubProceso
  * @property integer $IdArea
+ * @property string $Observaciones
  * @property integer $IdTurno
  *
  * @property AlmasProduccionDetalle[] $almasProduccionDetalles
- * @property Areas $idArea
+ * @property Areas $idArea 
+ * @property TratamientosTermicos $idTratamientoTermico
  * @property CentrosTrabajo $idCentroTrabajo
  * @property Empleados $idEmpleado
  * @property Maquinas $idMaquina
  * @property Turnos $idTurno
- * @property TratamientosTermicos $TratamientosTermicos
+ * @property TratamientosTermicos $tratamientosTermicos    
  * @property ProduccionesEstatus $idProduccionEstatus
  * @property SubProcesos $idSubProceso
  * @property ProduccionesDetalle[] $produccionesDetalles
@@ -56,7 +58,8 @@ class Producciones extends \yii\db\ActiveRecord
         return [
             [['IdCentroTrabajo', 'IdMaquina', 'IdEmpleado', 'IdProduccionEstatus', 'IdSubProceso', 'IdArea'], 'required'],
             [['IdCentroTrabajo', 'IdMaquina', 'IdEmpleado', 'IdProduccionEstatus', 'IdSubProceso', 'IdArea', 'IdTurno'], 'integer'],
-            [['Fecha'], 'safe']
+            [['Fecha'], 'safe'],
+            [['Observaciones'], 'string']
         ];
     }
 
@@ -74,6 +77,7 @@ class Producciones extends \yii\db\ActiveRecord
             'Fecha' => 'Fecha',
             'IdSubProceso' => 'Id Sub Proceso',
             'IdArea' => 'Id Area',
+            'Observaciones' => 'Observaciones',
             'IdTurno' => 'Dia Noche'
         ];
     }
@@ -99,10 +103,21 @@ class Producciones extends \yii\db\ActiveRecord
 	/**
      * @return \yii\db\ActiveQuery
      */
-	 public function getIdTratamientosTermicos()
+        public function getIdTratamientosTermicos()
     {
-         return $this->hasOne(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion'])
-					 ->with('idAprobo','idOperador','idSuperviso','idTipoEnfriamiento');
+        return $this->hasOne(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion'])
+            ->with('idAprobo')
+            ->with('idOperador')
+            ->with('idSuperviso')
+            ->with('idTipoEnfriamiento');
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTratamientosTermicos()
+    {
+        return $this->hasMany(TratamientosTermicos::className(), ['IdProduccion' => 'IdProduccion']);
     }
 	
     /**
@@ -159,8 +174,7 @@ class Producciones extends \yii\db\ActiveRecord
     public function getProduccionesDetalles()
     {
         return $this->hasMany(ProduccionesDetalle::className(), ['IdProduccion' => 'IdProduccion'])
-            ->with('idProductos')
-            ->with('produccionesDefectos');
+            ->with('idProductos');
     }
 
     /**

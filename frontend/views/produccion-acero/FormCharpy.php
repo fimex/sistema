@@ -31,10 +31,21 @@
 				<!--<th></th>-->
 			</tr>
 			<tr ng-repeat="charpy in datoscharpy" >
-				<th>   
-					<select aria-describedby="Probetas" class="form-control" ng-model="charpy.IdProbeta" required>
-                        <option ng-selected="charpy.IdProbeta == probeta.IdProbeta" value="{{probeta.IdProbeta}}" ng-repeat="probeta in probetas">Colada {{probeta.Colada}} - Lance {{probeta.Lance}}</option>
-                    </select>     
+				<th class="text-center"> 
+					<label ng-if="probetas[$index].IdProbeta == charpy.IdProbeta" > 
+						{{$index}}
+					</label>
+					<label  ng-if="probetas[$index].IdProbeta != null">
+						<select aria-describedby="Probetas" class="form-control" ng-model="charpy.IdProbeta" required>
+	                        <option ng-selected="charpy.IdProbeta == probeta.IdProbeta" value="{{probeta.IdProbeta}}" ng-repeat="probeta in probetas">Colada {{probeta.Colada}} - Lance {{probeta.Lance}}</option>
+	                    </select>  
+
+					</label>
+                    <!--<div ng-switch on="probetas[$index].IdProbeta"> pro {{probetas[$index].IdProbeta}} - {{charpy.IdProbeta}}
+					      <div class="animate-switch" ng-switch-when="settings">Settings Div</div>
+					      <div class="animate-switch" ng-switch-when="home">Home Span</div>
+					      <div class="animate-switch" ng-switch-default>default</div>
+					</div>-->
                 </th>
 				<th class="text-center">{{charpy.Colada}}</th>
 				<th class="text-center">{{charpy.Aleacion}}</th>
