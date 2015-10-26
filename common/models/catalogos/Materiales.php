@@ -12,10 +12,12 @@ use Yii;
  * @property string $Descripcion
  * @property integer $IdSubProceso
  * @property integer $IdArea
+ * @property integer $IdMaterialTipo
  *
- * @property MaterialesVaciado[] $materialesVaciados
- * @property SubProcesos $idSubProceso
+ * @property MaterialesTipo $idMaterialTipo
  * @property Areas $idArea
+ * @property SubProcesos $idSubProceso
+ * @property MaterialesVaciado[] $materialesVaciados
  */
 class Materiales extends \yii\db\ActiveRecord
 {
@@ -33,9 +35,9 @@ class Materiales extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Identificador', 'IdSubProceso', 'IdArea'], 'required'],
             [['Identificador', 'Descripcion'], 'string'],
-            [['IdSubProceso', 'IdArea'], 'integer']
+            [['IdSubProceso', 'IdArea', 'IdMaterialTipo'], 'required'],
+            [['IdSubProceso', 'IdArea', 'IdMaterialTipo'], 'integer']
         ];
     }
 
@@ -50,15 +52,24 @@ class Materiales extends \yii\db\ActiveRecord
             'Descripcion' => 'Descripcion',
             'IdSubProceso' => 'Id Sub Proceso',
             'IdArea' => 'Id Area',
+            'IdMaterialTipo' => 'Id Material Tipo',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getMaterialesVaciados()
+    public function getIdMaterialTipo()
     {
-        return $this->hasMany(MaterialesVaciado::className(), ['IdMaterial' => 'IdMaterial']);
+        return $this->hasOne(MaterialesTipo::className(), ['IdMaterialTipo' => 'IdMaterialTipo']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdArea()
+    {
+        return $this->hasOne(Areas::className(), ['IdArea' => 'IdArea']);
     }
 
     /**
@@ -72,8 +83,8 @@ class Materiales extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdArea()
+    public function getMaterialesVaciados()
     {
-        return $this->hasOne(Areas::className(), ['IdArea' => 'IdArea']);
+        return $this->hasMany(MaterialesVaciado::className(), ['IdMaterial' => 'IdMaterial']);
     }
 }

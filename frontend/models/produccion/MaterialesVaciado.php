@@ -60,7 +60,8 @@ class MaterialesVaciado extends \yii\db\ActiveRecord
     public function getIdMaterial()
     {
         return $this->hasOne(Materiales::className(), ['IdMaterial' => 'IdMaterial'])
-            ->with('idSubProceso');
+            ->with('idSubProceso')
+            ->with('idMaterialTipo');
     }
 
     /**

@@ -62,6 +62,7 @@ if ($IdAreaAct == 1){
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="
     countProduccionesAceros(<?=$IdSubProceso?>,<?=$IdArea?>);
+    IdArea = <?=$IdArea?>;
     IdSubProceso = <?=$IdSubProceso?>;
     <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
     loadMaquinas();
@@ -86,7 +87,7 @@ if ($IdAreaAct == 1){
                     <div class="col-md-2">
                         <div class="input-group">
                             <span class="input-group-addon">Fecha:</span>
-                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;" ng-model="Fecha"/>
+                            <input ng-show="!mostrar" class="form-control input-sm" type="date" ng-change="produccion.Fecha = Fecha;loadProgramacion();" max="<?=strtotime(date('G:i:s')) < strtotime('06:00') ? date('Y-m-d', strtotime('-1 day',strtotime(date('Y-m-d')))) : date('Y-m-d');?>" ng-model="Fecha" format-date/>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.Fecha}}"/>
                         </div>
                     </div>

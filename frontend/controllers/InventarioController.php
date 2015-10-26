@@ -42,6 +42,36 @@ class InventarioController extends \yii\web\Controller
         $model->save();
     }
     
+    function actionGetInventario($data){
+        $model = Inventarios::find()->where($data)->one();
+        if(is_null($model)){
+            $model = new Inventarios();
+            
+            $model->load(['Inventarios' => $data]);
+            $model->IdEstatusInventario = 1;
+            $model->save();
+
+            $model = Inventarios::find()->where($data)->one();
+        }
+        
+        return $model;
+    }
+    
+    function actionGetMovimientos($data){
+        $model = InventarioMovimientos::find()->where($data)->one();
+        if(is_null($model)){
+            $model = new InventarioMovimientos();
+            
+            $model->load(['InventarioMovimientos' => $data]);
+            $model->Tipo = 'E';
+            $model->save();
+
+            $model = Inventarios::find()->where($data)->one();
+        }
+        
+        return $model;
+    }
+    
     function actionSaveMovimiento(){
         $model = new InventarioMovimientos();
         $data = $_REQUEST;
@@ -71,10 +101,6 @@ class InventarioController extends \yii\web\Controller
             $model->update();
         }
         $encabezado->update();
-    }
-    
-    function actionGetMovimientos(){
-        
     }
 
     function actionDesafectar(){

@@ -20,6 +20,7 @@ use frontend\models\produccion\ProduccionesCiclosDetalle;
 use frontend\models\produccion\ProduccionesCiclos;
 use frontend\models\produccion\ProduccionesDetalle;
 use frontend\models\produccion\ProduccionesDefecto;
+use frontend\models\produccion\MaterialesTipo;
 use frontend\models\produccion\Producciones;
 use frontend\models\produccion\CiclosVarel;
 use frontend\models\programacion\ProgramacionesDia;
@@ -65,7 +66,7 @@ use frontend\models\Archivos;
 use yii\web\UploadedFile;
 
 
-class ProduccionAceroController extends \yii\web\Controller
+class ProduccionAceroController extends InventarioController
 {
     protected $areas;
     
@@ -356,11 +357,12 @@ class ProduccionAceroController extends \yii\web\Controller
 
 
     public function actionDetalleVaciado(){
-        $model = VProgramacionDiaAcero::find()->where("Dia = '".$_REQUEST['Dia']."' AND IdArea = ".$_REQUEST['IdArea']." AND IdSubProceso = ".$_REQUEST['IdSubProceso']." ")->asArray()->all();
+        $model = VProgramacionDiaAcero::find()->where("Dia = '".$_REQUEST['Dia']."' AND IdArea = ".$_REQUEST['IdArea']."")->asArray()->all();
 
         foreach ($model as &$value) {
             $detalle = ProduccionesDetalle::find()->where("IdProgramacion = ".$value['IdProgramacion']." AND IdProductos = ".$value['IdProducto']." AND IdProduccion = ".$_REQUEST['IdProduccion']."")->asArray()->one();
 
+            $value['Hechas'] = 0;
             if ($detalle != null) {
                 $value['Hechas'] = $detalle['Hechas'];
                 $value['IdProduccionDetalle'] = $detalle['IdProduccionDetalle'];
@@ -641,13 +643,30 @@ class ProduccionAceroController extends \yii\web\Controller
         $model = Materiales::find()->where([
             'IdSubProceso' => $IdSubProceso,
             'IdArea'=>$this->areas->getCurrent(),
-        ])->asArray()->all();
+        ])
+            ->with('idMaterialTipo')
+            ->asArray()->all();
+        
+        $IdMaterialTipo = '';
+        
+        foreach($model as $mod){
+            if($IdMaterialTipo != $mod['idMaterialTipo']['IdMaterialTipo']){
+                $IdMaterialTipo = $mod['idMaterialTipo']['IdMaterialTipo'];
+                $model2[$IdMaterialTipo] = $mod['idMaterialTipo'];
+            }
+            
+            unset($mod['idMaterialTipo']);
+            $model2[$IdMaterialTipo]['materiales'][] = $mod;
+            //var_dump($mod);
+        }
+        
+        $model = $model2;
         return json_encode($model);
     }
 
     public function actionConsumo(){
         if(isset($_REQUEST['IdProduccion'])){
-            $model = MaterialesVaciado::find()->where($_REQUEST)->asArray()->all();
+            $model = MaterialesVaciado::find()->where($_REQUEST)->with('idMaterial')->asArray()->all();
             foreach ($model as &$mod){
                 $mod['Cantidad'] *=1; 
             }
@@ -835,7 +854,10 @@ class ProduccionAceroController extends \yii\web\Controller
         $model->load($data);
         $model->Observaciones = isset($data['Producciones']['Observaciones']) ? $data['Producciones']['Observaciones'] : "";
 
-        $model1 = Producciones::find()->where("Fecha = '".$data['Producciones']['Fecha']."' AND IdSubProceso = ".$data['Producciones']['IdSubProceso']." AND IdMaquina = ". $data['Producciones']['IdMaquina']." AND IdEmpleado = ".$data['Producciones']['IdEmpleado']." AND IdArea = 2 ")->asArray()->one();
+        $model1 = null;
+        if($data['Producciones']['IdSubProceso'] != 10){
+            $model1 = Producciones::find()->where("Fecha = '".$data['Producciones']['Fecha']."' AND IdSubProceso = ".$data['Producciones']['IdSubProceso']." AND IdMaquina = ". $data['Producciones']['IdMaquina']." AND IdEmpleado = ".$data['Producciones']['IdEmpleado']." AND IdArea = 2 ")->asArray()->one();
+        }
 
         if($model1){
             $datos[0] = $model1;
@@ -849,20 +871,10 @@ class ProduccionAceroController extends \yii\web\Controller
         if($model->IdSubProceso == 10){
 
             $this->SaveLance($data['Producciones'],$model);
-            $materiales = json_decode($this->actionMaterial($model->IdSubProceso));
-
-            foreach($materiales as $material){
-                $consumo = new MaterialesVaciado();
-                $consumo->IdProduccion = $model->IdProduccion;
-                $consumo->IdMaterial = $material->IdMaterial;
-                $consumo->Cantidad = 0;
-                $consumo->save();
-            }
         }
-		
-		if ($model->IdSubProceso == 18) { // tratamientos 
+        
+        if ($model->IdSubProceso == 18) { // tratamientos 
             //echo "entroo";
-			
             $this->SaveTT($data['Tratamientos'],$model->IdProduccion);
         }
         
@@ -870,7 +882,7 @@ class ProduccionAceroController extends \yii\web\Controller
             ->with('lances')
             ->with('idMaquina')
             ->with('idEmpleado')
-            ->with('idTratamientoTermico')
+            ->with('idTratamientosTermicos')
             ->asArray()->one();
         
         $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
@@ -885,7 +897,9 @@ class ProduccionAceroController extends \yii\web\Controller
     }
 
     function getProduccion($datos){
+        
         $model = Producciones::find()->where($datos)->one();
+       
         if(is_null($model)){
            // exit();
             $datos['IdArea'] = !isset($datos['IdArea']) ? $this->areas->getCurrent() : $datos['IdArea'];
@@ -893,13 +907,14 @@ class ProduccionAceroController extends \yii\web\Controller
             $datos['IdEmpleado'] = !isset($datos['IdEmpleado']) ? Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'] : $datos['IdEmpleado'];
             $datos['IdProduccionEstatus'] = !isset($datos['IdProduccionEstatus']) ? 1 : $datos['IdProduccionEstatus'];
             $datos['IdCentroTrabajo'] = !isset($datos['IdCentroTrabajo']) ? VMaquinas::find()->where(['IdMaquina'=>$datos['IdMaquina']])->one()->IdCentroTrabajo : $datos['IdCentroTrabajo'];
-
+           
             $model = new Producciones();
             $model->load(['Producciones' => $datos]);
             $model->Observaciones = isset($datos['Observaciones']) ? $datos['Observaciones'] : "";
             $model->save();
             $model = Producciones::findOne($model->IdProduccion);
         }
+        
         return $model;
     }
     
@@ -919,7 +934,7 @@ class ProduccionAceroController extends \yii\web\Controller
     }
 
     function actionSaveVaciado(){
-        //var_dump($_REQUEST);
+        //var_dump($_REQUEST);exit;
         $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
         $_REQUEST['Inicio'] = isset($_REQUEST['Inicio']) ? $_REQUEST['Inicio'] : '00:00';
         $_REQUEST['Fin'] = isset($_REQUEST['Fin']) ? $_REQUEST['Fin'] : '00:00';
@@ -929,7 +944,11 @@ class ProduccionAceroController extends \yii\web\Controller
         $_REQUEST['Fin'] = ($_REQUEST['Fin'] < $_REQUEST['Inicio'] ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
         $_REQUEST['Eficiencia'] = isset($_REQUEST['Eficiencia']) ? $_REQUEST['Eficiencia'] : 1;
         $_REQUEST['IdProductos'] = $_REQUEST['IdProducto'];
-      
+        
+        $produccion = $this->getProduccion([
+            'IdProduccion' => $_REQUEST['IdProduccion']
+        ]);
+                
         $produccionDetalle = $this->getProduccionDetalle([
             'IdProduccion' => $_REQUEST['IdProduccion'],
             'IdProgramacion' => $_REQUEST['IdProgramacion'],
@@ -945,7 +964,7 @@ class ProduccionAceroController extends \yii\web\Controller
                 if ($modelS != null) {
                     $series = $this->setSeries([
                         'IdProducto' => $_REQUEST['IdProducto'],
-                        'IdSubProceso' => $_REQUEST['IdSubProceso'],
+                        'IdSubProceso' => 10,
                         'Serie' => $modelS['Serie'],
                         'Estatus' => $_REQUEST['op'] == 0 ? 'R' : 'B',
                         'FechaHora' => date('Y-m-d H:i:s'),
@@ -978,6 +997,19 @@ class ProduccionAceroController extends \yii\web\Controller
         $produccionDetalle->update();
         
         $this->actualizaHechas($produccionDetalle,$_REQUEST);
+        
+        /*$encabezado = $this->actionGetInventario([
+            'Fecha' => $produccion['Fecha'],
+            'IdEmpleado' => $produccion['IdEmpleado']
+        ]);
+        
+        $movimiento = $this->actionGetMovimientos([
+            'idInventario' => $encabezado->IdInventario,
+            'IdCentroTrabajo' => 0,
+            'IdProducto' => $produccionDetalle->IdProductos
+        ]);
+        var_dump($encabezado);*/
+        //Generar Transacciones
        
         return json_encode(
             $produccionDetalle->attributes
@@ -1042,6 +1074,7 @@ class ProduccionAceroController extends \yii\web\Controller
         $data['Producciones'] = json_decode($_REQUEST['Produccion'],true);
         $data['ProduccionesDetalleMoldeo'] = json_decode($_REQUEST['ProduccionesDetalleMoldeo'],true);
         $data['Producciones']['Fecha'] = date('Y-m-d',strtotime($data['Producciones']['Fecha']));
+        $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'] *= 1;
         $IdParteMolde = '';
                 
         $comentarios = isset($data['ProduccionesDetalleMoldeo']['Comentarios']) ? $data['ProduccionesDetalleMoldeo']['Comentarios'] : '';
@@ -1051,7 +1084,7 @@ class ProduccionAceroController extends \yii\web\Controller
         $produccion = $this->getProduccion($data['Producciones']);
         
         //OBETENER DETALLE DE PRODUCCION
-        //var_dump($data);exit;
+        var_dump($data);
         $produccionDetalle = $this->getProduccionDetalle([
             'IdProduccion' => $produccion['IdProduccion'],
             'IdProgramacion' => $data['ProduccionesDetalleMoldeo']['IdProgramacion'],
@@ -1066,12 +1099,13 @@ class ProduccionAceroController extends \yii\web\Controller
         $ProduccionesCiclos = new ProduccionesCiclos();
         
         $cicloGenerado = false;
-        
+
         foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
             if ($parte) {
                 
+                $parte *= 1;
                 //GENERAR CICLO
-                if($data['ProduccionesDetalleMoldeo']['CiclosMolde'] > 1 || $cicloGenerado == false){
+                if($data['ProduccionesDetalleMoldeo']['CiclosMoldeA'] > 1 || $cicloGenerado == false){
                     $ProduccionesCiclos = new ProduccionesCiclos();
                     $ProduccionesCiclos->load([
                         'ProduccionesCiclos' => [
@@ -1113,14 +1147,16 @@ class ProduccionAceroController extends \yii\web\Controller
         
         if(($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7 || $produccion['IdSubProceso'] == 17)){
             $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 1")->asArray()->one();
-            $produccionDetalle->Hechas = $totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
+            var_dump($totalOK);
+            var_dump($totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA']);
+            $produccionDetalle->Hechas = $totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'];
 			
         }elseif($data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1){
             $produccionDetalle->Hechas += 1;
         }
       
         $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
-        $produccionDetalle->Rechazadas = $totalREC['Ciclos']  / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
+        $produccionDetalle->Rechazadas = $totalREC['Ciclos']  / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'];
         
         var_dump($produccionDetalle->update());
         
@@ -1197,7 +1233,6 @@ class ProduccionAceroController extends \yii\web\Controller
        // var_dump($datos);
         $programacionDia = VProgramacionDiaAcero::find()->where([
             'IdProgramacion' => $produccion['IdProgramacion'],
-            'IdSubProceso' => $produccion['idProduccion']['IdSubProceso'],
             'Dia' => date('Y-m-d',strtotime($produccion['idProduccion']['Fecha']))
         ])->asArray()->one();
         $diario = $programacionDia;
@@ -1364,6 +1399,8 @@ class ProduccionAceroController extends \yii\web\Controller
             'IdArea' => $this->areas->getCurrent()
         ])->orderBy('Colada Desc')->asArray()->one();
         
+        //var_dump($model);
+        
         $model['Fecha'] = date('Y-m-d',strtotime($model['Fecha']));
         $data['Fecha'] = date('Y-m-d',strtotime($data['Fecha']));
         
@@ -1404,7 +1441,7 @@ class ProduccionAceroController extends \yii\web\Controller
                 'MaterialesVaciado'=>$_REQUEST
             ]);
         }else{
-            $model = MaterialesVaciado::findOne($_REQUEST['IdMaterialVaciado']);
+            $model = MaterialesVaciado::findOne($_REQUEST['IdMaterialVaciado'])->with('idMaterial');
             $model->load([
                 'MaterialesVaciado'=>$_REQUEST
             ]);

@@ -10,6 +10,7 @@
             <thead >
                 <tr>
                     <th>Material</th>
+                    <th>Tipo</th>
                     <th>Cantidad</th>
                     <th></th>
                 </tr>
@@ -17,8 +18,11 @@
             <tbody>
                 <tr ng-repeat="consumo in consumos">
                     <th><select class="form-control" ng-model-options="{updateOn: 'blur'}" ng-disabled="false" ng-model="consumo.IdMaterial">
-                            <option ng-selected="consumo.IdMaterial == material.IdMaterial" ng-repeat="material in materiales" value="{{material.IdMaterial}}">{{material.Descripcion}}</option>
+                            <optgroup ng-repeat="material in materiales" label="{{material.Descripcion}}">
+                                <option ng-repeat="material2 in material.materiales" ng-selected="consumo.IdMaterial == material2.IdMaterial" value="{{material2.IdMaterial}}">{{material2.Descripcion}}</option>
+                            </optgroup>
                     </select></th>
+                    <th>{{consumo.idMaterial.idMaterialTipo.Descripcion}}</th>
                     <th><input class="form-control" type="text" ng-model-options="{updateOn: 'blur'}" ng-model="consumo.Cantidad" value="{{consumo.Cantidad | currency:'':'2'}}"/></th>
                     <th>
                         <button class="btn btn-success btn-xs" ng-click="saveConsumo($index)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>

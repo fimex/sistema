@@ -213,23 +213,24 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.saveDetalleAcero = function(index,tipo){
         $scope.index = index;
         $scope.estatus = tipo;
+        $scope.programacionAceros[$scope.index].SerieInicio = $scope.IdSubProceso == 6 || $scope.IdSubProceso ==7 || $scope.IdSubProceso == 17 ? $scope.programacionAceros[$scope.index].SerieInicio : null;
         if ($scope.IdSubProceso != 9) {
             if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
                 return alert("Debes de ingresar la fecha del moldeo");
             };
         };
-        i = 1;
+        i = 0;
         console.log('hola');
         $scope.IdParteMolde = [];
-        if($scope.programacionAceros[$scope.index].CiclosMolde <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
-            $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMolde == (.5) ? [1,2,1,2] : [1,2];
+        if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
+            $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMoldeA == (.5) ? [1,2,1,2] : [1,2];
         }else{           
             $('input[name="Parte"]:checked').each(function() {
                 $scope.IdParteMolde[i] = $(this).val();
                 i++;
             });
         }
-        console.log($scope.estatus);
+        console.log($scope.IdParteMolde);
 
         if($scope.estatus == 3){
             $scope.IdParteMolde = [];
@@ -238,10 +239,10 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             });
         }
             
-        var CiclosMolde = 0;
+        var CiclosMoldeA = 0;
         switch ($scope.estatus){
-            case 1: CiclosMolde = $scope.Reposicion == 'SI' ? (.5) : (1 / $scope.programacionAceros[$scope.index].CiclosMolde); break;
-            case 3: CiclosMolde = $scope.IdSubProceso == 6 || $scope.IdSubProceso == 7 ? 0 : (-.5); break;
+            case 1: CiclosMoldeA = $scope.Reposicion == 'SI' ? (.5) : (1 / $scope.programacionAceros[$scope.index].CiclosMoldeA); break;
+            case 3: CiclosMoldeA = $scope.IdSubProceso == 6 || $scope.IdSubProceso == 7 ? 0 : (-.5); break;
         }
         
         $scope.programacionAceros[$scope.index].FechaMoldeo2 = $scope.FechaMoldeo2;
@@ -249,11 +250,12 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.programacionAceros[$scope.index].Linea = $scope.Linea || null;
         $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.IdParteMolde;
         $scope.programacionAceros[$scope.index].SerieInicio = $scope.indexSerie == null ? $scope.programacionAceros[$scope.index].SerieInicio : $scope.listadoseries[$scope.indexSerie].Serie;
+        $scope.indexSerie = null;
         
         if ($scope.programacionAceros[$scope.index].FechaMoldeo == null) {
             $scope.programacionAceros[$scope.index].FechaMoldeo = 0;
         };
-        
+        if($scope.programacionAceros[$scope.index].LlevaSerie != 'Si' || ($scope.programacionAceros[$scope.index].LlevaSerie == 'Si' && $scope.programacionAceros[$scope.index].SerieInicio != null))
         return $http.get('save-detalle-acero',{params:{
             Produccion:{
                 IdArea: $scope.IdArea,
@@ -269,13 +271,10 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.listadoSeries = [];
             $scope.indexSerie = null;
             $scope.loadPartesMolde();
+            $scope.showModal = false;
             window.name = 'NG_ENABLE_DEBUG_INFO!' + window.name;
-
         });
-
-        console.log(2);
     };
-
 
     $scope.getSerie = function(IdParte,IdProducto,estatus,IdSubProceso){
         $scope.ModelParte = IdParte;
@@ -698,7 +697,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }
     };
 	
-	$scope.controlClick = function(arr,index){
+    $scope.controlClick = function(arr,index){
         $scope[arr][index]['active'] = $scope[arr][index]['active'] == undefined ? true : $scope[arr][index]['active'];
 
         if($scope[arr][index]['active'] == false){
@@ -1365,7 +1364,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
             Dia: $scope.FechaProduccion,
             IdArea: $scope.produccion.IdArea,
             IdSubProceso: $scope.IdSubProceso,
-            IdProduccion: $scope.produccion.IdProduccion,
+            IdProduccion: $scope.produccion.IdProduccion
         }}).success(function(data) {
             $scope.detalles = [];
             $scope.detalles = data;
@@ -1697,6 +1696,7 @@ app.controller('PruebasDestructivas', function ($scope, $filter, $modal, $http, 
             //console.log($scope.erroresP);
             $scope.index = undefined;
             $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea,$scope.IdMaquina,$scope.IdCentroTrabajo);
+            $scope.loadDetalleVaciado();
         });
     };
 

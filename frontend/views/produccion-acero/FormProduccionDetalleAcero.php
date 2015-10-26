@@ -128,7 +128,8 @@
                         </label>
                     </div>
                     <fieldset id="btn-ciclo">
-                        <button class="btn btn-success" data-dismiss="modal" ng-click="saveDetalleAcero(index,estatus);" class="btn btn-default">Agreagar</button>
+                        <button class="btn btn-success" data-dismiss="modal" ng-show="(IdSubProceso == 6 || IdSubProceso == 7 || IdSubProceso == 17)" ng-click="saveDetalleAcero(index,estatus);" class="btn btn-default">Agreagar</button>
+                        <button class="btn btn-success" data-dismiss="modal" ng-disabled="programacionAceros[index].LlevaSerie == 'Si' && indexSerie == null" ng-show="!(IdSubProceso == 6 || IdSubProceso == 7 || IdSubProceso == 17)" ng-click="indexSerie=null;saveDetalleAcero(index,estatus);" class="btn btn-default">Agreagar</button>
                     </fieldset>
                 </div>
             </div>
@@ -157,7 +158,7 @@
                         <!--<select id="series" aria-describedby="Series" ng-model="serie.Serie" class="form-control input-sm" required>
                             <option value="{{series.Serie}}" name="Serie" ng-repeat="series in listadoseries">{{series.Serie}}</option>
                         </select>-->
-                        <select ng-model="indexSerie" ng-change="selectSerie(indexSerie)"  class="form-control input-sm" >
+                        <select ng-model="indexSerie" ng-change="selectSerie(indexSerie);indexSerie=null;"  class="form-control input-sm" >
                             <option ng-value="$index"  ng-repeat="serie in listadoseries">{{serie.Serie}}</option>
                         </select>
                     </div>

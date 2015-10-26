@@ -1783,6 +1783,8 @@ END AS FLOAT)
 
         foreach($model as $mod){
             $pos = date('N',strtotime($mod['Dia']))-1;
+            $mod['TotalProgramado'] *= 1;
+            $mod['ProgramadasSemana'] *= 1;
             $Loops[$pos]['Loops'][$mod['Loop']]['Tarima'.$mod['Tarima']] = $mod;
         }
         //var_dump($model);

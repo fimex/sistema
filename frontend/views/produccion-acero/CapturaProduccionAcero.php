@@ -57,7 +57,7 @@ $this->title = $title;
     IdTurno = 1;
     IdSubProceso = <?=$IdSubProceso?>;
     IdAreaAct = <?= is_null($IdAreaAct) ? 'null' : $IdAreaAct ?>;
-    IdMaquina = <?= $IdAreaAct == 1 ? 1751 : ($IdAreaAct == 2 ? 1610 : 1630) ?>;
+    IdMaquina = <?= $IdAreaAct == 1 ? 1751 : ($IdAreaAct == 2 ? 1610 : 1755) ?>;
     IdArea = <?= $IdArea?>;
     IdEmpleado = <?=$IdEmpleado?>;
     loadProgramaciones();
