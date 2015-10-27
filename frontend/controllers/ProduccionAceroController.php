@@ -920,6 +920,7 @@ class ProduccionAceroController extends InventarioController
     
     function getProduccionDetalle($datos){
         $model = ProduccionesDetalle::find()->where($datos)->one();
+        var_dump($model);
         if(is_null($model)){
             if(!isset($datos['Eficiencia'])){
                 $datos['Eficiencia'] = 1;
@@ -928,6 +929,7 @@ class ProduccionAceroController extends InventarioController
             $model = new ProduccionesDetalle();
             $model->load(['ProduccionesDetalle' => $datos]);
             $model->save();
+            //var_dump($model);
             $model = ProduccionesDetalle::findOne($model->IdProduccionDetalle);
         }
         return $model;
@@ -1101,7 +1103,7 @@ class ProduccionAceroController extends InventarioController
         $cicloGenerado = false;
 
         foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
-            if ($parte) {
+            if ($parte && $produccion['IdSubProceso'] != 17) {
                 
                 $parte *= 1;
                 //GENERAR CICLO
@@ -1140,31 +1142,37 @@ class ProduccionAceroController extends InventarioController
                     'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
                     'IdParteMolde' => $parte
                 ])->asArray()->one();
-                
                 $IdParteMolde = $model['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde'] ? $model['IdParteMolde'] : $IdParteMolde;
             }
         }
-        
-        if(($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7 || $produccion['IdSubProceso'] == 17)){
-            $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 1")->asArray()->one();
-            var_dump($totalOK);
-            var_dump($totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA']);
-            $produccionDetalle->Hechas = $totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'];
-			
-        }elseif($data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1){
-            $produccionDetalle->Hechas += 1;
+
+
+        if ($produccion['IdSubProceso'] != 17) {
+            if(($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7)){
+                $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 1")->asArray()->one();
+                $produccionDetalle->Hechas = $totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
+            }elseif($data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1){
+                $produccionDetalle->Hechas += 1;
+            }
+          
+            $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
+            $produccionDetalle->Rechazadas = $totalREC['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
+            
+            $produccionDetalle->update();
+
+        }elseif ($produccion['IdSubProceso'] == 17) {
+            $produccionDetalle->Hechas =  $produccionDetalle->Hechas*1; 
+            $produccionDetalle->Rechazadas = $produccionDetalle->Rechazadas*1;
+
+            $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1 ? $produccionDetalle->Hechas =  $produccionDetalle->Hechas + 1 :  $produccionDetalle->Rechazadas = $produccionDetalle->Rechazadas + 1;
+            $produccionDetalle->update();
         }
-      
-        $totalREC = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 3")->asArray()->one();
-        $produccionDetalle->Rechazadas = $totalREC['Ciclos']  / $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'];
-        
-        var_dump($produccionDetalle->update());
         
         //// CONTROL DE SERIES ----->INICIO
         if($data['ProduccionesDetalleMoldeo']['LlevaSerie'] == 'Si' && $IdParteMolde == $data['ProduccionesDetalleMoldeo']['IdParteMolde']){
             $IdConfiguracionSerie = $data['ProduccionesDetalleMoldeo']['IdConfiguracionSerie'];
 
-            if($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7){
+            if($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7 || $produccion['IdSubProceso'] == 17){
                 //echo "entro";
                 $this->updateConfSeries($IdConfiguracionSerie);
             }
@@ -1581,7 +1589,7 @@ class ProduccionAceroController extends InventarioController
         $data['Producciones'] = json_decode($_GET['Produccion'],true);
         $data['tratamientos'] = json_decode($_GET['tratamientos'],true);
 
-        //var_dump($data['tratamientos']); exit();
+        var_dump($data['tratamientos']); exit();
 
         $anio = date('Y');
         $mes = date('m');
@@ -1602,7 +1610,6 @@ class ProduccionAceroController extends InventarioController
             $data['Producciones']['IdProduccion'] *= 1;
             $model = Producciones::findOne( $data['Producciones']['IdProduccion']);
             $update = true;
-           
         }else{
             $model = new Producciones();
         }
@@ -1614,8 +1621,10 @@ class ProduccionAceroController extends InventarioController
             $data['tratamientos']['IdTratamientoTermico'] *= 1;
             $tratamientos = TratamientosTermicos::findOne( $data['tratamientos']['IdTratamientoTermico']);
             $update = true;
-           
         }else{
+            $data['tratamientos']['idAprobo'] = $data['tratamientos']['idAprobo']['IdEmpleado'];
+            $data['tratamientos']['idOperador'] = $data['tratamientos']['idOperador']['IdEmpleado'];
+            $data['tratamientos']['idSuperviso']= $data['tratamientos']['idSuperviso']['IdEmpleado'];
             $tratamientos = new TratamientosTermicos();
         }
 
@@ -1785,36 +1794,28 @@ class ProduccionAceroController extends InventarioController
 		return json_encode($model);
 	 }    
 	
-	 public function actionSaveprobetadetalle(){
-			
-		 $datos = [
+	 public function actionSaveprobetadetalle(){	
+		$datos = [
 			 'IdLance' => $_GET['IdLance'],
 			 'Cantidad' => $_GET['Cantidad'],
 			 'idProduccion' => $_GET['idProduccion'],
-			 'idTratamientosProbetas' => isset($_REQUEST['idTratamientosProbetas']) ?  $_REQUEST['idTratamientosProbetas'] : 0
+			 'idTratamientoProbetas' => isset($_REQUEST['idTratamientoProbetas']) ?  $_REQUEST['idTratamientoProbetas'] : 0
 		];
-		  
-		  
-		$model = TratamientosProbetas::find()->where(
-						['idTratamientosProbetas' =>$datos['idTratamientosProbetas'] ] 
-													)->one();
+		
+		$model = TratamientosProbetas::find()->where(['idTratamientoProbetas' =>$datos['idTratamientoProbetas']])->one();
 		
         if(is_null($model)){
 			echo 1;
             $model = new TratamientosProbetas();
             $model->load(['TratamientosProbetas' => $datos]);
             $model->save();
-            
         }else{
 			echo 2;
 			$model->load(['TratamientosProbetas' => $datos]);
 			$model->update();
 			var_dump($model);
-			
 		}
         //return $model;
-		 
-		 
 	 }
 	 
 	 public function actionDeleteprobetasdetallett(){

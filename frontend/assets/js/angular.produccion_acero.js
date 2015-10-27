@@ -191,8 +191,9 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.index = index;
         $scope.estatus = tipo;
         ciclo = $scope.programacionAceros[index].CiclosMolde;
-        if($scope.programacionAceros[index].LlevaSerie == 'Si' && ($scope.IdSubProceso != 6 || $scope.IdSubProceso != 7)){
-            $scope.MostrarSeries($scope.programacionAceros[index].IdProducto,6); 
+        //if($scope.programacionAceros[index].LlevaSerie == 'Si' && ($scope.IdSubProceso != 6 || $scope.IdSubProceso != 7)){
+        if($scope.programacionAceros[index].LlevaSerie == 'Si'){
+            $scope.MostrarSeries($scope.programacionAceros[index].IdProducto,$scope.IdSubProceso); 
         }
         
         $scope.title = $scope.estatus == 3 ? 'Ciclos Rechazados' : 'Captura de Ciclos';
@@ -200,10 +201,18 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.MostrarSeries = function(IdProducto,IdSubProceso){
+        if(IdSubProceso == 9 && $scope.IdAreaAct == 1)
+            subProceso = 6;
+        else if(IdSubProceso == 9 && $scope.IdAreaAct == 2)
+            subProceso = 7;
+        else
+            subProceso = IdSubProceso;
+
+        
         return $http.get('mostrar-series',{params:{
                 IdProducto: IdProducto,
                 Estatus:'B',
-                IdSubProceso:IdSubProceso
+                IdSubProceso:subProceso
             }}).success(function(data) {
             $scope.listadoseries = data;
         });
@@ -836,20 +845,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
 		
 	$scope.addProbetaDetalle = function(){
-      
-            $scope.inserted = {
-				idTratamientoProbetas: null,
-                IdLance: null,
-				idProduccion: $scope.produccion.IdProduccion,
-                Cantidad:null,
-               };
-			
-            $scope.probetadetalles.push($scope.inserted);
-          
-        
+        $scope.inserted = {
+			idTratamientoProbetas: null,
+            IdLance: null,
+			idProduccion: $scope.produccion.IdProduccion,
+            Cantidad:null,
+           };			
+        $scope.probetadetalles.push($scope.inserted);
     };
 	
-	 $scope.saveProbetaDetalle = function(index){
+	$scope.saveProbetaDetalle = function(index){
+        console.log($scope.probetadetalles[index]);
         if($scope.controlClick('probetadetalles',index)){
             $scope.probetadetalles[index].IdProgramacion  =$scope.IdProgramacion;
             return $http.get('saveprobetadetalle',{
@@ -878,7 +884,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	//subir imagentt
 	$scope.onFileSelect = function(files) {
     //$files: an array of files selected, each file has name, size, and type.
-
 		for (var i = 0; i < files.length; i++) {
 		    var file = files;
             console.log(file);

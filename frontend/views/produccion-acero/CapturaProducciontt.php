@@ -91,7 +91,6 @@ $this->title = $title;
 	loadLances();
     loadMaquinas(produccion.IdCentroTrabajo,<?=$IdSubProceso?>,<?=$IdArea?>);
 ">
-maq {{produccion.IdMaquina}}
     <div id="encabezado" class="row">
         <div class="col-md-10">
             <form class="form-horizontal" name="editableForm" onaftersave="saveProduccion()">
@@ -99,9 +98,7 @@ maq {{produccion.IdMaquina}}
                    <!-- <div  class="col-md-3" style="position:absolute; " >
                         <img ng-src="../frontend/assets/img/{{produccion.idTratamientosTermicos.ArchivoGrafica}}" width="860" height="620" >
                     </div>-->
-
                     <div class="col-md-6" >
-
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-addon">Fecha:</span>
@@ -214,10 +211,10 @@ maq {{produccion.IdMaquina}}
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <span id="enfriamiento" class="input-group-addon">Tipo Enfriamiento:</span>
-                                    <select ng-show="!mostrar" aria-describedby="Turnos" class="form-control input-sm" ng-model="IdTipoEnfriamiento" required>
+                                    <select aria-describedby="Turnos" class="form-control input-sm" ng-model="IdTipoEnfriamiento" required>
                                         <option ng-selected="IdTipoEnfriamiento == e.IdTipoEnfriamiento" ng-repeat="e in enfriamientos" ng-value="{{e.IdTipoEnfriamiento}}">{{e.Descripcion}}</option>
                                     </select>
-                                    <input ng-show="mostrar" class="form-control input-sm" value="{{produccion.idTratamientosTermicos.idTipoEnfriamiento.Descripcion}}"/>
+                                    <!--<input ng-show="mostrar" class="form-control input-sm" value="{{produccion.idTratamientosTermicos.idTipoEnfriamiento.Descripcion}}"/>-->
                                 </div>
                             </div>
                              <br><br>
@@ -303,8 +300,8 @@ maq {{produccion.IdMaquina}}
                     <div class="col-md-6" >
                          <div  class="col-md-6">
                             <span>Seleccione Imagen </span>
-                            <input ng-show="!mostrar" class="file" ng-file-select="onFileSelect($files)" type="file" ng-model="imagen" id="imagen" name="file" >
-                            <input ng-show="mostrar" class="file" type="file" name="file" >
+                            <input ng-show="!mostrar" class="file" ng-file-select="onFileSelect($files)" ng-value="{{produccion.idTratamientosTermicos.ArchivoGrafica}}" type="file" ng-model="imagen" id="imagen" name="file" >
+                            <input ng-show="mostrar" class="file" type="file" name="file" ng-value="{{produccion.idTratamientosTermicos.ArchivoGrafica}}" >
                         </div>
                         <img ng-src="../frontend/assets/img/{{produccion.idTratamientosTermicos.ArchivoGrafica}}" width="760" height="520" >
                     </div>
