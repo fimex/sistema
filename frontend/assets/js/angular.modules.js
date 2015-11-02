@@ -110,11 +110,11 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
                 '</div>' + 
               '</div>' + 
             '</div>',
-            restrict: 'E',
-            transclude: true,
-            replace:true,
-            scope:true,
-            link: function postLink(scope, element, attrs) {
+        restrict: 'E',
+        transclude: true,
+        replace:true,
+        scope:true,
+        link: function postLink(scope, element, attrs) {
             scope.title = attrs.title;
 
             scope.$watch(attrs.visible, function(value){
@@ -135,7 +135,94 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
                 scope.$parent[attrs.visible] = false;
               });
             });
+            console.log(scope);
+            console.log(scope.$parent);
         }
+    };
+}).directive('ordenamiento', function () {
+    return {
+        restrict: 'E',
+        transclude: true,
+        replace:true,
+        scope:{
+            title: '@',
+            element:'@',
+            arreglo:'='
+        },
+        controller: function($scope,$element){
+            $scope.orden = function (accion){
+                if(typeof dato !== 'object'){
+                    var palabra = "+"+$scope.element;
+                    var palabra2 = "-"+$scope.element;
+
+                    switch(accion){
+                        case 1:
+                            palabra = "+"+$scope.element;
+                            palabra2 = "-"+$scope.element;
+                        break;
+                        case 2:
+                            palabra = "-"+$scope.element;
+                            palabra2 = "+"+$scope.element;
+                        break;
+                    }
+
+                   for (x = 0; x <= $scope.arreglo.length; x++) {
+
+                        if (accion === 3 && ($scope.arreglo[x] === palabra || $scope.arreglo[x] === palabra2)) {
+                            $scope.arreglo.splice(x,1);
+                            return;
+                        };
+
+                        if ($scope.arreglo[x] === palabra2) {
+                            $scope.arreglo[x] = palabra;
+                            return;
+                        }else if($scope.arreglo[x] === palabra){return;};
+
+                    }
+                    $scope.arreglo.push(palabra);
+                }
+                console.log($scope.arreglo);
+                console.log($scope.$parent.arr);
+            };
+            
+            $scope.mostrarBoton = function(dato,accion) {
+                var palabra = "+"+dato;
+                var palabra2 = "-"+dato;
+                var mostrar = false;
+
+                switch(accion){
+                    case 1:
+                        palabra = "+"+dato;
+                        palabra2 = "-"+dato;
+                        mostrar = true;
+                    break;
+                    case 2:
+                        palabra = "-"+dato;
+                        palabra2 = "+"+dato;
+                        mostrar = true;
+                    break;
+                }
+
+                for (x = 0; x <= $scope.arreglo.length; x++) {
+                    if (accion === 3 && ($scope.arreglo[x] === palabra || $scope.arreglo[x] === palabra2)) {
+                        mostrar = true;
+                        return mostrar;
+                    };
+                    if ($scope.arreglo[x] === palabra2) {
+                        return mostrar;
+                    }else if($scope.arreglo[x] === palabra){
+                        mostrar = false;
+                        return mostrar;
+                    };
+                }
+                return mostrar;
+            };
+        },
+        template: '<span>{{title}}<br />'+
+            '<span ng-click="orden(1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true"ng-show="mostrarBoton(\'{{element}}\',1);"></span>'+
+            '<span ng-click="orden(2)" class="seleccion glyphicon glyphicon-triangle-top" aria-hidden="true" ng-show="mostrarBoton(\'{{element}}\',2);"></span>'+
+            '<span ng-click="orden(3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton(\'{{element}}\',3);"></span></span>'
+        
     };
 });
 app.config(['$httpProvider', function ($httpProvider) {

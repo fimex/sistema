@@ -26,6 +26,7 @@ if($IdArea == 4){
                     <span ng-click="orden('OrdenCompra',3);" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('OrdenCompra',3);"></span>
                     <br />
                     <input class="form-control" ng-model="filtro.orden" />
+                    <ordenamiento title="Orden" element="OrdenCompra"></ordenamiento>
                 </th>
                 <th ng-show="mostrar" style="min-width: 200px" rowspan="2">
                     Descripcion<br />
@@ -195,43 +196,24 @@ if($IdArea == 4){
             <tr>
                 <th ng-show="mostrar" style="min-width: 30px" rowspan="2"></th>
                 <th ng-show="mostrar" style="max-width: 100px"  rowspan="2">
-                    Cliente<br />
-                    <span ng-click="orden('Marca',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Marca',1);"></span>
-                    <span ng-click="orden('Marca',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Marca',2);"></span>
-                    <span ng-click="orden('Marca',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Marca',3);"></span>
-                    <br />
+                    <ordenamiento title="Cliente" element="Marca" arreglo="arr"></ordenamiento>
                     <input class="form-control" ng-model="filtro.cliente" />
+                    
                 </th>
                 <th ng-show="mostrar" style="min-width: 200px" rowspan="2">
-                    Descripcion<br />
-                    <span ng-click="orden('Descripcion',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Descripcion',1);"></span>
-                    <span ng-click="orden('Descripcion',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Descripcion',2);"></span>
-                    <span ng-click="orden('Descripcion',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Descripcion',3);"></span>
-                    <br />
+                    <ordenamiento title="Descripcion" element="Descripcion" arreglo="arr"></ordenamiento>
                     <input class="form-control" ng-model="filtro.descripcion" />
                 </th>
                 <th ng-show="mostrar" style="min-width: 200px" rowspan="2">
-                    Cod Cliente<br />
-                    <span ng-click="orden('Producto',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Producto',1);"></span>
-                    <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Producto',2);"></span>
-                    <span ng-click="orden('Producto',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Producto',3);"></span>
-                    <br />
+                    <ordenamiento title="Cod Cliente" element="ProductoCasting" arreglo="arr"></ordenamiento>
                     <input class="form-control" ng-model="filtro.casting" />
                 </th>
                 <th style="min-width: 200px" rowspan="2">
-                    No Parte<br />
-                    <span ng-click="orden('Producto',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Producto',1);"></span>
-                    <span ng-click="orden('Producto',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Producto',2);"></span>
-                    <span ng-click="orden('Producto',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Producto',3);"></span>
-                    <br />
+                    <ordenamiento title="No Parte" element="Producto" arreglo="arr"></ordenamiento>
                     <input class="form-control" ng-model="filtro.producto" />
                 </th>
                 <th ng-show="mostrar" style="max-width: 100px" rowspan="2">
-                    Aleacion<br />
-                    <span ng-click="orden('Aleacion',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Aleacion',1);"></span>
-                    <span ng-click="orden('Aleacion',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Aleacion',2);"></span>
-                    <span ng-click="orden('Aleacion',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Aleacion',3);"></span>
-                    <br />
+                    <ordenamiento title="Aleacion" element="Aleacion" arreglo="arr"></ordenamiento>
                     <input class="form-control" ng-model="filtro.aleacion" />
                 </th>
                
@@ -263,28 +245,16 @@ if($IdArea == 4){
                 <?php for($x=1;$x<=6;$x++):?>
                 <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
                 <th class="<?=$class?>">
-                    Pr<br />
-                    <span ng-click="orden('Prioridad<?=$x?>',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Prioridad<?=$x?>',1);"></span>
-                    <span ng-click="orden('Prioridad<?=$x?>',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Prioridad<?=$x?>',2);"></span>
-                    <span ng-click="orden('Prioridad<?=$x?>',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Prioridad<?=$x?>',3);"></span>
+                    <ordenamiento title="Pr" element="Prioridad<?=$x?>" arreglo="arr"></ordenamiento>
                 </th>
                 <th class="<?=$class?>">
-                    Prg<br />
-                    <span ng-click="orden('Programadas<?=$x?>',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',1);"></span>
-                    <span ng-click="orden('Programadas<?=$x?>',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',2);"></span>
-                    <span ng-click="orden('Programadas<?=$x?>',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',3);"></span>
+                    <ordenamiento title="Prg" element="Programadas<?=$x?>" arreglo="arr"></ordenamiento>
                 </th>
                 <th class="<?=$class?>2">
-                    H<br />
-                    <span ng-click="orden('Hechas<?=$x?>',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Hechas<?=$x?>',1);"></span>
-                    <span ng-click="orden('Hechas<?=$x?>',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Hechas<?=$x?>',2);"></span>
-                    <span ng-click="orden('Hechas<?=$x?>',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Hechas<?=$x?>',3);"></span>
+                    <ordenamiento title="H" element="Hechas<?=$x?>" arreglo="arr"></ordenamiento>
                 </th>
                 <th class="<?=$class?>2">
-                    F<br />
-                    <span ng-click="orden('Programadas<?=$x?>',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',1);"></span>
-                    <span ng-click="orden('Programadas<?=$x?>',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',2);"></span>
-                    <span ng-click="orden('Programadas<?=$x?>',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',3);"></span>
+                    F
                 </th>
                 <?php endfor;?>
             </tr>

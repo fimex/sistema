@@ -85,7 +85,7 @@
                 <tbody>
                     <tr ng-repeat="programacion in programaciones">
                         <th class="col-md-1">{{programacion.Prioridad}}</th>
-                        <th class="col-md-1"><div ng-drag="true" ng-drag-data="programaciones[$index]" ng-drag-success="onDragComplete($data,$event)"><span class="btn btn-xs" style="background-color: {{programacion.Color}}">{{programacion.Producto}}</span></div></th>
+                        <th class="col-md-1"><div ng-drag="true" ng-drag-data="programacion" ng-drag-success="onDragComplete($data,$event)"><span class="btn btn-xs" style="background-color: {{programacion.Color}}">{{programacion.Producto}}</span></div></th>
                         <th class="col-md-1">{{programacion.Aleacion}}</th>
                         <th class="col-md-1">{{programacion.CiclosMolde}}</th>
                         <th class="col-md-1">{{programacion.Programadas}}</th>
@@ -116,9 +116,9 @@
                     <tr ng-repeat="loop in loops">
                         <th style="text-align: center" ng-init="loop.index = $index">{{$index+1}}</th>
                         <?php for($x=1;$x<=9;$x++):?>
-                        <td style="width: 250px;"><div ng-drop="true" ng-drop-success="onDropComplete($data,$event,[{Loop:{{$index}},Tarima:<?=$x?>}])">
+                        <td style="width: 250px;"><div ng-drop="true" ng-drop-success="rellenar({{$index}},<?=$x?>,$data,$event)">
                             <span class="btn btn-xs" style="background-color: {{loop.Tarima<?=$x?>.Color}}">{{loop.Tarima<?=$x?>.Producto}}</span>
-                            <button ng-click="rellenar($index,<?=$x?>);" ng-if="loop.Tarima<?=$x?>.visible" class="btn btn-xs btn-success">+</button>
+                            <button ng-click="rellenar({{$index}},<?=$x?>,loop.Tarima<?=$x?>);" ng-if="loop.Tarima<?=$x?>.visible" class="btn btn-xs btn-success">+</button>
                             <button ng-click="Delete($index,<?=$x?>);" ng-if="loop.Tarima<?=$x?>.visible" class="btn btn-xs btn-danger">-</button>
                         </div></td>
                         <?php endfor;?>

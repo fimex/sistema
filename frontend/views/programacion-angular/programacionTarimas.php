@@ -67,24 +67,29 @@
     }
     .noche{
         background-color: lightgray;
-        opacity: .5
     }
     tr.active {
         background-color: lightgray !important;
     }
     .btn-droppable { width: 180px; height: 30px; padding-left: 4px; }
     .btn-draggable { width: 100%; }
+    .scrollable {
+        margin: auto;
+        height: 742px;
+        border: 2px solid #ccc;
+        overflow-y: scroll; /* <-- here is what is important*/
+    }
   </style>
-<div ng-controller="Programacion" ng-init="reporte=<?=$reporte?>;loadAleaciones();loadDias(true);">
-    <b style="font-size: 14pt;">Programacion Tarimas</b>  <input type="week" ng-model="semanaActual" ng-change="loadDias(true);" />
+<div ng-controller="Programacion" ng-init="reporte=<?=$reporte?>;loadAleaciones();loadDias(true);filtro.IdAreaAct=1">
+    <b style="font-size: 14pt;">Programacion Tarimas Kloster</b>  <input type="week" ng-model="semanaActual" ng-change="loadDias(true);" />
     <button class="btn btn-success" ng-click="loadProgramacionDiaria(true);">Actualizar</button>
     <button class="btn btn-success" ng-click="reporte = !reporte">Ver como <span ng-show="!reporte">Reporte</span><span ng-show="reporte">Captura</span></button>
     
     <div class="row" style="width: 100%">
-        <div class="col-md-5">
+        <div class="col-md-5" style="z-index: 5;">
             <table class="table table-striped table-responsive table-bordered table-hover">
             <thead>
-                <tr>
+                <tr class="active">
                     <th>Pr</th>
                     <th>
                         Producto<br/>
@@ -102,11 +107,11 @@
                 <tbody>
                     <tr 
                         ng-repeat="programacion in programaciones | filter:filtro"
-                        ng-class="{'active':programacion.TotalProgramado >= programacion.Programadas}"
+                        ng-class="{'success':programacion.TotalProgramado >= programacion.Programadas}"
                     >
                         <th class="col-md-1">{{programacion.Prioridad}}</th>
                         <th class="col-md-2">
-                            <div class="btn btn-draggable" style="opacity: .8; background-color: {{programacion.Color}}" ng-drag="!reporte" ng-drag-data="$index" ng-drag-success="onDragComplete($data,$event)">
+                            <div class="btn btn-draggable" style="opacity: .8; background-color: {{programacion.Color}}" ng-drag="!reporte && programacion.TotalProgramado < programacion.Programadas" ng-drag-data="programacion" ng-drag-success="onDragComplete($data,$event)">
                                 <span style="font-size:10pt; color: #000000; font-weight: bold">{{programacion.Producto}}</span>
                             </div>
                         </th>
@@ -121,8 +126,8 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-7 tarimas" style="overflow: auto;height: 850px;">
-            <table class="table table-bordered table-responsive" ng-table>
+        <div id="tarimas" class="col-md-7 tarimas scrollable" style="overflow: auto;height: 850px;">
+            <table class="table table-bordered table-responsive" ng-table fixed-table-headers="tarimas">
                 <thead style="background-color: white">
                     <tr>
                         <th rowspan="2">Loop</th>
@@ -134,29 +139,27 @@
                         <?php for($x=1;$x<=9;$x++):?>
                         <th style="text-align: center">T<?=$x?></th>
                         <?php endfor;?>
-                        <th style="text-align: center" ng-repeat="aleacion in aleaciones">{{aleacion}}</th>
+                        <th ng-repeat="aleacion in aleaciones"><span style="display:inline-block ;text-align: center; min-width: 60px;">{{aleacion}}</span></th>
                     </tr>
                 </thead>
                 <tbody ng-repeat="loop in loops" ng-init="loop.index = $index">
                     <tr class="dia">
                         <th colspan="{{11 + aleaciones.length}}">{{loop.dia}}</th>
                     </tr>
-                    <?php for($y=1;$y<=3;$y++):?>
-                    <tr class="<?= $y == 1 ? 'dia' : ($y == 1 ? 'tarde' : 'noche') ?>" ng-repeat="Turno in loop.Turno<?=$y?>" ng-show="MostrarLoop(Turno);">
+                    <tr ng-class="{'dia':$index <= 29, 'noche':$index > 29}" ng-repeat="Turno in loop.Loops" ng-show="MostrarLoop(Turno);">
                         <th style="text-align: center" ng-init="Turno.index = $index">{{$index+1}}</th>
                         <?php for($x=1;$x<=9;$x++):?>
                         <td>
-                            <div class="btn btn-droppable" style="opacity: .8; background-color: {{Turno.Tarima<?=$x?>.Color}}" ng-drop="!reporte" ng-drop-success="onDropComplete($data,$event,[{Dia:loop.index,Turno:'Turno<?=$y?>',Loop:{{Turno.index}},Tarima:<?=$x?>}])">
-                                <span ng-click="rellenar(loop.index,'Turno<?=$y?>',$index,<?=$x?>);" ng-if="Turno.Tarima<?=$x?>.visible" class="btn text-success">+</span>
-                                <span ng-click="Delete(loop.index,'Turno<?=$y?>',$index,<?=$x?>);" ng-if="Turno.Tarima<?=$x?>.visible" class="btn text-danger">-</span>
+                            <div class="btn btn-droppable" style="background-color: {{Turno.Tarima<?=$x?>.Color}}" ng-drop="!reporte" ng-drag="!reporte" ng-drop-success="rellenar(loop.index,Turno.index,<?=$x?>,$data)">
+                                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true" ng-click="rellenar(loop.index,Turno.index,<?=$x?>,Turno.Tarima<?=$x?>,true);" ng-if="Turno.Tarima<?=$x?>.visible"></span>
                                 <span style="font-size:10pt; color: #000000; font-weight: bold">{{Turno.Tarima<?=$x?>.Producto}}</span>
+                                <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true" ng-click="Delete(loop.index,Turno.index,<?=$x?>,Turno.Tarima<?=$x?>);" ng-if="Turno.Tarima<?=$x?>.visible"></span>
                             </div>
                         </td>
                         <?php endfor;?>
                         <th style="text-align: center">{{$index+1}}</th>
-                        <th style="text-align: center" ng-repeat="aleacion in aleaciones" ng-class="{'success':Turno[aleacion] > {{((parseInt(Turno[aleacion] / 1000)+1)*1000) - 50}} && Turno[aleacion] < {{(parseInt(Turno[aleacion] / 1000)+1)*1000}} }">{{Turno[aleacion] | currency:"":2 || 0}}</th>
+                        <th ng-repeat="aleacion in aleaciones" ng-class="{'success':Turno[aleacion] > {{tolerancia(Turno[aleacion],-100)}} && Turno[aleacion] < {{tolerancia(Turno[aleacion],50)}} }"><span style="display:inline-block ;text-align: center; max-width: 60px; min-width: 60px;">{{Turno[aleacion] | currency:"":2 || 0}}</span></th>
                     </tr>
-                    <?php endfor;?>
                 </tbody>
             </table>
         </div>

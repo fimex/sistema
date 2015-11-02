@@ -5,7 +5,7 @@ app.controller("FirseController",function ($scope,$http) {
 			$scope.numero = 0;
 		};
 
-	}
+	};
 });
 function justNumbers(e) {
 	var keynum = window.event ? window.event.keyCode : e.which;
@@ -21,8 +21,9 @@ function getkey (event,objeto) {
 }
 
 function sumarDias(dias,fecha){
-    dias = fecha == undefined ? dias : dias + 1;
+    dias = fecha == undefined ? 0 : dias;
     fecha = fecha == undefined ? new Date() : new Date(fecha);
-    fecha.setTime(fecha.getTime()+parseInt(dias*24*60*60*1000));
-    return fecha.getFullYear() + "-" + (fecha.getMonth() < 10 ? '0' : '') + (fecha.getMonth()) + "-" + (fecha.getDate() < 10 ? '0' : '') + (fecha.getDate());
+    var zn = fecha.getTimezoneOffset() * 1000 * 60;
+    fecha.setTime(fecha.getTime()+parseInt(dias*24*60*60*1000)+zn);
+    return fecha;
 }

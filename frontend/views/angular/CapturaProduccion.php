@@ -91,11 +91,12 @@ $this->title = $title;
     IdSubProceso = <?=$IdSubProceso?>;
     IdArea = <?=$IdArea?>;
     loadProgramacion(true);
-    <?=$IdEmpleado == null ? "" : "    produccion.IdEmpleado = $IdEmpleado;"?>
-    loadCentros();<?php if($IdSubProceso != 12):?>
-        loadMaquinas();
+    <?=$IdEmpleado == null ? "" : "produccion.IdEmpleado = $IdEmpleado;"?>
+    loadCentros();
+    <?php if($IdSubProceso != 12):?>
+    loadMaquinas();
     <?php else:?>
-        loadCentros();
+    loadCentros();
     <?php endif?>
     loadFallas();
     loadDefectos();

@@ -246,7 +246,22 @@ class ProduccionAceroController extends InventarioController
     } 
 
     public function actionProductosSeries(){
-        $model = ConfiguracionSeries::find()->asArray()->all();
+        $model2 = [];
+        $model = Productos::find()
+            ->where([
+                'IdPresentacion' => 2,
+                'LlevaSerie' => 'Si'
+            ])
+            ->with('idConfiguracionSerie')
+            ->with('idMarca')
+            ->orderBy('IdMarca')
+            ->asArray()
+            ->all();
+        
+        foreach($model as &$mod){
+            $mod['Marca'] = $mod['idMarca']['Descripcion'];
+        }
+        
         return json_encode($model);
     }
 
@@ -604,11 +619,10 @@ class ProduccionAceroController extends InventarioController
     }
 
     public function actionGetSerie(){
-        $model = new ConfiguracionSeries;
-        $serie = $model->getSerie($_REQUEST);
+        $model = ConfiguracionSeries::findOne($_REQUEST['IdConfiguracionSerie']);
 
-        if ($serie != null) {
-            return json_encode($serie[0]);
+        if ($model != null) {
+            return json_encode($model->SerieInicio);
         }else{
             $serie[0] = 0;
         }
@@ -796,19 +810,33 @@ class ProduccionAceroController extends InventarioController
     }
 
     function actionSaveSerie(){
-        $serie = isset($_REQUEST['Serie']) ? $_REQUEST['SerieInicio'] : 0 ;
-        $producto = isset($_REQUEST['IdProducto']) ? $_REQUEST['IdProducto'] : 0 ;
-        $model = ConfiguracionSeries::find()->where('SerieInicio = '.$serie.' AND IdProducto = '.$producto.'')->asArray()->one();
+        $_REQUEST['idConfiguracionSerie'] = json_decode($_REQUEST['idConfiguracionSerie'], true);
+        $producto = Productos::findOne($_REQUEST['IdProducto']);
 
-        if ($model == null) {
+        if(isset($_REQUEST['IdConfiguracionSerie'])){
+            $model = ConfiguracionSeries::findOne($_REQUEST['IdConfiguracionSerie']);
+            $model->SerieInicio = $_REQUEST['idConfiguracionSerie']['SerieInicio'];
+            $model->update();
+        }else{
             $model = new ConfiguracionSeries();
             $model->load([
-                'ConfiguracionSeries'=>$_REQUEST
+                'ConfiguracionSeries'=>$_REQUEST['idConfiguracionSerie']
             ]);
-            $model->save();
-        }else{
-            $model['Error'] = 1;
+            if(!$model->save()){
+                
+            }
         }
+        $producto->IdConfiguracionSerie = $model->IdConfiguracionSerie;
+        $producto->update();
+        
+        $model = Productos::find()
+            ->where(['IdProducto' => $_REQUEST['IdProducto']])
+            ->with('idConfiguracionSerie')
+            ->with('idMarca')
+            ->asArray()
+            ->one();
+        
+        $model['Marca'] = $model['idMarca']['Descripcion'];
         return json_encode($model);
     }
 
@@ -1086,7 +1114,7 @@ class ProduccionAceroController extends InventarioController
         $produccion = $this->getProduccion($data['Producciones']);
         
         //OBETENER DETALLE DE PRODUCCION
-        var_dump($data);
+        
         $produccionDetalle = $this->getProduccionDetalle([
             'IdProduccion' => $produccion['IdProduccion'],
             'IdProgramacion' => $data['ProduccionesDetalleMoldeo']['IdProgramacion'],
@@ -1102,7 +1130,9 @@ class ProduccionAceroController extends InventarioController
         
         $cicloGenerado = false;
 
+        //var_dump($ProduccionesCiclos);
         foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
+            
             if ($parte && $produccion['IdSubProceso'] != 17) {
                 
                 $parte *= 1;
@@ -1120,6 +1150,7 @@ class ProduccionAceroController extends InventarioController
                 }
                 
                 $ProduccionesCiclos->save();
+                var_dump($ProduccionesCiclos);
                 
                 $ProduccionesCiclos = ProduccionesCiclos::find()->where([
                     'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,

@@ -147,10 +147,12 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
            
         }}).success(function(data){
             $scope.programacionAceros = data;
+
             /************************************************************************
             Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
             ************************************************************************/
             for(x=0;x<$scope.programacionAceros.length;x++){
+                $scope.programacionAceros[x].LlevaSerie = $scope.programacionAceros[x].LlevaSerie == 'No' ? "" : $scope.programacionAceros[x].LlevaSerie;
                 if($scope.programacionAceros[x].CiclosMolde == 1)
                     $scope.programacionAceros[x].OKMoldeo = $scope.programacionAceros[x].OKMoldeo/2;
             }
@@ -188,6 +190,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.ModelMoldeo = function(index,tipo){
+        $scope.showserie = false;
         $scope.index = index;
         $scope.estatus = tipo;
         ciclo = $scope.programacionAceros[index].CiclosMolde;
@@ -197,7 +200,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }
         
         $scope.title = $scope.estatus == 3 ? 'Ciclos Rechazados' : 'Captura de Ciclos';
-        $scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
+        //$scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
+        $scope.estatus == 3 ? $scope.showModalCRV = !$scope.showModalCRV : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
     };
     
     $scope.MostrarSeries = function(IdProducto,IdSubProceso){
@@ -208,7 +212,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         else
             subProceso = IdSubProceso;
 
-        
+
         return $http.get('mostrar-series',{params:{
                 IdProducto: IdProducto,
                 Estatus:'B',
@@ -229,17 +233,24 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             };
         };
         i = 0;
-        console.log('hola');
         $scope.IdParteMolde = [];
+        //console.log("Ciclos Molde "+$scope.programacionAceros[$scope.index].CiclosMoldeA);
+        console.log("Estatus "+$scope.estatus);
+        //console.log("Reposicion "+$scope.Reposicion);
         if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
             $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMoldeA == (.5) ? [1,2,1,2] : [1,2];
         }else{           
-            $('input[name="Parte"]:checked').each(function() {
-                $scope.IdParteMolde[i] = $(this).val();
+            while($scope.programacionAceros[$scope.index].CiclosMoldeA > i){
+                $scope.IdParteMolde[i] = i-(-1);
                 i++;
-            });
+            }
+            /*$('input[name="Parte"]:checked').each(function() {
+                $scope.IdParteMolde[i] = $(this).val();
+                console.log(i+$(this).val())
+                i++;
+            });*/
         }
-        console.log($scope.IdParteMolde);
+        
 
         if($scope.estatus == 3){
             $scope.IdParteMolde = [];
@@ -265,6 +276,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.programacionAceros[$scope.index].FechaMoldeo = 0;
         };
         if($scope.programacionAceros[$scope.index].LlevaSerie != 'Si' || ($scope.programacionAceros[$scope.index].LlevaSerie == 'Si' && $scope.programacionAceros[$scope.index].SerieInicio != null))
+
+        //console.log($scope.programacionAceros[$scope.index]);
         return $http.get('save-detalle-acero',{params:{
             Produccion:{
                 IdArea: $scope.IdArea,
@@ -275,6 +288,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 IdTurno: $scope.IdTurno
             },
             ProduccionesDetalleMoldeo:$scope.programacionAceros[$scope.index]
+            
         }}).success(function(data) {
             $scope.loadProgramaciones();
             $scope.listadoSeries = [];
@@ -289,26 +303,41 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.ModelParte = IdParte;
         if (IdSubProceso == 9) { IdSubProceso = 6; };
         return $http.get('get-serie',{params:{
-        IdParteMolde:IdParte,
-        IdProducto:IdProducto
+            IdParteMolde:IdParte,
+            IdConfiguracionSerie:IdProducto
         }})
         .success(function(data){
             if (data != 0) {
                 $scope.serieproducto = data;
-                $scope.MostrarSeries(IdProducto,IdSubProceso);
-                $('#showseries').removeAttr("disabled", 'false');
+                //$scope.MostrarSeries(IdProducto,IdSubProceso);
+                //$('#showseries').removeAttr("disabled", 'false');
+                $scope.showserie = true;
             }
             if(data == 0){
-                $('#showseries').attr("disabled", 'true');
+                //$('#showseries').attr("disabled", 'true');
+                $scope.showserie = false;
             }
         });
     };
     
+    $scope.activaBtnCerrado = function(op){
+        switch (op){
+            case 1: $('#btn-ciclo').removeAttr("disabled", 'false'); break;
+            case 2: $('#btn-rechazoV').removeAttr("disabled", 'false'); break;
+            case 3: $('#btn-cerrado').removeAttr("disabled", 'false'); break;
+            case 4: $('#btn-rechazoK').removeAttr("disabled", 'false'); break;
+            case 5: $('#btn-cicloK').removeAttr("disabled", 'false'); break;
+            case 6: $('#btn-cicloV').removeAttr("disabled", 'false'); break;
+
+        }                        
+    };
+
     $scope.loadProductosSeries = function(){
         return $http.get('productos-series')
         .success(function(data) {
             $scope.ProductosSeries = [];
             $scope.ProductosSeries = data;
+            console.log($scope.ProductosSeries);
         });
     };
 
@@ -328,15 +357,11 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.ProductosSeries.push($scope.inserted); 
     };
 
-    $scope.saveSerie = function(index){
-        if($scope.ProductosSeries[index].SerieInicio != ''){
-            return $http.get('save-serie',{params:$scope.ProductosSeries[index]})
+    $scope.saveSerie = function(producto){
+        console.log(producto);
+        if(producto.idConfiguracionSerie.SerieInicio != ''){
+            return $http.get('save-serie',{params:producto})
             .success(function(data) {
-                $scope.errores = [];
-                $scope.errores = data;
-                if($scope.errores.Error == 1){
-                    alert("El No de Parte "+$scope.errores.IdProducto+" o la Serie "+$scope.errores.Serie+" ya estan configuradas ");
-                }
                 $scope.loadProductosSeries();
             });
         }
@@ -1136,7 +1161,14 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
     };
 	
     $scope.addProduccion = function(){
-            produccion = null;
+        produccion = null;
+        var defaultForm = {
+            IdMaquina: null,
+            IdEmpleado: null,
+            IdAleacion: null,
+        };
+        $scope.editableForm.$setPristine();
+        $scope.produccion = defaultForm;
     };
 
 
@@ -1305,18 +1337,14 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         $scope.ProductosSeries.push($scope.inserted); 
     };
 
-    $scope.saveSerie = function(index){
-        if($scope.ProductosSeries[index].SerieInicio != ''){
-            return $http.get('save-serie',{params:$scope.ProductosSeries[index]})
+    $scope.saveSerie = function(producto){
+        console.log(producto);
+        if(producto.idConfiguracionSerie.SerieInicio != ''){
+            return $http.get('save-serie',{params:producto})
             .success(function(data) {
-                $scope.errores = [];
-                $scope.errores = data;
-                if($scope.errores.Error == 1){
-                    alert("El No de Parte "+$scope.errores.IdProducto+" o la Serie "+$scope.errores.Serie+" ya estan configuradas ");
-                }
                 $scope.loadProductosSeries();
             });
-        }   
+        }
     };
 
     $scope.saveProduccion = function (){
@@ -1552,7 +1580,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
                 if(data == 0){
                     $('#showseries').attr("disabled", 'true');
                     $('#showseriesR').attr("disabled", 'true');
-                    //$('#lb-serie').attr("disabled",'true');
+                    $('#lb-serie').attr("disabled",'true');
                     $scope.activaBtnCerrado(2);
                 }
             });

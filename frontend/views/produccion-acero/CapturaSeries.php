@@ -34,8 +34,8 @@ $this->title = $title;
         border: 2px solid #ccc;
         overflow-y: scroll; /* <-- here is what is important*/
     }
-    #programacion, #detalle, #rechazo, #TMuerto{
-        height:280px;
+    #ProductosSeries{
+        height:800px;
     }
     thead {
         background: white;
@@ -51,35 +51,36 @@ $this->title = $title;
     }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="loadProductosSeries(); loadProductos();">
-    <div class="col-md-5">
+    <div class="col-md-12">
     <div class="panel panel-primary">
         <!-- Default panel contents -->
         <div class="panel-heading">Control de Series</div>
         <div class="panel-body">
-            <button class="btn btn-success" ng-click="addSerie()">Agregar Serie</button>
         </div>
         <div id="ProductosSeries" class="scrollable">
-            <table class="table table-condensed table-striped">
+            <table ng-table fixed-table-headers="ProductosSeries" class="table table-condensed table-striped" >
                 <thead>
                     <tr>
-                        <th style="width: 50px;">IdSerie</th>
-                        <th>No Parte</th>
+                        <th>IdSerie</th>
+                        <th>Cliente<br /><input class="form-control" ng-model="filtro.Marca"/></th>
+                        <th>No Parte<br /><input class="form-control" ng-model="filtro.Identificacion"/></th>
+                        <th>Descripcion</th>
                         <th style="width: 100px;">Serie</th>
                         <th style="width: 100px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="series in ProductosSeries">
+                    <tr ng-repeat="series in ProductosSeries | filter:filtro">
                         <th>{{series.IdConfiguracionSerie}}</th>
+                        <th>{{series.Marca}}</th>
+                        <th>{{series.Identificacion}}</th>
+                        <th>{{series.Descripcion}}</th>
+                        <th style="width: 100px;"><input class="form-control" style="width: 100px;" ng-model-options="{updateOn: 'blur'}" ng-model="series.idConfiguracionSerie.SerieInicio"/>
+                        </th>
                         <th>
-                            <select class="form-control"  ng-init="series.IdProducto" ng-model="series.IdProducto" ng-disabled="series.IdConfiguracionSerie">
-                                <option ng-selected="series.IdProducto == producto.IdProducto" ng-init="producto.Identificacion" value="{{producto.IdProducto}}" ng-repeat="producto in productos">{{ producto.Identificacion }}</option>
-                            </select>
+                            <button class="btn btn-danger" ng-if="!series.IdConfiguracionSerie" ng-click="saveSerie(series)">Generar</button>
+                            <button class="btn btn-info" ng-if="series.IdConfiguracionSerie" ng-click="saveSerie(series)">Actualizar</button>
                         </th>
-                        <th style="width: 100px;"><input class="form-control" style="width: 100px;" ng-model-options="{updateOn: 'blur'}" ng-model="series.SerieInicio" value="{{series.SerieInicio}}"/>
-                        <input class="form-control" type="hidden" ng-model="producto.Identificacion" value="{{producto.Identificacion}}">
-                        </th>
-                        <th><button class="btn btn-danger" ng-click="saveSerie($index)">Guargar</button></th>
                     </tr>
                 </tbody>
             </table>

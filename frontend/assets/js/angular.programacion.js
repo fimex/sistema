@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
+app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $timeout){
     $http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
     
     $scope.semanas = [];
@@ -27,7 +27,6 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     $scope.selected = null;
 
     $scope.cerrarPedido = function(){
-       
         $('input[name="Cerrado[]"]:checked').each(function() {
             $scope.selectedCerrado.push($(this).val());
         });
@@ -35,7 +34,6 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
         return $http.get('update-pedidos',{params:$scope.selectedCerrado}).success(function(data) {
            $scope.loadSemanas();
         });
-
     };
     
     $scope.saveEnvio = function(IdPedido,FechaEnvio){
@@ -389,142 +387,130 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
     };
     
     $scope.onDragComplete=function(data,evt){
-        //console.log(data);
     };
     
-    $scope.onDropComplete=function(index,evt,tarimas,data){
-        data2 = $filter('filter')($scope.programaciones, $scope.filtro);
-        data2 = data2[index];
-        var dataDia = undefined;
-        var dataNoche = undefined;
-        var dia = [];
-        var noche = [];
-        
-        
-        if(data === undefined){
-            data = data2;
+    $scope.saveTarima = function(tarimas){
+        return $http.get('save-tarimas',{params:tarimas}).success(function(data){
+            var loop = data.Loop;
+            var tarima = 'Tarima'+data.Tarima;
+            
+            for(x=0;x < data.lenght;x++){
+                $scope.loops[data[x].indexDia]['Lopps'][data[x].Loop]['Tarima'+data[x].Tarima] = data[x];
+            }
+            
+            $timeout(function() {$scope.loadProgramacionDiaria(true);}, 1000);
+            $scope.resumen();
+        }).error(function(data){
+            alert("Fallo el proceso de guardar tarimas favor de volver a intentar");
+        });
+    };
+    
+    $scope.rellenar=function(dia,loop,tarima,data,rellenar){
+        if(rellenar != undefined){
+            loop++;
         }
-        
         if(data.TotalProgramado >= data.ProgramadasSemana){
             alert('Ya no se pueden Programar mas moldes, si se requieren mas favor de capturarlos en la programacion Semanal');
             return;
         }
-            
-        data.CiclosMolde = data.CiclosMoldeA;
-        var ciclos = parseFloat(data.CiclosMoldeA) <= 0 ? 1 : parseFloat(data.CiclosMoldeA);
-        var x;
-        var y = 0;
-        data.Tarimas = [];
-
-        for(x=0;x<ciclos;x++){
-            if(x > 0){
-                tarima2 = prompt("En que tarima desea colocar el siguiente ciclo");
-                tarima2 = tarima2 - tarimas[0].Tarima;
-            }
-
-            var tarima2 = tarima2 != null ? tarima2 : x;
-
-            for(y=0;y<tarimas.length;y++){
-                
-                var tarima = tarimas[y].Tarima + tarima2;
-                var loop = tarimas[y].Loop;
-                var Dia = tarimas[y].Dia;
-
-                if(loop >= 30){
-                    dataNoche = data;
-                    dataNoche.IdTurno = 3;
-                }else{
-                    dataDia = data;
-                    dataDia.IdTurno = 1;
-                }
-
-                $scope.loops[Dia]['Loops'][loop]['Tarima'+tarima] = [];
-                $scope.loops[Dia]['Loops'][loop]['Tarima'+tarima] = loop >= 30 ? dataNoche : dataDia;
-                $scope.loops[Dia]['Loops'][loop]['Tarima'+tarima].visible = true;
-
-                if(loop >= 30){
-                    noche.push({Loop:loop,Tarima:tarima,IdTurno:3});
-                }else{
-                    dia.push({Loop:loop,Tarima:tarima,IdTurno:1});
-                }
-                Dia2 = Dia;
-            }
-        }
-
-        if(dataDia != undefined){
-            dataDia.Tarimas = dia;
-            $scope.saveTarima(dataDia,Dia+1);
-        }
-        if(dataNoche != undefined){
-            dataNoche.Tarimas = noche;
-            $scope.saveTarima(dataNoche,Dia+1);
-        }
-    };
-    
-    $scope.saveTarima = function(data,dia){
-        var cantidad = 0;
-
-        data['Programadas'+dia] = cantidad;
-        $scope.saveProgramacionDiaria(data,dia);
-    };
-    
-    $scope.rellenar=function(dia,loop,tarima){
-        var loop2 = prompt("Moldes que desea agregar");
-        var data = $scope.loops[dia]['Loops'][loop]['Tarima'+tarima];
+        
+        var loop2 = parseInt(prompt("Moldes que desea agregar"));
+        var tarima2 = undefined;
+        var ciclosMolde = data.CiclosMoldeA < 0 ? 1 : data.CiclosMoldeA;
+        var data = data;
         var tarimas = [];
         var x;
         
-        if(data.TotalProgramado >= data.ProgramadasSemana){
-            alert('Ya no se pueden Programar mas moldes, si se requieren mas favor de capturarlos en la programacion Semanal');
-            return;
+        if(ciclosMolde > 1){
+            tarima2 = prompt("En que tarima desea colocar el siguiente ciclo (Colocar solo el numero de la tarima)");
+            console.log(tarima2);
         }
         
-        data['Maquina'+(dia+1)] = data.Maquina;
-        data['Dia'+(dia+1)] = data.Dia;
-        data['Programadas'+(dia+1)] = data['Programadas'];
-        
         if(loop2 !== 'null'){
+            loop2 = (loop2 + data.TotalProgramado) > parseInt(data.ProgramadasSemana) ? (parseInt(data.ProgramadasSemana) - data.TotalProgramado) : loop2;
+            //loop2 *= ciclosMolde;
+            var Dia = data.Dia;
+            Dia2 = sumarDias(dia,Dia);
+            var loopActual=loop;
             
-            var ciclosMolde = data.CiclosMolde > 0 ? 1 : data.CiclosMolde;
             
-            loop2 = loop2 < 60 ? loop2 : 60;
-            loop2 = loop2 + data.TotalProgramado > data.ProgramadasSemana ? data.ProgramadasSemana - data.TotalProgramado: loop2;
-            loop2 *= ciclosMolde;
-            
-            loop2 = parseInt(loop2) + (loop+1);
-            
-            for(x=loop + 1;x<loop2;x++){
+            for(x=loop;x<(loop2 + loop);x++){
+                
+                if(loopActual>19){
+                    dia++;
+                    loopActual=0;
+                    Dia2 = sumarDias(dia,Dia);
+                }
+                
+                IdTurno = loopActual >=30 ? 3 : 1; 
+        
                 tarimas.push({
-                    Dia:dia,
-                    Loop:x,
-                    Tarima:tarima
+                    Dia:Dia2,
+                    indexDia:dia,
+                    Loop:loopActual,
+                    Tarima:tarima,
+                    IdProgramacionSemana:data.IdProgramacionSemana,
+                    IdTurno:IdTurno
                 });
+                
+                if(tarima2 != undefined){
+                    tarimas.push({
+                        Dia:Dia2,
+                        indexDia:dia,
+                        Loop:loopActual,
+                        Tarima:tarima2,
+                        IdProgramacionSemana:data.IdProgramacionSemana,
+                        IdTurno:IdTurno
+                    });
+                }
+                loopActual++;
             };
-            $scope.onDropComplete(0,'',tarimas,data);
+            $scope.saveTarima(tarimas);
         }
     };
     
     $scope.Delete = function(dia,loop,tarima){
-        var data = $scope.loops[dia]['Loops'][loop]['Tarima'+tarima];
-
-        data.Tarimas = [];
+        var loop2 = parseInt(prompt("Cantidad de moldes a eliminar"));
+        var tarimas = [];
         var x;
-        var data = $scope.loops[dia]['Loops'][loop]['Tarima'+tarima];
-        
-        data.Delete = true;
-        data['Maquina'+(dia+1)] = data.Maquina;
-        data['Dia'+(dia+1)] = data.Dia;
-        data['Programadas'+(dia+1)] = data['Programadas'];
+        var loopActual=loop;
+        loop2 = loop2 !== 'null' ? loop2 : 1 ;
 
-        $scope.loops[dia]['Loops']['Tarima' + tarima] = [];
-        data.Tarimas.push({
-            Dia:dia,
-            IdTurno: loop >= 30 ? 3 : 1,
-            Loop:loop,
-            Tarima:tarima
-        });
+        for(x=loop;x<(loop2 + loop);x++){
+            if(loopActual>19){
+                dia++;
+                loopActual=0;
+            }
+            
+            if(!$scope.loops[dia]['Loops'][loopActual]['Tarima'+tarima]){
+                break;
+            }
+            
+            tarimas.push({
+                indexDia:dia,
+                Loop:loopActual,
+                Tarima:tarima,
+                IdTarima:$scope.loops[dia]['Loops'][loopActual]['Tarima'+tarima].IdTarima
+            });
+            
+            loopActual++;
+        }
         
-        $scope.saveTarima(data,dia+1);
+        return $http.get('delete-tarimas',{params:tarimas}).success(function(data){
+            
+            for(var x in data){
+                $scope.loops[data[x].indexDia]['Loops'][data[x].Loop]['Tarima'+data[x].Tarima] = [];
+            }
+            
+            for(x=0;x < data.length;x++){
+                $scope.loops[data[x].indexDia]['Loops'][data[x].Loop]['Tarima'+data[x].Tarima] = [];
+            }
+            
+            $timeout(function() {$scope.loadProgramacionDiaria();}, 1000);
+            $scope.resumen();
+        }).error(function(data){
+            alert("Fallo el proceso de eliminar tarimas favor de volver a intentar");
+        });
     };
     
     $scope.resumen = function(){
@@ -540,7 +526,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http){
                         if(data.Aleacion === aleacion){
                             $scope.loops[IndexDia]['Loops'][IndexLoop][aleacion] += (parseFloat(data.PesoAraniaA) / parseFloat(data.CiclosMoldeA));
                             acumulado += (parseFloat(data.PesoAraniaA) / parseFloat(data.CiclosMoldeA));
-                           }
+                        }
                     }
                 });
             });

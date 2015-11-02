@@ -11,6 +11,7 @@ use Yii;
  * @property integer $IdProgramacionDia
  * @property integer $Loop
  * @property integer $Tarima
+ * @property string $Dia
  *
  * @property ProgramacionesDia $idProgramacionDia
  */
@@ -31,7 +32,8 @@ class Tarimas extends \yii\db\ActiveRecord
     {
         return [
             [['IdProgramacionDia', 'Loop', 'Tarima'], 'required'],
-            [['IdProgramacionDia', 'Loop', 'Tarima'], 'integer']
+            [['IdProgramacionDia', 'Loop', 'Tarima'], 'integer'],
+            [['Dia'], 'safe']
         ];
     }
 
@@ -45,6 +47,7 @@ class Tarimas extends \yii\db\ActiveRecord
             'IdProgramacionDia' => 'Id Programacion Dia',
             'Loop' => 'Loop',
             'Tarima' => 'Tarima',
+            'Dia' => 'Dia',
         ];
     }
 

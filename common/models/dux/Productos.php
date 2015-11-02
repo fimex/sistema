@@ -3,6 +3,7 @@
 namespace common\models\dux;
 
 use Yii;
+use frontend\models\produccion\ConfiguracionSeries;
 
 /**
  * This is the model class for table "Productos".
@@ -27,31 +28,37 @@ use Yii;
  * @property string $LlevaSerie
  * @property integer $IdParteMolde
  * @property integer $FechaMoldeo
+ * @property integer $CiclosVarel
+ * @property string $CodigoCliente
+ * @property integer $IdConfiguracionSerie
  *
  * @property Cajas[] $cajas
  * @property ConfiguracionSeries[] $configuracionSeries
- * @property CentrosTrabajoProductos[] $centrosTrabajoProductos
  * @property AlmasProduccionDetalle[] $almasProduccionDetalles
  * @property MaquinasProductos[] $maquinasProductos
+ * @property ProductosCavidades[] $productosCavidades
  * @property Camisas[] $camisas
  * @property Programaciones[] $programaciones
  * @property Series[] $series
  * @property FechaMoldeo[] $fechaMoldeos
  * @property ProduccionesDetalle[] $produccionesDetalles
  * @property Filtros[] $filtros
+ * @property Existencias[] $existencias
+ * @property CentrosTrabajoProductos[] $centrosTrabajoProductos
+ * @property ConfiguracionSeries $idConfiguracionSerie
  * @property Aleaciones $idAleacion
+ * @property AreaActual $idAreaAct
  * @property Marcas $idMarca
+ * @property PartesMolde $idParteMolde
  * @property Presentaciones $idPresentacion
  * @property Productos $idProductoCasting
  * @property Productos[] $productos
  * @property ProductosEstatus $idProductosEstatus
- * @property AreaActual $idAreaAct
- * @property PartesMolde $idParteMolde
  * @property Almas[] $almas
  * @property ProductosEnsamble[] $productosEnsambles
- * @property Pedidos[] $pedidos
  * @property HistoriaExplosion[] $historiaExplosions
  * @property CiclosVarel[] $ciclosVarels
+ * @property Pedidos[] $pedidos
  */
 class Productos extends \yii\db\ActiveRecord
 {
@@ -70,8 +77,8 @@ class Productos extends \yii\db\ActiveRecord
     {
         return [
             [['IdMarca', 'IdPresentacion', 'IdAleacion', 'PiezasMolde', 'CiclosMolde', 'PesoCasting', 'PesoArania'], 'required'],
-            [['IdMarca', 'IdPresentacion', 'IdAleacion', 'IdProductoCasting', 'PiezasMolde', 'CiclosMolde', 'MoldesHora', 'CiclosHora', 'IdProductosEstatus', 'IdAreaAct', 'IdParteMolde', 'FechaMoldeo'], 'integer'],
-            [['Identificacion', 'Descripcion', 'Ensamble', 'LlevaSerie'], 'string'],
+            [['IdMarca', 'IdPresentacion', 'IdAleacion', 'IdProductoCasting', 'PiezasMolde', 'CiclosMolde', 'MoldesHora', 'CiclosHora', 'IdProductosEstatus', 'IdAreaAct', 'IdParteMolde', 'FechaMoldeo', 'CiclosVarel', 'IdConfiguracionSerie'], 'integer'],
+            [['Identificacion', 'Descripcion', 'Ensamble', 'LlevaSerie', 'CodigoCliente'], 'string'],
             [['PesoCasting', 'PesoArania', 'FactorTiempoDesmoldeo'], 'number']
         ];
     }
@@ -102,6 +109,9 @@ class Productos extends \yii\db\ActiveRecord
             'LlevaSerie' => 'Lleva Serie',
             'IdParteMolde' => 'Id Parte Molde',
             'FechaMoldeo' => 'Fecha Moldeo',
+            'CiclosVarel' => 'Ciclos Varel',
+            'CodigoCliente' => 'Codigo Cliente',
+            'IdConfiguracionSerie' => 'Id Configuracion Serie',
         ];
     }
 
@@ -124,14 +134,6 @@ class Productos extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCentrosTrabajoProductos()
-    {
-        return $this->hasMany(CentrosTrabajoProductos::className(), ['IdProducto' => 'IdProducto']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
     public function getAlmasProduccionDetalles()
     {
         return $this->hasMany(AlmasProduccionDetalle::className(), ['IdProducto' => 'IdProducto']);
@@ -143,6 +145,14 @@ class Productos extends \yii\db\ActiveRecord
     public function getMaquinasProductos()
     {
         return $this->hasMany(MaquinasProductos::className(), ['IdProducto' => 'IdProducto']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProductosCavidades()
+    {
+        return $this->hasMany(ProductosCavidades::className(), ['IdProducto' => 'IdProducto']);
     }
 
     /**
@@ -196,6 +206,30 @@ class Productos extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getExistencias()
+    {
+        return $this->hasMany(Existencias::className(), ['IdProducto' => 'IdProducto']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCentrosTrabajoProductos()
+    {
+        return $this->hasMany(CentrosTrabajoProductos::className(), ['IdProducto' => 'IdProducto']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdConfiguracionSerie()
+    {
+        return $this->hasOne(ConfiguracionSeries::className(), ['IdConfiguracionSerie' => 'IdConfiguracionSerie']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getIdAleacion()
     {
         return $this->hasOne(Aleaciones::className(), ['IdAleacion' => 'IdAleacion']);
@@ -204,9 +238,25 @@ class Productos extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getIdAreaAct()
+    {
+        return $this->hasOne(AreaActual::className(), ['IdAreaAct' => 'IdAreaAct']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getIdMarca()
     {
         return $this->hasOne(Marcas::className(), ['IdMarca' => 'IdMarca']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdParteMolde()
+    {
+        return $this->hasOne(PartesMolde::className(), ['IdParteMolde' => 'IdParteMolde']);
     }
 
     /**
@@ -244,22 +294,6 @@ class Productos extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdAreaAct()
-    {
-        return $this->hasOne(AreaActual::className(), ['IdAreaAct' => 'IdAreaAct']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdParteMolde()
-    {
-        return $this->hasOne(PartesMolde::className(), ['IdParteMolde' => 'IdParteMolde']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
     public function getAlmas()
     {
         return $this->hasMany(Almas::className(), ['IdProducto' => 'IdProducto']);
@@ -271,14 +305,6 @@ class Productos extends \yii\db\ActiveRecord
     public function getProductosEnsambles()
     {
         return $this->hasMany(ProductosEnsamble::className(), ['IdComponente' => 'IdProducto']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPedidos()
-    {
-        return $this->hasMany(Pedidos::className(), ['IdProducto' => 'IdProducto']);
     }
 
     /**
@@ -297,19 +323,11 @@ class Productos extends \yii\db\ActiveRecord
         return $this->hasMany(CiclosVarel::className(), ['IdProducto' => 'IdProducto']);
     }
 
-
-    public function getProductosSeries(){
-
-        $command = \Yii::$app->db;
-        $model =$command->createCommand("SELECT
-                                            Productos.IdProducto,
-                                            Productos.Identificacion,
-                                            Productos.LlevaSerie
-                                        FROM
-                                            Productos
-                                        LEFT JOIN ConfiguracionSeries ON Productos.IdProducto = ConfiguracionSeries.IdProducto 
-                                        WHERE Productos.LlevaSerie = 'Si' ")->queryAll();
-
-        return $model;
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPedidos()
+    {
+        return $this->hasMany(Pedidos::className(), ['IdProducto' => 'IdProducto']);
     }
 }

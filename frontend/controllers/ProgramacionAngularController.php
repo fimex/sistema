@@ -185,10 +185,93 @@ class ProgramacionAngularController extends Controller
     {
         $this->layout = 'programacion';
         
-        return $this->render('programacionTarimas',[
+        return $this->render('programacionTarimas', [
             'area' => $area,
             'reporte'=>'false'
         ]);
+    }
+    
+    public function actionDeleteTarimas(){
+        foreach($_REQUEST as &$data){
+            $data = json_decode($data,true);
+            $tarima = Tarimas::findOne($data['IdTarima']);
+            $IdProgramacionDia = $tarima->IdProgramacionDia;
+            $tarima->delete();
+            $this->actualizarProgramacionDiaria(['IdProgramacionDia' => $IdProgramacionDia]);
+        }
+        return json_encode($_REQUEST);
+    }
+    
+    public function actionSaveTarimas(){
+        $tarimas = [];
+        foreach($_REQUEST as $data){
+            
+            $data = json_decode($data,true);
+            $data['Dia'] = date('Y-m-d',strtotime($data['Dia']));
+            $programacionDiaria = $this->getProgramacionDiaria([
+                'IdProgramacionSemana' => $data['IdProgramacionSemana'],
+                'IdTurno' => $data['IdTurno'],
+                'Dia' => $data['Dia']
+            ]);
+
+            $tarima = Tarimas::find()->where([
+                'Loop' => $data['Loop'],
+                'Tarima' => $data['Tarima'],
+                'Dia' => $data['Dia']
+            ])->one();
+
+            if(is_null($tarima)){
+                $data['IdProgramacionDia'] = $programacionDiaria->IdProgramacionDia;
+
+                $tarima = new Tarimas();
+                $tarima->load(['Tarimas' => $data]);
+                $tarima->save();
+            }else{
+                $tarima->load(['Tarimas' => $data]);
+                $tarima->update();
+            }
+
+            $this->actualizarProgramacionDiaria(['IdProgramacionDia' => $programacionDiaria->IdProgramacionDia]);
+            $tarima = VTarimas::find()->where([
+                'Loop' => $data['Loop'],
+                'Tarima' => $data['Tarima'],
+                'Dia' => $data['Dia']
+            ])->asArray()->one();
+            $tarima['indexDia'] = $data['indexDia'];
+            $tarimas[] = $tarima;
+        }
+        
+        return json_encode($tarimas);
+    }
+    
+    public function actualizarProgramacionDiaria($data){
+        $programacionDiaria = $this->getProgramacionDiaria($data);
+        
+        $tarimas = VTarimas::find()->select('count(CiclosMoldeA) AS Total, CiclosMoldeA')->where(['IdProgramacionDia' => $data['IdProgramacionDia']])->groupBY('IdProgramacionDia,CiclosMoldeA')->asArray()->one();
+        
+        $total = 0;
+        if($tarimas['Total'] != 0 || $tarimas['CiclosMoldeA'] != 0){
+             $total = $tarimas['Total'] / $tarimas['CiclosMoldeA'];
+        }
+        $programacionDiaria->Programadas = $total;
+        $programacionDiaria->update();
+    }
+    
+    public function getProgramacionDiaria($data){
+        $model = ProgramacionesDia::find()->where($data)->one();
+
+        if(is_null($model)){
+            $model = new ProgramacionesDia();
+            $data['Programadas'] = isset($data['Programadas']) ? $data['Programadas'] : 0;
+            $data['IdMaquina'] = isset($data['IdMaquina']) ? $data['IdMaquina'] : 1;
+            $data['IdCentroTrabajo'] = isset($data['IdCentroTrabajo']) ? $data['IdCentroTrabajo'] : 1;
+            
+            $model->load(['ProgramacionesDia' => $data]);
+            $model->save();
+            //var_dump($model);
+            $model = ProgramacionesDia::find()->where($data)->one();
+        }
+        return $model;
     }
     
     public function actionResumenSemanal(){
@@ -1764,7 +1847,7 @@ END AS FLOAT)
                 'dia' => $dia
             ];
             
-            for($y=0;$y<60;$y++){
+            for($y=0;$y<20;$y++){
                 $Loops[$key]['Loops'][] = [
                     'Tarima1' => '',
                     'Tarima2' => '',
