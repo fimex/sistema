@@ -31,8 +31,9 @@
     </thead>
     <tbody  ng-repeat="dat in data">
         <tr>
-            <th>{{dat.Fecha | date:'dd-MMM-yyyy'}}</th>
+            <th>{{dat.Fecha | date:'dd-MMM-yyyy'}} Turno: {{dat.Turno}}</th>
         </tr>
+        <tr>
             <td>
                 <table class="table table-striped table-bordered table-hover">
                     <tr>

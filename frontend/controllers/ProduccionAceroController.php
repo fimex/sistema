@@ -31,6 +31,7 @@ use frontend\models\produccion\Series;
 use frontend\models\produccion\VCapturaExceleada;
 use frontend\models\produccion\VProduccionCiclos;
 use frontend\models\produccion\VProgramacionesCiclos;
+use frontend\models\produccion\VCiclosComponentes;
 use frontend\models\produccion\FechaMoldeo;
 use frontend\models\produccion\FechaMoldeoDetalle;
 use frontend\models\produccion\ResumenFechaMoldeo;
@@ -40,6 +41,11 @@ use frontend\models\produccion\VProgramacionDiaAcero;
 use frontend\models\produccion\VProgramacionCiclosAcero;
 use frontend\models\produccion\MantenimientoHornos;
 use frontend\models\produccion\VSeries;
+use frontend\models\calidad\VCalidad;
+use frontend\models\calidad\VExistenciasCalidad;
+use frontend\models\calidad\Existencias;
+use frontend\Models\calidad\ProduccionCalidad;
+
 use common\models\vistas\VAleaciones;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\VProduccion2;
@@ -114,7 +120,10 @@ class ProduccionAceroController extends InventarioController
     {
         return $this->CapturaProduccion(9,2,2);
     }
-    
+     public function actionCerradoE()
+    {
+        return $this->CapturaProduccion(9,2,3);
+    }
     public function actionVaciado() //Correcto
     {
        $this->layout = 'produccionAceros';
@@ -127,7 +136,21 @@ class ProduccionAceroController extends InventarioController
     {
         return $this->CapturaProduccion(10,2);
     }
-    
+    public function actionCalidadL(){
+        return $this->CapturaProduccion(20,2,1049);
+    }
+    public function actionCalidadP(){
+        return $this->CapturaProduccion(21,2,1046);
+    }
+    public function actionCalidadR(){
+        return $this->CapturaProduccion(22,2,1048);
+    }
+    public function actionCalidadU(){
+        return $this->CapturaProduccion(23,2,1047);
+    }
+    public function actionCalidadV(){
+        return $this->CapturaProduccion(24,2,1045);
+    }
     public function CapturaSeries()
     {
         $this->layout = 'produccionAceros';
@@ -150,6 +173,13 @@ class ProduccionAceroController extends InventarioController
     public function actionPruebasmecanicas(){
         return $this->CapturaPruebasDestructivas(14,2,2243,1050);
     }
+
+     function actionDataComponentes(){
+        $_REQUEST['Dia'] = date('Y-m-d',  strtotime($_REQUEST['Dia']));
+        //var_dump($_REQUEST);
+        $model = VCiclosComponentes::find()->where($_REQUEST)->orderBy('Prioridad ASC')->asArray()->all();
+        return json_encode($model);
+    }
     
     /*
      *    INICIA CODIGO AGREGADO POR IVAN DE SANTIAGO
@@ -159,6 +189,120 @@ class ProduccionAceroController extends InventarioController
         $_REQUEST['Dia'] = date('Y-m-d',  strtotime($_REQUEST['Dia']));
         //var_dump($_REQUEST);
         $model = VProgramacionesCiclos::find()->where($_REQUEST)->orderBy('Prioridad ASC')->asArray()->all();
+
+        foreach ($model as &$value) {
+           
+            $OkCiclos = VProduccionCiclos::find()->select('count(Hechas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'Tipo' => 'C',
+                'IdEstatus' => 1
+            ])->asArray()->one();
+            $RecCiclos = VProduccionCiclos::find()->select('count(Rechazadas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'Tipo' => 'C',
+                'IdEstatus' => 3
+            ])->asArray()->one();
+            $RepCiclos = VProduccionCiclos::find()->select('count(Rechazadas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'Tipo' => 'C',
+                'IdEstatus' => 2
+            ])->asArray()->one();
+
+            $vaciadoOK = VProduccionCiclos::find()->select('Sum(Hechas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'IdSubProceso' => 10
+            ])->asArray()->one();
+            $vaciadoRec = VProduccionCiclos::find()->select('Sum(Rechazadas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'IdSubProceso' => 10
+            ])->asArray()->one();
+            if($_GET['IdAreaAct'] == 2 || $_GET['IdAreaAct'] == 3){////VAREL
+                /*****CALCULOS DE MOLDES****/
+
+                    //Moldes Rechazados Cerrados
+                    $value['RecMoldesCerrado'] = $value['RecComponentesCerrado'] == 0 ? 0 : $value['RecComponentesCerrado'] / $value['BaseDivicion']; 
+
+                    //Moldes Rechazados
+                    $value['RecMoldesMoldeo'] = $value['RecComponentesMoldeo'] == 0 ? 0 : $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
+
+                    //Moldes Reparados
+                    $value['RepMoldesMoldeo'] = $value['RepComponentesMoldeo'] == 0 ? 0 : $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+
+                    //Moldes Ok
+                    $value['OkMoldesMoldeo'] = $value['OkComponentesMoldeo'] == 0 ? 0 : ($value['OkComponentesMoldeo'] / $value['BaseDivicion']) - $value['RecMoldesCerrado'] - $value['RecMoldesMoldeo'] + $value['RepMoldesMoldeo']; 
+                /****FIN DE CALCULOS DE MOLDES****/
+
+                /****CALCULOS DE CICLOS****/
+                    //Ciclos rechazados
+                    $value['RecCiclosMoldeo'] = $RecCiclos['total'] * 1; 
+                    $value['RecCiclosMoldeo'] = round($value['RecMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
+
+                    // Ciclos Reposicion
+                    $value['RepCiclosMoldeo'] = $RepCiclos['total'] * 1; 
+                    $value['RepCiclosMoldeo'] = round($value['RepMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
+
+                    //Ciclos Ok
+                    $value['OkCiclosMoldeo'] = $OkCiclos['total'] * 1; 
+                    /*$value['OkCiclosMoldeo'] = 
+                        round(($value['OkMoldesMoldeo']*$value['CiclosMoldeA']) - $value['RecCiclosMoldeo'] + $value['RepCiclosMoldeo'],0, PHP_ROUND_HALF_UP);*/
+                    $value['OkCiclosMoldeo'] = 
+                        round(($value['OkMoldesMoldeo']*$value['CiclosMoldeA']),0, PHP_ROUND_HALF_UP);
+
+                    //Ciclos Totales
+                    //$value['CiclosTotal'] = $value['OkCiclosMoldeo'] + $value['RecCiclosMoldeo'] + $value['RepCiclosMoldeo'];
+                    $value['CiclosTotal'] = $value['OkCiclosMoldeo'] + $value['RecCiclosMoldeo'];
+                /****FIN DE CALCULOS DE CICLOS***/
+
+                /****CALCULOS INICIALES****/
+                    //Ciclos requeridos para moldeo
+                    $value['CiclosRequeridosMoldeo'] = ($value['CiclosMoldeA'] * $value['Programadas']) - $value['OkCiclosMoldeo'];
+
+                    $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeo'] + $value['RecMoldesCerrado'] + ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
+                    $value['FaltaNCerradasV'] = $value['OkMoldesMoldeo'] - $value['OkMoldesCerrados'] - $value['RecMoldesCerrado'] - ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
+                /****FIN CALCULOS INICIALES****/                
+               
+                if(!is_null($vaciadoOK)){
+                    $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
+                }
+
+                if(!is_null($vaciadoRec)){
+                    $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
+                }
+            }
+            elseif($_GET['IdAreaAct'] == 1){/////KLOSTER
+                $value['RecCiclosMoldeo'] = $RecCiclos['total'] * 1;
+                $value['OkCiclosMoldeo'] = $OkCiclos['total'] * 1;
+                $value['RepCiclosMoldeo'] = $RepCiclos['total'] * 1;
+                $value['RecMoldesMoldeo'] = $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
+                $value['RecMoldesCerrado'] = $value['RecComponentesCerrado'] / $value['BaseDivicion'];  
+                //$value['RecCiclosMoldeo'] = round($value['RecMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
+                $value['OkMoldesMoldeo'] = $value['OkComponentesMoldeo'] / $value['BaseDivicion'] - $value['RecMoldesCerrado'] + ($value['RepCiclosMoldeo']/ $value['BaseDivicion']); 
+                
+                $value['RepMoldesMoldeo'] = $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+                //$value['RepCiclosMoldeo'] = round($value['RepMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
+                //$value['OkCiclosMoldeo'] = round($value['OkMoldesMoldeo']*$value['CiclosMoldeA'] +$value['RepCiclosMoldeo'] ,0, PHP_ROUND_HALF_UP);
+                
+                $value['OkCiclosMoldeo'] = (($value['OkComponentesMoldeo'] / $value['BaseDivicion'])*$value['CiclosMoldeA']) + ($value['RepCiclosMoldeo']);
+
+                $value['CiclosRequeridosMoldeo'] = ($value['CiclosMoldeA'] * $value['Programadas']) - $value['OkCiclosMoldeo'] + $value['RecCiclosMoldeo'] + ($value['RecComponentesCerrado']);
+                $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeo'] + $value['RecMoldesCerrado'] + ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
+                $value['FaltaNCerradasV'] = $value['OkMoldesMoldeo'] - $value['OkMoldesCerrados'] - $value['RecMoldesCerrado'] - ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
+                if(!is_null($vaciadoOK)){
+                    $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
+                }
+                
+                if(!is_null($vaciadoRec)){
+                    $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
+                }
+            }
+            
+        }
+
         return json_encode($model);
     }
     
@@ -194,14 +338,19 @@ class ProduccionAceroController extends InventarioController
 
     public function CapturaProduccion($subProceso, $IdArea, $IdAreaActual = null){
         $this->layout = 'produccionAceros';
-        
+        $url = 'CapturaProduccionAcero';
         switch ($subProceso){
-            case 6: $url = 'CapturaProduccionAcero'; $title = 'Moldeo Kloster';break;
-            case 7: $url = 'CapturaProduccionAcero'; $title = 'Moldeo Varel';break;
-            case 8: $url = 'CapturaProduccionAcero'; $title = 'Pintado ';break;
-            case 9: $url = 'CapturaProduccionAcero'; $title = 'Cerrado '. ($IdAreaActual == 1 ? 'Kloster' : 'Varel') ;break;
+            case  6: $title = 'Moldeo Kloster';break;
+            case  7: $title = 'Moldeo Varel';break;
+            case  8: $title = 'Pintado ';break;
+            case  9: $title = 'Cerrado '. ($IdAreaActual == 1 ? 'Kloster' : $IdAreaActual == 2 ? 'Varel' : 'Especial') ;break;
             case 10: $url = 'CapturaProduccion'; $title = 'Vaciado';break;
-            case 17: $url = 'CapturaProduccionAcero'; $title = 'Moldeo Especial';break;
+            case 17: $title = 'Moldeo Especial';break;
+            case 20: $title = 'Calidad - Liquidos Penetrantes'; $subProceso = 14; break;
+            case 21: $title = 'Calidad - Partículas Magnéticas'; $subProceso = 14; break;
+            case 22: $title = 'Calidad - Rayos X'; $subProceso = 14; break;
+            case 23: $title = 'Calidad - Ultrasonido'; $subProceso = 14; break;
+            case 24: $title = 'Calidad - Inspeccion Visual'; $subProceso = 14; break;
         }
         return $this->render($url, [
             'title' => $title,
@@ -276,7 +425,92 @@ class ProduccionAceroController extends InventarioController
         
         return json_encode($model);
     }
+    /*
+     * CODIGO PARA EL APARTADO DE CALIDAD   
+     */
+    
+    public function actionGetCantidad() {
+        if(isset($_GET['IdProduccion'])){
+            $model = new ProduccionCalidad();
+            $IdProduccion   = $_GET['IdProduccion'];
+            $IdSubProceso   = $_GET['IdSubProceso'];
+            $IdCentroTrabajo= $_GET['IdCentroTrabajo'];
+            $prb = $model->GetCantidad($IdProduccion, $IdSubProceso, $IdCentroTrabajo);
+            return json_encode($prb);
+        }
+    }
 
+    public function actionDefectos($IdSubProceso,$IdArea){
+        $model = VDefectos::find()->where([
+            'IdSubProceso' => $IdSubProceso,
+            'IdArea'=>$IdArea,
+        ])->asArray()->all();
+        
+        return json_encode($model);
+    }
+    
+    public function actionSaveSeriesAceptadas(){
+        $model = new Series();
+        $model = $model::findOne($_GET['IdSerie']);
+        $model->IdSubProceso = $_GET['IdSubProceso'];
+        $model->IdCentroTrabajo = $_GET['IdCentroTrabajo'];
+        $model->update();
+    }
+
+    public function actionSaveSeriesDetalles(){
+        $model = new SeriesDetalles();
+        //$model = SeriesDetalles::find()->where('IdProduccionDetalle = '$_GET['IdProduccionDetalle'])->asArray()->one();
+        //$model = $model::findOne($_GET['IdProduccionDetalle']);
+        //$detalle = $model->IdSeriesDetalles;
+        //print_r($model);
+        if($model['IdSeriesDetalles'] == ""){
+            $model = new SeriesDetalles();
+            $model->load(['SeriesDetalles' => $_GET]);
+            $model->save();
+        }
+    }
+
+    public function actionSaveDetalleCalidad(){
+        $model = new ProduccionesDetalle();
+        $model = ProduccionesDetalle::find('IdProduccionDetalle')->where('IdProduccion = '.$_GET['IdProduccion'].' AND IdProductos = '.$_GET['IdProductos'].' AND IdEstatus = '.$_GET['IdEstatus'])->asArray()->one();
+        $IdProduccionDetalle = $model['IdProduccionDetalle'];
+        $model = new ProduccionesDetalle();
+        if($IdProduccionDetalle == ''){//Es nuevo, hay que agregarlo
+            $model->load(['ProduccionesDetalle' => $_GET]);
+            $model->save();
+        }
+        else{//Ya existe, actualizar en base al IdProduccionDetalle obtenido
+            $model = ProduccionesDetalle::findOne($IdProduccionDetalle);
+            $model->Rechazadas = 0;
+            $model->Hechas = $_GET['Hechas'];
+            $model->update();
+        }
+        echo $IdProduccionDetalle;
+    }
+
+    public function actionSaveExistencias(){
+        $model = new Existencias(); 
+        $model = $model::findOne($_GET['Id']);
+        $model->Cantidad -= $_GET['Cantidad'];
+        $model->update();
+    }
+
+    public function actionSaveInspeccionadas(){
+        $cantidad = $_GET['Cantidad'];
+        unset($_GET['Cantidad']);
+        $model = new Existencias();
+        $model = $model::findOne($_GET);
+        $model->Cantidad += $cantidad;
+        $model->update();
+    }
+
+    public function actionRecibe(){
+        var_dump($_FILES);
+        var_dump($_POST);        
+    }
+    /*
+     * END CODIGO PARA EL APARTADO DE CALIDAD   
+     */
 
     /************************************************************
      *                    OBTENCION DE DATOS
@@ -375,7 +609,37 @@ class ProduccionAceroController extends InventarioController
 
         foreach ($model as &$value) {
             $detalle = ProduccionesDetalle::find()->where("IdProgramacion = ".$value['IdProgramacion']." AND IdProductos = ".$value['IdProducto']." AND IdProduccion = ".$_REQUEST['IdProduccion']."")->asArray()->one();
-
+            $moldes = VProgramacionesCiclos::find()->where([
+                'IdProducto' =>  $value['IdProducto'],
+                'Dia' => $value['Dia'],
+            ])->asArray()->one();
+            $vaciadoOK = VProduccionCiclos::find()->select('Sum(Hechas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'IdSubProceso' => 10
+            ])->asArray()->one();
+            $vaciadoRec = VProduccionCiclos::find()->select('Sum(Rechazadas) AS total')->where([
+                'IdProductos' =>  $value['IdProducto'],
+                'Fecha' => $value['Dia'],
+                'IdSubProceso' => 10
+            ])->asArray()->one();
+            //var_dump($moldes);
+            
+            if(!is_null($moldes)){
+                $value['OkMoldesCerrados'] = $moldes['OkMoldesCerrados'];
+                $value['RecMoldesCerrados'] = $moldes['RecComponentesCerrado'] == 0 ? 0 : $moldes['RecComponentesCerrado'] / $moldes['BaseDivicion'];
+                $value['RepMoldesCerrados'] = $moldes['RepComponentesMoldeo'] == 0 ? 0 : $moldes['RepComponentesMoldeo'] / $moldes['BaseDivicion'];
+                $value['OkMoldesMoldeo'] = $moldes['OkComponentesMoldeo'] == 0 ? 0 : $moldes['OkComponentesMoldeo'] / $moldes['BaseDivicion'];
+            }
+            
+            if(!is_null($vaciadoOK)){
+                $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
+            }
+            
+            if(!is_null($vaciadoRec)){
+                $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
+            }
+            
             $value['Hechas'] = 0;
             if ($detalle != null) {
                 $value['Hechas'] = $detalle['Hechas'];
@@ -556,7 +820,6 @@ class ProduccionAceroController extends InventarioController
         $model = Turnos::find()->asArray()->all();
         return json_encode($model);
     }
-
 
     function actionSaveTiempo(){
        // $_REQUEST['Fecha'] = date('Y-m-d'); 
@@ -1038,12 +1301,14 @@ class ProduccionAceroController extends InventarioController
             'IdEmpleado' => $produccion['IdEmpleado']
         ]);
         
+        //var_dump($encabezado);exit;
         $movimiento = $this->actionGetMovimientos([
-            'idInventario' => $encabezado->IdInventario,
-            'IdCentroTrabajo' => 0,
-            'IdProducto' => $produccionDetalle->IdProductos
+            'IdInventario' => $encabezado->IdInventarios,
+            'IdCentroTrabajo' => 1,
+            'IdProducto' => $produccionDetalle->IdProductos,
+            'Cantidad' => $_REQUEST['Hechas'],
         ]);
-        var_dump($encabezado);
+        var_dump($movimiento);
         //Generar Transacciones
        
         return json_encode(
@@ -1104,14 +1369,21 @@ class ProduccionAceroController extends InventarioController
         }
         return $model;
     }*/
+    function actionSaveProgramacion(){
+        $model = ProgramacionesDia::findOne($_REQUEST['IdProgramacionDia']);
+        $model->Prioridad = $_REQUEST['Prioridad'] == 'true' ? 1 : 0;
+        $model->save();
+        var_dump($model);
+    }
+    
     function actionSaveDetalleAcero(){
-        //exit();
+        
         $data['Producciones'] = json_decode($_REQUEST['Produccion'],true);
         $data['ProduccionesDetalleMoldeo'] = json_decode($_REQUEST['ProduccionesDetalleMoldeo'],true);
         $data['Producciones']['Fecha'] = date('Y-m-d',strtotime($data['Producciones']['Fecha']));
         $data['ProduccionesDetalleMoldeo']['CiclosMoldeA'] *= 1;
         $IdParteMolde = '';
-                
+        //var_dump($data['ProduccionesDetalleMoldeo']); exit();        
         $comentarios = isset($data['ProduccionesDetalleMoldeo']['Comentarios']) ? $data['ProduccionesDetalleMoldeo']['Comentarios'] : '';
         
         //OBETENER PRODUCCION
@@ -1133,7 +1405,7 @@ class ProduccionAceroController extends InventarioController
         $ProduccionesCiclos = new ProduccionesCiclos();
         
         $cicloGenerado = false;
-        $FechaCreacion = date("Y-m-d H:i:s");
+        //$FechaCreacion = date('Y-m-d G:i:s');
         $Tipo = $produccion['IdSubProceso'] != 9 ? 'C' : 'M';
         
         if(!is_array($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'])){
@@ -1144,7 +1416,7 @@ class ProduccionAceroController extends InventarioController
         foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
             //if ($parte && $produccion['IdSubProceso'] != 17) { Se modifico el dia 9 Nov. 2015 para moldeo especial 
             if ($parte) {
-                
+              
                 $parte *= 1;
                 //GENERAR CICLO
                 if($data['ProduccionesDetalleMoldeo']['CiclosMoldeA'] > 1 || $cicloGenerado == false){
@@ -1154,7 +1426,7 @@ class ProduccionAceroController extends InventarioController
                             'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
                             'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'],
                             'Tipo' => $Tipo,
-                            'FechaCreacion' => $FechaCreacion,
+                            //'FechaCreacion' => "$FechaCreacion",
                             'Linea' => isset($data['ProduccionesDetalleMoldeo']['Linea']) == true ? $data['ProduccionesDetalleMoldeo']['Linea'] : ''
                         ]
                     ]);
@@ -1193,26 +1465,27 @@ class ProduccionAceroController extends InventarioController
         //echo "IDPARET MOLDE".$IdParteMolde;
 
         //// CONTROL DE CICLOS DE CERRADO
-        if ($produccion['IdSubProceso'] == 9) {
+        if ($produccion['IdSubProceso'] == 9 && $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1 ) {
             if($data['ProduccionesDetalleMoldeo']['CiclosMoldeA'] > 1 || $cicloGenerado == false){
+
                 $ProduccionesCiclos = new ProduccionesCiclos();
                 $ProduccionesCiclos->load([
                     'ProduccionesCiclos' => [
-                        'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
-                        'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'],
-                        'Tipo' => $Tipo,
-                        'FechaCreacion' => $FechaCreacion,
-                        'Linea' => isset($data['ProduccionesDetalleMoldeo']['Linea']) == true ? $data['ProduccionesDetalleMoldeo']['Linea'] : ''
+                    'IdProduccionDetalle' => $produccionDetalle->IdProduccionDetalle,
+                    'IdEstatus' => $data['ProduccionesDetalleMoldeo']['IdEstatus'],
+                    'Tipo' => $Tipo,
+                    //'FechaCreacion' => $FechaCreacion,
+                    'Linea' => isset($data['ProduccionesDetalleMoldeo']['Linea']) == true ? $data['ProduccionesDetalleMoldeo']['Linea'] : ''
                     ]
-                ]);   
+                ]);              
                 $cicloGenerado = true;
             }
             $ProduccionesCiclos->save();
         }
 
         //if ($produccion['IdSubProceso'] != 17) { Se modifico el dia 9 Nov. 2015 para moldeo especial 
-        if ($produccion['IdSubProceso'] != 9) {
-            if(($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7 || $produccion['IdSubProceso'] == 17)){
+        //if ($produccion['IdSubProceso'] != 9) {
+            if(($produccion['IdSubProceso'] == 6 || $produccion['IdSubProceso'] == 7 || $produccion['IdSubProceso'] == 17 || $produccion['IdSubProceso'] == 9)){
                 $totalOK = $ProduccionesCiclos::find()->select("count(IdProduccionDetalle) AS Ciclos")->where("IdProduccionDetalle = ".$produccionDetalle->IdProduccionDetalle." AND IdEstatus = 1")->asArray()->one();
                 $produccionDetalle->Hechas = $totalOK['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
             }elseif($data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1){
@@ -1224,15 +1497,9 @@ class ProduccionAceroController extends InventarioController
             $produccionDetalle->Rechazadas = $totalREC['Ciclos'] == 0 ? 0 : $totalREC['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
 
             $produccionDetalle->update();
-            //var_dump($produccionDetalle);
+            var_dump($produccionDetalle);
 
-        }elseif ($produccion['IdSubProceso'] == 17) {
-           /* $produccionDetalle->Hechas =  $produccionDetalle->Hechas*1; 
-            $produccionDetalle->Rechazadas = $produccionDetalle->Rechazadas*1;
-
-            $data['ProduccionesDetalleMoldeo']['IdEstatus'] == 1 ? $produccionDetalle->Hechas =  $produccionDetalle->Hechas + 1 :  $produccionDetalle->Rechazadas = $produccionDetalle->Rechazadas + 1;
-            $produccionDetalle->update();*/
-        }
+       // }
 
         //// CONTROL DE SERIES ----->INICIO
         //var_dump("Producto ".$producto->IdParteMolde);
@@ -1502,6 +1769,8 @@ class ProduccionAceroController extends InventarioController
                 'Kellblocks' => isset($data['Kellblocks']) ? $data['Kellblocks'] : '',
                 'Lingotes' => isset($data['Lingotes']) ? $data['Lingotes'] : '',
                 'Probetas' => isset($data['Probetas']) ? $data['Probetas'] : '',
+                'inicioLance' => isset($data['inicioLance']) ? $data['inicioLance'] : '',
+                'horaVaciado' => isset($data['horaVaciado']) ? $data['horaVaciado'] : '',
             ]
         ];
         $lances = new Lances();
@@ -1564,6 +1833,11 @@ class ProduccionAceroController extends InventarioController
         }else{
             return $this->actionTemperaturas($model->IdTemperatura);
         }
+    }
+	
+	 function actionDeleteTemperatura(){
+		
+        $model = Temperaturas::findOne($_REQUEST['IdTemperatura'])->delete();
     }
 
     function actionSaveTiempoAnalisis(){
@@ -1894,48 +2168,6 @@ class ProduccionAceroController extends InventarioController
 		 
 	 }
 	 
-	 public function actionProbetasvaciado(){
-		 
-	    $IdProduccion  = $_GET['IdProduccion'];
-		 // $model =  VTratamientosTermicos::find()
-		 $model =  VProbetas::find()
-						->where(" idProduccion = ".$IdProduccion)
-						->asArray()
-						->all();
-						
-		   return json_encode($model);
-	 }
-	 
-	 
-	  public function actionSaveprobetadetallevaciado(){	
-		$datos = [
-			 'IdLance' => $_GET['IdLance'],
-			 'Cantidad' => $_GET['Cantidad'],
-			 //'idProduccion' => $_GET['idProduccion'],
-			 'idProbeta' => isset($_REQUEST['idProbeta']) ?  $_REQUEST['idProbeta'] : 0
-		];
-		
-		$model = Probetas::find()->where(['idProbeta' =>$datos['idProbeta']])->one();
-		
-        if(is_null($model)){
-			echo 1;
-            $model = new Probetas();
-            $model->load(['Probetas' => $datos]);
-            $model->save();
-        }else{
-			echo 2;
-			$model->load(['Probetas' => $datos]);
-			$model->update();
-			var_dump($model);
-		}
-        //return $model;
-	 }
-	 
-	 public function actionDeleteprobetasdetallevaciado(){
-		
-		   $model = Probetas::findOne($_REQUEST['IdProbeta'])->delete();
-		 
-	 }
 	 
 	 
 	 public function actionUploadtt(){

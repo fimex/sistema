@@ -37,6 +37,16 @@ app.controller('ProgramacionAlmas', function($scope, $filter, ngTableParams, $ht
         });
     };
     
+    $scope.loadCentros = function(){
+        console.log($scope.IdSubProceso);
+        return $http.get('/fimex/angular/centros-trabajo',{params:{
+            IdSubProceso:$scope.IdSubProceso,
+            IdArea:$scope.IdArea
+        }}).success(function(data) {
+            $scope.centros = data;
+        });
+    };
+    
     $scope.loadMarcas = function(){
         return $http.get('marcas').success(function(data) {
             $scope.clientes = [];
@@ -59,6 +69,7 @@ app.controller('ProgramacionAlmas', function($scope, $filter, ngTableParams, $ht
             $scope.dias = data;
             $scope.loadProgramacionDiaria();
             $scope.loadMaquinas();
+            $scope.loadCentros();
         });
     }
     
@@ -105,6 +116,7 @@ app.controller('ProgramacionAlmas', function($scope, $filter, ngTableParams, $ht
             Dia: $scope.selected['Dia'+dia],
             Programadas: $scope.selected['Programadas'+dia],
             Maquina: $scope.selected['Maquina'+dia],
+            Centro: $scope.selected['Centro'+dia]
         }}).success(function(data){
             if(data == true){
                 $scope.loadProgramacionDiaria();

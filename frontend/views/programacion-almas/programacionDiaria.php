@@ -27,7 +27,7 @@ $this->title = $title;
     }
     #scrollable-area {
         margin: auto;
-        height: 800px;
+        height: 700px;
         border: 2px solid #ccc;
         overflow-y: scroll; /* <-- here is what is important*/
     }
@@ -65,10 +65,11 @@ $this->title = $title;
                     <th rowspan="2">Prog</th>
                     <th rowspan="2">Total Prog</th>
                     <th rowspan="2">H</th>
-                    <th colspan="4" ng-repeat="dia in dias">{{dia}}</th>
+                    <th colspan="5" ng-repeat="dia in dias">{{dia}}</th>
                 </tr>
                     <?php for($x=1;$x<=6;$x++):?>
                     <th style="width: 100px;">Maq</th>
+                    <th style="width: 100px;">Proceso</th>
                     <th>Prg</th>
                     <th>H</th>
                     <th style="width: 33px;">F</th>
@@ -84,12 +85,15 @@ $this->title = $title;
                     <th ng-class="{success: programacion.Hechas >= programacion.Programadas, danger: programacion.Hechas == 0, warning: programacion.Hechas < programacion.Programadas}">{{programacion.Hechas}}</th>
 
                 <?php for($x=1;$x<=6;$x++):?>
-                    <td><select ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Maquina<?=$x?>">
+                    <td><select class="form-control" style="min-width: 100px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Maquina<?=$x?>">
                         <option ng-selected="programacion.Maquina<?=$x?> == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}}</option>
                     </select></td>
-                    <td><input class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></td>
-                    <td>{{programacion.Hechas<?=$x?>}}</td>
-                    <td>{{programacion.Programadas<?=$x?> - programacion.Hechas<?=$x?>}}</td>
+                    <td><select class="form-control" style="min-width: 100px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Centro<?=$x?>">
+                        <option ng-selected="programacion.Centro<?=$x?> == centro.IdCentroTrabajo" value="{{centro.IdCentroTrabajo}}" ng-repeat="centro in centros">{{centro.Descripcion}}</option>
+                    </select></td>
+                    <td><input class="form-control" class="filter" style="min-width: 80px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}"></td>
+                    <td style="min-width: 50px; font-size: 9pt;">{{programacion.Hechas<?=$x?>}}</td>
+                    <td style="min-width: 50px; font-size: 9pt;">{{programacion.Programadas<?=$x?> - programacion.Hechas<?=$x?>}}</td>
                 <?php endfor; ?>
                 </tr>
             </tbody>

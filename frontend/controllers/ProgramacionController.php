@@ -404,7 +404,9 @@ class ProgramacionController extends Controller
     public function actionPedidos(){
         $this->layout = 'JSON';
         $model = new Pedidos();
-        $dataProvider = $model->getSinProgramar(isset($_REQUEST['fecha']) ? date('Y-m-d',strtotime($_REQUEST['fecha'])) : '');
+        
+        $fecha = isset($_REQUEST['fecha']) ? date('Y-m-d',strtotime($_REQUEST['fecha'])) : '';
+        $dataProvider = $model->getSinProgramar($fecha , $_REQUEST['IdArea']);
 
         if(count($dataProvider)>0){
             return json_encode([
@@ -710,8 +712,12 @@ class ProgramacionController extends Controller
     }
     
     public function getProgramacion($pedido,$where = [],$agrupado=0){
-        $Programacion = $agrupado ==1 ? Programaciones::find()->where($where)->one() : null;
+        $Programacion = null;
         
+        if($agrupado == 1){
+            $where['Agrupado'] = $agrupado;
+            $Programacion = Programaciones::find()->where($where)->one();
+        }
         
         if(is_null($Programacion)){
             $Programacion = new Programaciones();
@@ -723,7 +729,8 @@ class ProgramacionController extends Controller
                     'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
                     'IdProgramacionEstatus' => 1,
                     'IdProducto' => $where['IdProducto'],
-                    'Programadas' => 0
+                    'Programadas' => 0,
+                    'Agrupado' => $agrupado
                 ]
             ]);
             $Programacion->save();
@@ -770,7 +777,7 @@ class ProgramacionController extends Controller
                         'PedProg' => [
                             'IdPedido' => $Pedido->IdPedido,
                             'IdProgramacion' => $Programacion->IdProgramacion,
-                            'OrdenCompra' => $Pedido->OrdenCompra,
+                            'OrdenCompra' => $area['AgruparPedidos'] == 1 ? "Agrupados" : $Pedido->OrdenCompra,
                             'FechaMovimiento' => date('Y-m-d G:i:s')
                         ]
                     ]);

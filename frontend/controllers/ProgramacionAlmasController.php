@@ -261,7 +261,8 @@ class ProgramacionAlmasController extends Controller
 
         if(isset($dat['Programadas'])){
             $maq = $maquinas->find()->where("IdMaquina = ".$dat['Maquina'])->asArray()->all();
-            $datosSemana = $dat['IdProgramacionAlmaSemana'].",'".$dat['Dia']."',".$dat['Prioridad'].",".$dat['Programadas'].",".$dat['Maquina'].",".$maq[0]['IdCentroTrabajo'];
+            $centro = isset($dat['Centro']) ? $dat['Centro'] : $maq[0]['IdCentroTrabajo'];
+            $datosSemana = $dat['IdProgramacionAlmaSemana'].",'".$dat['Dia']."',".$dat['Prioridad'].",".$dat['Programadas'].",".$dat['Maquina'].",$centro";
             $model->setProgramacionDiaria($datosSemana);
             return true;
         }

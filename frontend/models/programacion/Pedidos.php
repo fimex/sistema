@@ -104,10 +104,13 @@ class Pedidos extends \yii\db\ActiveRecord
         return $this->hasOne(Productos::className(), ['IdProducto' => 'IdProducto']);
     }
     
-    public function getSinProgramar($fecha = '')
+    public function getSinProgramar($fecha = '',$area = '')
     {
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
+        if($area == ''){
+            $area = Yii::$app->session->get('area');
+            $area = $area['IdArea'];
+        }
+
         $fecha = $fecha == '' ? "" : "AND Fecha >= '$fecha'";
         $sql = "SELECT * FROM v_PedidosPorProgramar Where IdPresentacion = $area $fecha";
         $command = \Yii::$app->db;

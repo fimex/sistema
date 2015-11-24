@@ -3,8 +3,8 @@
 namespace frontend\models\produccion;
 
 use Yii;
-use common\models\datos\Causas;
-use common\models\datos\Maquinas;
+use common\models\datos\Causas; 
+use common\models\datos\Maquinas; 
 
 /**
  * This is the model class for table "TiemposMuerto".
@@ -18,6 +18,7 @@ use common\models\datos\Maquinas;
  * @property string $Fecha
  * @property integer $IdTurno
  * @property integer $IdEmpleado
+ * @property string $Orden
  *
  * @property Causas $idCausa
  * @property Empleados $idEmpleado
@@ -43,7 +44,7 @@ class TiemposMuerto extends \yii\db\ActiveRecord
             [['IdMaquina', 'IdCausa', 'Fecha'], 'required'],
             [['IdMaquina', 'IdCausa', 'IdTurno', 'IdEmpleado'], 'integer'],
             [['Inicio', 'Fin', 'Fecha'], 'safe'],
-            [['Descripcion'], 'string']
+            [['Descripcion', 'Orden'], 'string']
         ];
     }
 
@@ -62,6 +63,7 @@ class TiemposMuerto extends \yii\db\ActiveRecord
             'Fecha' => 'Fecha',
             'IdTurno' => 'Id Turno',
             'IdEmpleado' => 'Id Empleado',
+            'Orden' => 'Orden',
         ];
     }
 

@@ -13,10 +13,6 @@ use Yii;
  * @property string $Tipo
  * @property string $FechaCreacion
  * @property integer $Linea
- *
- * @property ProduccionesCiclosDetalle[] $produccionesCiclosDetalles
- * @property CiclosTipo $idEstatus
- * @property ProduccionesDetalle $idProduccionDetalle
  */
 class ProduccionesCiclos extends \yii\db\ActiveRecord
 {
@@ -54,29 +50,5 @@ class ProduccionesCiclos extends \yii\db\ActiveRecord
             'FechaCreacion' => 'Fecha Creacion',
             'Linea' => 'Linea',
         ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getProduccionesCiclosDetalles()
-    {
-        return $this->hasMany(ProduccionesCiclosDetalle::className(), ['IdProduccionCiclos' => 'IdProduccionCiclos']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdProduccionDetalle()
-    {
-        return $this->hasOne(ProduccionesDetalle::className(), ['IdProduccionDetalle' => 'IdProduccionDetalle']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdEstatus()
-    {
-        return $this->hasOne(CiclosTipo::className(), ['IdCicloTipo' => 'IdEstatus']);
     }
 }

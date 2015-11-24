@@ -18,7 +18,6 @@ use frontend\models\produccion\MantenimientoHornos;
 use frontend\models\produccion\VCapturaExceleada;
 use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\programacion\VProgramacionesAlmaDia;
-use frontend\models\programacion\ProgramacionesAlmaDia;
 use frontend\models\programacion\VAlmasRebabeo;
 use common\models\vistas\VAleaciones;
 use common\models\catalogos\VDefectos;
@@ -458,29 +457,12 @@ class AngularController extends \yii\web\Controller
     
     public function actionProgramacion(){
         $_REQUEST['Dia'] = date('Y-m-d',strtotime($_REQUEST['Dia']));
-        
-		unset($_REQUEST['IdMaquina']);
+        unset($_REQUEST['IdMaquina']);
         
         if($_REQUEST['IdSubProceso'] == 2 || $_REQUEST['IdSubProceso'] == 4){
+            unset($_REQUEST['IdSubProceso']);
             unset($_REQUEST['IdTurno']);
-			
-			if ($_REQUEST['IdSubProceso'] == 4 ){
-				unset($_REQUEST['IdSubProceso']);
-				$fecha = $_REQUEST['Dia'];
-				$nuevafecha = strtotime ( '-7 day' , strtotime ( $fecha ) ) ;
-				$fechainicio = date ( 'Y-m-d' , $nuevafecha );
-				$model = VProgramacionesAlmaDia::find()->where([
-					'between', 'Dia',$fechainicio,$_REQUEST['Dia'] ,
-					'IdArea'=> $_REQUEST['IdArea'],
-				])->asArray()->all();
-			} else {
-				unset($_REQUEST['IdSubProceso']);
-				$model = VProgramacionesAlmaDia::find()->where($_REQUEST)->asArray()->all();
-				
-			}
-			
-			
-			
+            $model = VProgramacionesAlmaDia::find()->where($_REQUEST)->asArray()->all();
         }elseif($_REQUEST['IdSubProceso'] == 3){
             unset($_REQUEST['IdSubProceso']);
             unset($_REQUEST['Dia']);
@@ -790,7 +772,7 @@ class AngularController extends \yii\web\Controller
         $model['Inicio'] = date('H:i',strtotime($model['Inicio']));
         $model['Fin'] = date('H:i',strtotime($model['Fin']));
         
-        $this->actualizaHechasAlmas($model);
+        //$this->actualizaHechas($model);
         
         return json_encode(
             $model
@@ -819,48 +801,8 @@ class AngularController extends \yii\web\Controller
         //var_dump($model2);exit;
         $model = AlmasProduccionDetalle::findOne($_REQUEST['IdAlmaProduccionDetalle'])->delete();
         //$this->actualizaHechas($model2);
-		$this->actualizaHechasAlmas($model2);
     }
     
-    function actualizaHechasAlmas($produccion){
-		// var_dump ( $produccion['idProducto']['IdProducto'] ); exit;
-		$almasProduccionDetalle = AlmasProduccionDetalle::find()
-								->where([
-									'IdProduccion' => $produccion['IdProduccion'],
-									'idProducto' =>  $produccion['idProducto']['IdProducto'],
-								])
-								->with('idProducto')
-								->with('idAlmaTipo')
-								->with('idProduccion')
-					->asArray()->all();
-		$hechas = 0 ;
-		foreach($almasProduccionDetalle as $detalle){
-            $hechas += $detalle['Hechas'];
-        }
-		
-		// echo "hhhh"; var_dump($almasProduccionDetalle);exit;
-		
-		$where['IdProgramacionAlma'] = $produccion['IdProgramacionAlma'];
-		
-		
-		$programacionAlmaDia = VProgramacionesAlmaDia::find()->where($where)->asArray()->one();
-		$programacionDia = ProgramacionesAlmaDia::findOne($programacionAlmaDia['IdProgramacionAlmaDia']);
-		$programacionDia->Hechas = $hechas;
-		
-		
-		// echo "Guarda";
-		if ($programacionDia->save() !== false ) {
-			 // echo "OK";
-		}else{
-			 // echo "camote";
-		};
-		// echo "salvado";
-		 // var_dump($programacionDia);
-		
-		
-	}
-	
-	
     function actualizaHechas($produccion){
         $where['IdProgramacion'] = $produccion['IdProgramacion'];
         $where['Dia'] = date('Y-m-d',strtotime($produccion['idProduccion']['Fecha']));

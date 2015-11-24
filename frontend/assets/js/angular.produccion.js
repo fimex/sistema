@@ -449,7 +449,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             return $http.get('save-detalle',{params:$scope.detalles[index]}).success(function(data) {
                 $scope.detalles[index] = data;
                 $scope.loadProgramacion();
-            });
+            }).error(function(){$scope.detalles[index]['active'] = undefined});
         }
     };
     
@@ -576,7 +576,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             return $http.get('save-rechazo',{params:$scope.rechazos[index]}).success(function(data) {
                 $scope.rechazos[index] = data;
                 $scope.loadDetalle();
-            });
+            }).error(function(){$scope.rechazos[index]['active'] = undefined});
         }
     };
     /********************************************************************
@@ -638,7 +638,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             if(($scope.TiemposMuertos[index].Incio != '00:00' && $scope.TiemposMuertos[index].Fin != '00:00') || $scope.TiemposMuertos[index].IdCausa != null){
                 return $http.get('save-tiempo',{params:$scope.TiemposMuertos[index]}).success(function(data) {
                     $scope.TiemposMuertos[index] = data;
-                });
+                }).error(function(){$scope.TiemposMuertos[index]['active'] = undefined});
             }
         }
     };
@@ -693,7 +693,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
             return $http.get('save-consumo',{params:$scope.consumos[index]}).success(function(data) {
                 $scope.consumos[index] = data;
-            });
+            }).error(function(){$scope.consumos[index]['active'] = undefined});
         }
     };
     
@@ -743,7 +743,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
                 if(data != false){
                     $scope.temperaturas[index] = data;
                 }
-            });
+            }).error(function(){$scope.temperaturas[index]['active'] = undefined});
         }   
     };
     
@@ -798,7 +798,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
                     $scope.detalles[index] = data;
                 }
                 console.log($scope.detalles[index]);
-            });
+            }).error(function(){$scope.detalles[index]['active'] = undefined});
         }
     };
     
@@ -876,7 +876,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
                 IdAlmaProduccionDetalle = $scope.almasRechazos[index].IdAlmaProduccionDetalle;
                 $scope.almasRechazos[index] = data;
                 $http.get('total-rechazo',{params:{IdAlmaProduccionDetalle:IdAlmaProduccionDetalle}}).success(function(data){$scope.detalles[$scope.indexDetalle].Rechazadas = data;});
-            });
+            }).error(function(){$scope.almasRechazos[index]['active'] = undefined});
         }
     };
     

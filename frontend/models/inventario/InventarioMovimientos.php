@@ -10,12 +10,14 @@ use Yii;
  * @property integer $IdInventarioMovimiento
  * @property integer $IdInventario
  * @property integer $IdCentroTrabajo
+ * @property integer $IdProducto
  * @property string $Tipo
  * @property integer $Cantidad
- * @property integer $Exixtencia
+ * @property integer $Existencia
+ * @property string $Observaciones
  *
- * @property Inventarios $idInventario
  * @property CentrosTrabajo $idCentroTrabajo
+ * @property Inventarios $idInventario
  * @property SeriesMovimientos[] $seriesMovimientos
  */
 class InventarioMovimientos extends \yii\db\ActiveRecord
@@ -34,9 +36,9 @@ class InventarioMovimientos extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdInventario', 'IdCentroTrabajo', 'Tipo'], 'required'],
-            [['IdInventario', 'IdCentroTrabajo', 'Cantidad', 'Exixtencia'], 'integer'],
-            [['Tipo'], 'string']
+            [['IdInventario', 'IdCentroTrabajo', 'IdProducto', 'Tipo'], 'required'],
+            [['IdInventario', 'IdCentroTrabajo', 'IdProducto', 'Cantidad', 'Existencia'], 'integer'],
+            [['Tipo', 'Observaciones'], 'string']
         ];
     }
 
@@ -49,18 +51,12 @@ class InventarioMovimientos extends \yii\db\ActiveRecord
             'IdInventarioMovimiento' => 'Id Inventario Movimiento',
             'IdInventario' => 'Id Inventario',
             'IdCentroTrabajo' => 'Id Centro Trabajo',
+            'IdProducto' => 'Id Producto',
             'Tipo' => 'Tipo',
             'Cantidad' => 'Cantidad',
-            'Exixtencia' => 'Exixtencia',
+            'Existencia' => 'Existencia',
+            'Observaciones' => 'Observaciones',
         ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdInventario()
-    {
-        return $this->hasOne(Inventarios::className(), ['IdInventarios' => 'IdInventario']);
     }
 
     /**
@@ -69,6 +65,14 @@ class InventarioMovimientos extends \yii\db\ActiveRecord
     public function getIdCentroTrabajo()
     {
         return $this->hasOne(CentrosTrabajo::className(), ['IdCentroTrabajo' => 'IdCentroTrabajo']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdInventario()
+    {
+        return $this->hasOne(Inventarios::className(), ['IdInventarios' => 'IdInventario']);
     }
 
     /**

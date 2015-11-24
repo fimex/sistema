@@ -57,7 +57,7 @@ if ($IdAreaAct == 1){
     }
     
     #detalle, #rechazo, #TMuerto, #Temperaturas{
-        height:280px;
+        height:380px;
     }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="
@@ -72,11 +72,8 @@ if ($IdAreaAct == 1){
     <?php endif?>
     <?php if($IdSubProceso == 10):?>
         loadEmpleados(['1-5']);
-    <?php endif?>
-    <?php if($IdSubProceso == 10):?>
         loadAleaciones();
     <?php endif?>
-	loadLances();
 ">
     <?php if ($IdSubProceso == 6):?>
         <h3>Molde <?= $nameAreAc?></h3>
@@ -154,41 +151,58 @@ if ($IdAreaAct == 1){
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="colada" class="input-group-addon">Colada:</span>
-                            <input ng-show="!mostrar" class="form-control" ng-model="produccion.lances.Colada" ng-value="{{produccion.lances.Colada}}"/>
+                            <input ng-show="!mostrar" class="form-control" ng-model="Colada" ng-value="{{Colada}}"/>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.Colada}}"/>
                         </div>
                     </div>
-                    <div class="col-md-2">
+					<div class="col-md-2">
                         <div class="input-group">
                             <span id="lance" class="input-group-addon">Lance:</span>
-                            <input ng-show="!mostrar" class="form-control" ng-model="produccion.lances.Lance" ng-value="{{produccion.lances.Lance}}"/>
+                            <input ng-show="!mostrar" class="form-control" ng-model="Lance" ng-value="{{Lance}}"/>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.Lance}}"/>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span id="lance" class="input-group-addon">Inicio Lance:</span>
+                            <input ng-show="!mostrar" class="form-control" ng-model="inicioLance" ng-value="{{inicioLance}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.inicioLance}}"/>
+                        </div>
+                    </div>
+					 <div class="col-md-2">
+                        <div class="input-group">
+                            <span id="lance" class="input-group-addon">Hora Vaciado:</span>
+                            <input ng-show="!mostrar" class="form-control" ng-model="horaVaciado" ng-value="{{horaVaciado}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.horaVaciado}}"/>
+                        </div>
+                     </div>
+					 
                 </div>
                 <br>
-               <!-- <div class="row">
+                <div class="row">
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">KellBlocks:</span>
-                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Kellblocks" ng-value="{{produccion.lances.Kellblocks}}"/>
+                            <input ng-show="!mostrar" class="form-control" ng-model="Kellblocks" ng-value="{{Kellblocks}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Kellblocks" ng-value="{{produccion.lances.Kellblocks}}"/>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">Lingotes:</span>
-                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Lingotes" ng-value="{{produccion.lances.Lingotes}}"/>
+							<input ng-show="!mostrar" class="form-control" ng-model="Lingotes" ng-value="{{Lingotes}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Lingotes" ng-value="{{produccion.lances.Lingotes}}"/>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">Probetas:</span>
-                            <input ng-enabled="mostrar" class="form-control" ng-model="produccion.lances.Probetas" ng-value="{{produccion.lances.Probetas}}"/>
+							<input ng-show="!mostrar" class="form-control" ng-model="Probetas" ng-value="{{Probetas}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Probetas" ng-value="{{produccion.lances.Probetas}}"/>
 
                         </div>
                     </div>
                 </div>
-				-->
                 <?php endif;?>
                 <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-2">
@@ -308,13 +322,6 @@ if ($IdAreaAct == 1){
                 'subProceso'=>$IdSubProceso,
             ]);?>
         </div>
-		<div class="col-md-4">
-			 <?= $this->render('FormProduccionDetalleProbetasVaciado',[
-                'subProceso'=>$IdSubProceso,
-            ]);?>
-		</div>
-		
-		
     </div>
     <?php endif?>
 

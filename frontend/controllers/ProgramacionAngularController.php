@@ -197,7 +197,7 @@ class ProgramacionAngularController extends Controller
             $tarima = Tarimas::findOne($data['IdTarima']);
             $IdProgramacionDia = $tarima->IdProgramacionDia;
             $tarima->delete();
-            $this->actualizarProgramacionDiaria(['IdProgramacionDia' => $IdProgramacionDia]);
+            //$this->actualizarProgramacionDiaria(['IdProgramacionDia' => $IdProgramacionDia]);
         }
         return json_encode($_REQUEST);
     }
@@ -234,7 +234,7 @@ class ProgramacionAngularController extends Controller
                 $tarima->update();
             }
 
-            $this->actualizarProgramacionDiaria(['IdProgramacionDia' => $programacionDiaria->IdProgramacionDia]);
+            //$this->actualizarProgramacionDiaria(['IdProgramacionDia' => $programacionDiaria->IdProgramacionDia]);
             $tarima = VTarimas::find()->where([
                 'Loop' => $data['Loop'],
                 'Tarima' => $data['Tarima'],

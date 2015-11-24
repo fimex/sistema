@@ -112,8 +112,8 @@ $this->title = $title;
                     <td>{{programacion.Existencia}}</td>
                     <td>{{(programacion.Requeridas1 + programacion.Requeridas2 + programacion.Requeridas3) - programacion.Existencia}}</td>
                     <?php for($x=1;$x<=4;$x++):?>
-                    <td style="width:80px"><input class="form-control" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Prioridad<?=$x?>" value="{{programacion.Prioridad<?=$x?>}}" /></td>
-                    <td style="width:80px"><input class="form-control" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}" /></td>
+                    <td style="min-width:80px"><input class="form-control" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Prioridad<?=$x?>" value="{{programacion.Prioridad<?=$x?>}}" /></td>
+                    <td style="min-width:80px"><input class="form-control" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionSemanal(<?=$x?>);" ng-model="programacion.Programadas<?=$x?>" value="{{programacion.Programadas<?=$x?>}}" /></td>
                     <td style="width:80px"></td>
                     <td style="width:80px"></td>
                     <?php endfor;?>

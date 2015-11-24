@@ -40,9 +40,9 @@
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
 
-                    <th>{{1*detalle.Llenadas}}</th>
-                    <th>{{detalle.Cerradas}}</th>
-                    <th>{{detalle.CantVaciadas}}</th>
+                    <th>{{detalle.OkMoldesMoldeo}}</th>
+                    <th>{{detalle.OkMoldesCerrados}}</th>
+                    <th>{{detalle.OkMoldesVaciados}}</th>
                     <!--<th>{{1*detalle.Llenadas - 1*detalle.CantVaciadas}}</th>-->
 
                     <th rowspan="1" ></th>

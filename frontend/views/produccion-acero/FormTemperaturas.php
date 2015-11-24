@@ -18,7 +18,6 @@
                     <?php endif;?>
                     <?php if($IdSubProceso == 10): ?>
                     <th>Hornero / Vaciador</th>
-                    <th>Moldes</th>
                     <?php endif;?>
                 </tr>
             </thead>
@@ -29,7 +28,7 @@
                 >
                     <?php if($IdSubProceso != 2): ?>
                     <th><select class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.IdMaquina">
-                            <option ng-selected="temperatura.IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
+                        <option ng-show="maquina.IdMaquina === produccion.IdMaquina || maquinas[indexMaquina].IdCentroTrabajo !== maquina.IdCentroTrabajo" ng-selected="temperatura.IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
                     </select></th>
                     <?php endif;?>
                     <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Fecha" value="{{temperatura.Fecha | date:'HH:mm'}}" /></th>
@@ -43,7 +42,6 @@
                             <option ng-selected="temperatura.IdEmpleado == em.IdEmpleado" ng-repeat="em in empleados" ng-value="{{em.IdEmpleado}}">{{em.NombreCompleto}}</option>
                         </select>
                     </th>
-                    <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Moldes" value="{{temperatura.Moldes}}"/></th>
                     <?php endif;?>
                     <th class="col-md-2">
                         <button class="btn btn-success btn-xs" ng-click="saveTemperatura($index)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>

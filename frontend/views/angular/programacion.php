@@ -18,6 +18,7 @@ use yii\helpers\URL;
             <thead>
                 <tr>
                     <th>Pr</th>
+                    <th>Turno</th>
                     <th>Producto</th>
                     <th>Aleacion</th>
                     <th>Prog</th>
@@ -33,6 +34,7 @@ use yii\helpers\URL;
                     ng-click="selectProgramacion($index);"
                 >
                     <th>{{programacion.Prioridad}}</th>
+                    <th>{{programacion.TurnoIdentificador}}</th>
                     <th>{{programacion.ProductoCasting}}</th>
                     <th>{{programacion.Aleacion}}</th>
                     <th>{{programacion.Programadas}}</th>

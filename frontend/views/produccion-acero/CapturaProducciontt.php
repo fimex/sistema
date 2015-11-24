@@ -356,7 +356,7 @@ $this->title = $title;
 	   <div class= 'row'>
 		
 			 <div class="col-md-5">
-            <?= $this->render('FormProduccionDetalleProbetas',[
+            <?= $this->render('FormProduccionDetalleprobetas',[
                 'IdSubProceso'=>$IdSubProceso,
             ]);?>
 			</div>

@@ -65,7 +65,6 @@ class InventarioController extends \yii\web\Controller
             $model->load(['InventarioMovimientos' => $data]);
             $model->Tipo = 'E';
             $model->save();
-
             $model = Inventarios::find()->where($data)->one();
         }
         
@@ -79,8 +78,8 @@ class InventarioController extends \yii\web\Controller
         $model->save();
     }
     
-    function actionAfectar(){
-        $encabezado = Inventarios::find()->where($_REQUEST)->one();
+    function actionAfectar($data){
+        $encabezado = Inventarios::find()->where($data)->one();
         $encabezado->IdEstatusInventario = 3;
         
         $partidas = InventarioMovimientos::find()->where([

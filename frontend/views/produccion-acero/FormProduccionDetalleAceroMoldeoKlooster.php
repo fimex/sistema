@@ -6,6 +6,16 @@
 <div class="panel panel-primary">
     <!-- Default panel contents -->
     <div class="panel-heading">Captura de produccion</div>
+    <div class="panel-body">
+        <div class="input-group">
+            <span id="Productos" class="input-group-addon">Ver Productos:</span>
+            <select aria-describedby="Productos" class="form-control input-sm" ng-model="filtro.Prioridad" style="max-width: 100px;">
+                <option value=''>Todos</option>
+                <option value='1'>Con Prioridad</option>
+                <option value='0'>Sin Prioridad</option>
+            </select>
+        </div>
+    </div>
     <div id="detalle">
         <table ng-table class="table table-condensed table-striped table-bordered">
             <tr>
@@ -19,7 +29,7 @@
                 <th colspan="2" class="text-center"  >Moldes</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
-                <th colspan="4" class="text-center"  >Cerrados</th>
+                <th colspan="2" class="text-center"  >Cerrados</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th colspan="2" class="text-center"  >Vaciados</th>
             </tr>
@@ -38,55 +48,54 @@
                 <th colspan="2">Reposicion</th>
                 <th class="width-40">OK</th>
                 <th class="width-40">RECH</th>
-                <th colspan="2" class="width-40">Ok</th>
-                <th colspan="2" class="width-30">Rech</th>
-                <th class="width-40">Ok</th>
+                <th class="width-40">OK</th>
+                <th class="width-30">Rech</th>
+                <th class="width-40">OK</th>
                 <th class="width-30">Rech</th>
             </tr> 
-            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
-                <th>{{detalle.Prioridad}}</th>
+            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros | filter:filtro" ng-init="detalle.Prioridad != 'true' ? 'false' : 'true'">
+                <th><input ng-click="detalle.Prioridad = !detalle.Prioridad; saveProgramacion(detalle)" ng-checked="detalle.Prioridad == 1" type="checkbox" /></th>
                 <th>{{detalle.Programadas}}</th>
-                <th>{{detalle.Programadas - detalle.Llenadas | currency:"":1}}</th>
-                <th>{{detalle.OKMoldeo - detalle.Cerradas}}</th>
+                <th><span>{{detalle.Programadas - detalle.OkMoldesMoldeo + detalle.RecMoldesCerrado | currency:"":1}} </span></th>
+                <th><span>{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados - detalle.RecMoldesCerrado | currency:"":1}}</span></th>
                 <td class="col-md-3">{{detalle.Producto}}</td>
                 <th>{{detalle.Aleacion}}</th>
                 <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">{{detalle.SerieInicio || '--'}}</th>
                 <th>{{detalle.CiclosMolde}}</th>
-                <th>{{ IdAreaAct == 1 ? (detalle.CiclosMolde * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado) : ( IdAreaAct == 2 ? (detalle.CiclosMolde * detalle.Programadas) - (detalle.OKVarel*1) + (detalle.RECVarel*1) + (detalle.REPVarel - detalle.RECCerrado) : (detalle.CiclosMolde * detalle.Programadas) - (detalle.Llenadas*1) + (detalle.Rechazadas*1) + (detalle.REPEspecial - detalle.RECCerrado) ) }}</th>
-                <th colspan="4" ng-show="!detalle.SerieInicio && detalle.LlevaSerie">Configurar serie para poder capturar</th>
+                <th>{{detalle.CiclosRequeridosMoldeo}}</th>
+                <th colspan="6" ng-show="!detalle.SerieInicio && detalle.LlevaSerie">SERIE NO CONFIGURADA</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct == 1 ? detalle.OKMoldeo  : (IdAreaAct == 2 ? (detalle.OKVarel - detalle.RECVarel) : (detalle.Llenadas - detalle.Rechazadas) ) }}</th>
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(16);ModelMoldeo($index,4); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct == 1 ? detalle.RECMoldeo : ( IdAreaAct == 2 ? detalle.RECVarel || 0 : detalle.Rechazadas*1 || 0 )  }}</th>
-                <th>
-                    <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,9);" class="btn btn-info btn-sm">
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
+                    <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,10);" class="btn btn-info btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th>{{detalle.REPMoldeo}}</th>
-                <th>{{detalle.Llenadas | currency:"":1}}</th>
-                <th>{{detalle.OKCerrado || 0}}</th>
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RepCiclosMoldeo}}</th>
+                <th>{{detalle.OkMoldesMoldeo | currency:"":1}}
+                <!--{{(detalle.Llenadas -(-detalle.REPMoldeo)) | currency:"":1}}--></th>
+                <th>{{detalle.RecMoldesMoldeo}}</th>
                 
-                <th></th>
-                <th>{{detalle.Cerradas | currency:"":1}}</th>
-                <th></th>
-                <th>{{detalle.RECCerrado | currency:"":1}}</th>
+                <th>{{detalle.OkMoldesCerrados | currency:"":1 || 0}}</th>
+                <th>{{detalle.RecMoldesCerrado | currency:"":1 || 0}}</th>
 
-                <th>{{detalle.VaciadoOK || 0}}</th>
-                <th>{{detalle.VaciadoREC || 0}}</th>
+                <th>{{detalle.OkMoldesVaciados || 0}}</th>
+                <th>{{detalle.RecMoldesVaciados || 0}}</th>
             </tr>
         </table>
 
         <!--#####################################################
-        ########################   Modal ########################
+        ########################   Modal   ########################
         #########################################################-->
 
         <!--########################### CICLOS REPOSICION KLOOSTER ########################-->
@@ -130,7 +139,7 @@
                 <div class="form-group">
                     <label for="producto">No Parte: </label> <label style="color:green;" >{{programacionAceros[index].Producto}}</label>
                     <input type="hidden" class="form-control" ng-model="idproducto" value="idproducto" id="Producto" />
-                </div>  
+                </div>
                 <div style="float:left; width:30%;">
                     <label>Parte del Molde</label><br>
                     <div ng-repeat="parte in partes">
@@ -141,7 +150,7 @@
                 </div>
 
                 <div style="float:left; width:60%;" >
-                    <div id="lb-serie" > 
+                    <div id="lb-serie" >
                         <label style="text-align:center;" ng-show="showserie" >
                             Serie: 
                             <label style="color:red; font-size:15pt;">{{programacionAceros[index].SerieInicio}}</label>
@@ -155,4 +164,3 @@
         </modal>
     </div>
 </div>
-

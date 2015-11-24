@@ -14,12 +14,12 @@
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th colspan="5" class="text-center" >Datos</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
-                <th colspan="6" class="text-center">Ciclos</th>
+                <th colspan="7" class="text-center">Ciclos</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th colspan="2" class="text-center"  >Moldes</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
-                <th colspan="4" class="text-center"  >Cerrados</th>
+                <th colspan="2" class="text-center"  >Cerrados</th>
                 <th rowspan="{{programacionAceros.length + 2}}"></th>
                 <th colspan="2" class="text-center"  >Vaciados</th>
             </tr>
@@ -33,58 +33,57 @@
                 <th>Serie</th>
                 <th>CxM</th>
                 <th class="width-80">Cic Req</th>   
-                <th colspan="2" class="width-30">OK</th>
+                <th colspan="1" class="width-30">Total</th>
+                <th colspan="2" class="width-30">Ok</th>
                 <th colspan="2" class="width-30">Rech</th>
                 <th colspan="2">Reposicion</th>
                 <th class="width-40">OK</th>
                 <th class="width-40">RECH</th>
-                <th colspan="2" class="width-40">Ok</th>
-                <th colspan="2" class="width-30">Rech</th>
+                <th class="width-40">Ok</th>
+                <th class="width-30">Rech</th>
                 <th class="width-40">Ok</th>
                 <th class="width-30">Rech</th>
             </tr> 
             <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
                 <th>{{detalle.Prioridad}}</th>
                 <th>{{detalle.Programadas}}</th>
-                <th>{{detalle.Programadas - detalle.Llenadas | currency:"":1}}</th>
-                <th>{{detalle.OKMoldeo - detalle.Cerradas}}</th>
+                <th><span>{{detalle.FaltanLlenadasV | currency:"":1}} </span></th>
+                <th><span>{{detalle.FaltaNCerradasV | currency:"":1}}</span></th>
                 <td class="col-md-3">{{detalle.Producto}}</td>
                 <th>{{detalle.Aleacion}}</th>
                 <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">
                     {{detalle.SerieInicio || '--'}}
                 </th>
                 <th>{{detalle.CiclosMolde}}</th>
-                <th>{{ IdAreaAct == 1 ? (detalle.CiclosMolde * detalle.Programadas) - detalle.OKMoldeo + (detalle.REPMoldeo - detalle.RECCerrado) : ( IdAreaAct == 2 ? (detalle.CiclosMolde * detalle.Programadas) - (detalle.OKVarel*1) + (detalle.RECVarel*1) + (detalle.REPVarel - detalle.RECCerrado) : (detalle.CiclosMolde * detalle.Programadas) - (detalle.Llenadas*1) + (detalle.Rechazadas*1) + (detalle.REPEspecial - detalle.RECCerrado) ) }}</th>
-                
+                <th>{{detalle.CiclosRequeridosMoldeo}}</th>
+                <th>{{detalle.CiclosTotal}}</th>
                 <th colspan="4" ng-show="!detalle.SerieInicio && detalle.LlevaSerie">Configurar serie para poder capturar</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct == 1 ? detalle.OKMoldeo  : (IdAreaAct == 2 ? (detalle.OKVarel - detalle.RECVarel) : (detalle.Llenadas - detalle.Rechazadas) ) }}</th>
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(17);ModelMoldeo($index,3);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct == 1 ? detalle.RECMoldeo : ( IdAreaAct == 2 ? detalle.RECVarel || 0 : detalle.Rechazadas*1 || 0 )  }}</th>
+                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
                 <th>
-                    <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,9);" class="btn btn-info btn-sm">
+                    <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,10);" class="btn btn-info btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th>{{detalle.REPVarel}}</th>
-                <th>{{detalle.Llenadas | currency:"":1}}</th>
-                <th>{{detalle.OKCerrado || 0}}</th>               
-                
-                <th></th>
-                <th>{{detalle.Cerradas | currency:"":1}}</th>
-                <th></th>
-                <th>{{detalle.RECCerrado | currency:"":1}}</th>
+                <th>{{detalle.RepCiclosMoldeo}}</th>
+                <th>{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
+                <th>{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
+                     
+                <th>{{detalle.OkMoldesCerrados | currency:"":2 || 0}}</th>
+                <th>{{detalle.RecMoldesCerrado | currency:"":2 || 0}}</th>
 
-                <th>{{detalle.VaciadoOK || 0}}</th>
-                <th>{{detalle.VaciadoREC || 0}}</th>
+                <th>{{detalle.OkMoldesVaciados || 0}}</th>
+                <th>{{detalle.RecMoldesVaciados || 0}}</th>
             </tr>
         </table>
 
@@ -101,7 +100,7 @@
                     <label>Parte del Molde</label><br>
                     <div ng-repeat="parte in partes">
                         <label ng-if="parte.Identificador != 'Cabeza'">
-                            <label ng-if="parte.Num <= programacionAceros[index].CiclosMoldeA">
+                            <label ng-if="parte.Num <= programacionAceros[index].CiclosMolde">
                                 <input 
                                 type="radio" 
                                 name="Parte" 

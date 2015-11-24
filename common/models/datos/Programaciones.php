@@ -14,8 +14,8 @@ use Yii;
  * @property integer $IdProgramacionEstatus
  * @property integer $IdProducto
  * @property integer $Programadas
- * @property integer $Hechas
  * @property integer $Cantidad
+ * @property integer $Hechas
  * @property integer $Llenadas
  * @property integer $Cerradas
  * @property integer $Vaciadas
@@ -23,6 +23,7 @@ use Yii;
  * @property string $HoraCerrado
  * @property string $CerradoPor
  * @property string $CerradoPC
+ * @property string $Agrupado
  *
  * @property Areas $idArea
  * @property Empleados $idEmpleado
@@ -30,8 +31,9 @@ use Yii;
  * @property Productos $idProducto
  * @property ProgramacionesEstatus $idProgramacionEstatus
  * @property ProduccionesDetalle[] $produccionesDetalles
- * @property ProgramacionesAlma[] $programacionesAlmas
+ * @property PedProg[] $pedProgs
  * @property ProgramacionesSemana[] $programacionesSemanas
+ * @property ProgramacionesAlma[] $programacionesAlmas
  */
 class Programaciones extends \yii\db\ActiveRecord
 {
@@ -50,7 +52,7 @@ class Programaciones extends \yii\db\ActiveRecord
     {
         return [
             [['IdPedido', 'IdArea', 'IdEmpleado', 'IdProgramacionEstatus', 'IdProducto', 'Programadas'], 'required'],
-            [['IdPedido', 'IdArea', 'IdEmpleado', 'IdProgramacionEstatus', 'IdProducto', 'Programadas', 'Hechas', 'Cantidad', 'Llenadas', 'Cerradas', 'Vaciadas'], 'integer'],
+            [['IdPedido', 'IdArea', 'IdEmpleado', 'IdProgramacionEstatus', 'IdProducto', 'Programadas', 'Cantidad', 'Hechas', 'Llenadas', 'Cerradas', 'Vaciadas', 'Agrupado'], 'integer'],
             [['FechaCerrado', 'HoraCerrado'], 'safe'],
             [['CerradoPor', 'CerradoPC'], 'string']
         ];
@@ -69,8 +71,8 @@ class Programaciones extends \yii\db\ActiveRecord
             'IdProgramacionEstatus' => 'Id Programacion Estatus',
             'IdProducto' => 'Id Producto',
             'Programadas' => 'Programadas',
-            'Hechas' => 'Hechas',
             'Cantidad' => 'Cantidad',
+            'Hechas' => 'Hechas',
             'Llenadas' => 'Llenadas',
             'Cerradas' => 'Cerradas',
             'Vaciadas' => 'Vaciadas',
@@ -78,6 +80,7 @@ class Programaciones extends \yii\db\ActiveRecord
             'HoraCerrado' => 'Hora Cerrado',
             'CerradoPor' => 'Cerrado Por',
             'CerradoPC' => 'Cerrado Pc',
+            'Agrupado' => 'Agrupado',
         ];
     }
 
@@ -132,9 +135,9 @@ class Programaciones extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getProgramacionesAlmas()
+    public function getPedProgs()
     {
-        return $this->hasMany(ProgramacionesAlma::className(), ['IdProgramacion' => 'IdProgramacion']);
+        return $this->hasMany(PedProg::className(), ['IdProgramacion' => 'IdProgramacion']);
     }
 
     /**
@@ -143,5 +146,13 @@ class Programaciones extends \yii\db\ActiveRecord
     public function getProgramacionesSemanas()
     {
         return $this->hasMany(ProgramacionesSemana::className(), ['IdProgramacion' => 'IdProgramacion']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProgramacionesAlmas()
+    {
+        return $this->hasMany(ProgramacionesAlma::className(), ['IdProgramacion' => 'IdProgramacion']);
     }
 }

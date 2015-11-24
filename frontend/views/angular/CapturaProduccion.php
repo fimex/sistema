@@ -168,17 +168,10 @@ $this->title = $title;
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="Turnos" class="input-group-addon">Turno:</span>
-                            <select ng-show="!mostrar" aria-describedby="Turnos" class="form-control input-sm" ng-model="IdTurno" required>
+                            <select ng-show="!mostrar" aria-describedby="Turnos" class="form-control input-sm" ng-change="produccion.IdTurno = IdTurno;loadProgramacion();" ng-model="IdTurno" required>
                                 <option ng-selected="IdTurno == t.IdTurno" ng-repeat="t in turnos" ng-value="{{t.IdTurno}}">{{t.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idTurno.Descripcion}}"/>
-                        </div>
-                    </div>
-                    <br><br>
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <span id="Observaciones" class="input-group-addon">Observaciones:</span>
-                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-model="produccion.Observaciones">{{produccion.Observaciones}}</textarea>
                         </div>
                     </div>
                 </div>
@@ -216,6 +209,14 @@ $this->title = $title;
                     </div>
                 </div>
                 <?php endif;?>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span id="Observaciones" class="input-group-addon">Observaciones:</span>
+                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-model="produccion.Observaciones">{{produccion.Observaciones}}</textarea>
+                        </div>
+                    </div>
+                </div>
                 <br>
                 <div class="row">
                     <div class="col-md-12">
