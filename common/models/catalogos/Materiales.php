@@ -3,6 +3,7 @@
 namespace common\models\catalogos;
 
 use Yii;
+use common\models\catalogos\MaterialesTipo;
 
 /**
  * This is the model class for table "Materiales".

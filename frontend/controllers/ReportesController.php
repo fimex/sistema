@@ -19,6 +19,7 @@ use frontend\models\programacion\VProgramaciones;
 use frontend\models\vistas\VCamisasDia;
 use frontend\models\vistas\VFiltrosDia;
 use frontend\models\vistas\VMetalDia;
+use common\models\catalogos\Turnos;
 
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
@@ -237,13 +238,45 @@ class ReportesController extends Controller
         ]);
     }
 
-    public function actionPromolDia()
-    {
-         return $this->render('index',[
+    public function actionTurnos(){
+        $model = Turnos::find()->asArray()->all();
+        return json_encode($model);
+    }
+
+    public function actionPromolDia(){
+        if (isset($_REQUEST["Turno"]) && isset($_REQUEST["Dia"])){
+            $turno = $_REQUEST["Turno"];
+            $dia = date('Y-m-d',strtotime($_REQUEST['Dia']));
+        }else{
+            $turno = '1';
+            // $dia = '2015-10-22';
+			$dia = date('Y-m-d');
+        }
+
+        echo "fecha ".$dia;
+        
+        return $this->render('PromolDia', ['Turno' => $turno, 'Dia' => $dia ]);                 
+        /*return $this->render('index',[
             'vista' => 'PromolDia',
             'IdSubProceso' => 6,
             'IdArea' => 2
-        ]);
+        ]);*/
+    } 
+	
+	public function actionGraficaKloster(){
+        
+		return $this->render('GraficaKloster');      
+    }
+
+    public function actionPromolSemana(){
+
+        if (isset($_REQUEST["Semanaini"]) ){
+            $sem = $_REQUEST["Semanaini"];
+        }else{
+            $sem = date("W");
+        }
+      
+        return $this->render('PromolSemana', ['Semanaini' => $sem ]);                 
     }
     
     

@@ -206,8 +206,11 @@ class ProgramacionAngularController extends Controller
         $tarimas = [];
         foreach($_REQUEST as $data){
             
-            $data = json_decode($data,true);
-            $data['Dia'] = date('Y-m-d',strtotime($data['Dia']));
+            //$data = json_decode($data,true);
+            //$data['Dia'] = str_replace("'", "", $data['Dia']);
+            var_dump($data['Dia']);
+            $data['Dia'] = date('Y-m-d',$data['Dia']);
+            var_dump($data['Dia']);
             $programacionDiaria = $this->getProgramacionDiaria([
                 'IdProgramacionSemana' => $data['IdProgramacionSemana'],
                 'IdTurno' => $data['IdTurno'],

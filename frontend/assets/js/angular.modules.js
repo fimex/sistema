@@ -89,14 +89,22 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
         }
     }
 }).directive("formatDate", function(){
-  return {
-   require: 'ngModel',
-    link: function(scope, elem, attr, modelCtrl) {
-      modelCtrl.$formatters.push(function(modelValue){
-        return new Date(modelValue);
-      });
-    }
-  };
+    return {
+        require: 'ngModel',
+        link: function(scope, elem, attr, modelCtrl) {
+            modelCtrl.$formatters.push(function(modelValue){
+                if(modelValue instanceof Date && !isNaN(modelValue.valueOf())){
+                    var fecha = new Date(modelValue.getFullYear() + "-" + (modelValue.getMonth() +1) + "-" + modelValue.getDate());
+                }else{
+                    var fecha = new Date(modelValue);
+                }
+                
+                var zn = fecha.getTimezoneOffset() * 1000 * 60;
+                fecha.setTime(fecha.getTime()+zn);
+                return fecha;
+            });
+        }
+    };
 }).directive('modal', function () {
     return {
         template: '<div class="modal fade">' + 
@@ -135,8 +143,6 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
                 scope.$parent[attrs.visible] = false;
               });
             });
-            console.log(scope);
-            console.log(scope.$parent);
         }
     };
 }).directive('ordenamiento', function () {
@@ -181,8 +187,6 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
                     }
                     $scope.arreglo.push(palabra);
                 }
-                console.log($scope.arreglo);
-                console.log($scope.$parent.arr);
             };
             
             $scope.mostrarBoton = function(dato,accion) {

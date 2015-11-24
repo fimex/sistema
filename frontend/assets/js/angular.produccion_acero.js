@@ -36,6 +36,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.lenghtPartes = [];
 	$scope.mostrar = true;
     $scope.uploadResult = [];
+    $scope.showpartes == false;
 	
 	$scope.countProduccionesAceros = function(IdSubProceso,IdArea){
 
@@ -99,6 +100,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     }
 	
     $scope.loadProduccion = function(){
+        idproduccion = '';
         if ($scope.IdSubProceso == 18 || $scope.IdSubProceso == 14 ){
             idproduccion =  $scope.producciones[$scope.index].IdProduccion;
         }
@@ -109,13 +111,13 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             //IdMaquina: $scope.IdMaquina,
             //IdEmpleado: $scope.IdEmpleado,
             IdTurno: $scope.IdTurno,
-            IdProduccion: $scope.producciones[$scope.index].IdProduccion
+            IdProduccion: idproduccion
         }}).success(function(data){       
             $scope.IdProduccion = data.IdProduccion;
             $scope.IdProduccionEstatus = data.IdProduccionEstatus;
             $scope.produccion = data;
-            $scope.loadDetallett();
-            $scope.loadProbetas();
+            //$scope.loadDetallett();
+            //$scope.loadProbetas();
         }).error(function(){
             
         });
@@ -152,7 +154,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
             ************************************************************************/
             for(x=0;x<$scope.programacionAceros.length;x++){
-                $scope.programacionAceros[x].LlevaSerie = $scope.programacionAceros[x].LlevaSerie == 'No' ? "" : $scope.programacionAceros[x].LlevaSerie;
+                $scope.programacionAceros[x].LlevaSerie = $scope.programacionAceros[x].LlevaSerie == "No" ? null : $scope.programacionAceros[x].LlevaSerie;
                 if($scope.programacionAceros[x].CiclosMolde == 1)
                     $scope.programacionAceros[x].OKMoldeo = $scope.programacionAceros[x].OKMoldeo/2;
             }
@@ -165,7 +167,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }).error(function(){
         });
     };
+    $scope.capturaFecha = function(){
+        $scope.datoCaptura = "Si";
+    }
     
+    $scope.loadDivFlotante = function(){
+        //if($scope.datoCaptura == "Si")
+            document.getElementById("completo").style.marginTop = "-100%";
+        //else
+            //document.getElementById("msgError").innerHTML = "Es necesario selecionar una fecha de moldeo";
+
+    }
     $scope.loadPartesMolde = function(){
         return $http.get('partes-molde',{params:{
             IdArea: $scope.IdArea,
@@ -186,6 +198,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     
     $scope.selectSerie = function(indexSerie){
         $scope.indexSerie = indexSerie;
+        
         //alert($scope.indexSerie);
     };
     
@@ -199,9 +212,20 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.MostrarSeries($scope.programacionAceros[index].IdProducto,$scope.IdSubProceso); 
         }
         
-        $scope.title = $scope.estatus == 3 ? 'Ciclos Rechazados' : 'Captura de Ciclos';
+        $scope.title = $scope.estatus == 3 ? 'Ciclos Rechazados' : ($scope.estatus == 9 ? 'Reposiciones' : 'Captura de Ciclos');
+
+        if($scope.IdSubProceso == 9 && $scope.estatus == 1 ){ $scope.showModalCerrado = !$scope.showModalCerrado }
+        if($scope.IdSubProceso == 9 && $scope.estatus == 3 ){ $scope.showModalCerradoR = !$scope.showModalCerradoR }
+       /* if($scope.IdSubProceso != 9){
+            $scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
+        }*/
+
         //$scope.estatus == 3 ? $scope.showModalR = !$scope.showModalR : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
-        $scope.estatus == 3 ? $scope.showModalCRV = !$scope.showModalCRV : ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : $scope.showModal = !$scope.showModal);
+        if($scope.IdSubProceso != 9){
+            $scope.estatus == 3 ? $scope.showModalCRV = !$scope.showModalCRV : 
+                ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : 
+                    ($scope.estatus == 10 ? $scope.showModalREP = !$scope.showModalREP : $scope.showModal = !$scope.showModal));
+        }
     };
     
     $scope.MostrarSeries = function(IdProducto,IdSubProceso){
@@ -223,61 +247,72 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
 
     
-    $scope.saveDetalleAcero = function(index,tipo){
+    $scope.saveDetalleAcero = function(index,tipo){      
         $scope.index = index;
         $scope.estatus = tipo;
+        $scope.Reposicion = $scope.estatus == 10 ? "SI" : "NO";
         $scope.programacionAceros[$scope.index].SerieInicio = $scope.IdSubProceso == 6 || $scope.IdSubProceso ==7 || $scope.IdSubProceso == 17 ? $scope.programacionAceros[$scope.index].SerieInicio : null;
+        
         if ($scope.IdSubProceso != 9) {
-            if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
+            /*if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
                 return alert("Debes de ingresar la fecha del moldeo");
-            };
+            };*/
         };
+
         i = 0;
         $scope.IdParteMolde = [];
-        //console.log("Ciclos Molde "+$scope.programacionAceros[$scope.index].CiclosMoldeA);
-        console.log("Estatus "+$scope.estatus);
-        //console.log("Reposicion "+$scope.Reposicion);
-        if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
+        //console.log($scope.estatus);
+        if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1)){
+        //if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
             $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMoldeA == (.5) ? [1,2,1,2] : [1,2];
         }else{           
-            while($scope.programacionAceros[$scope.index].CiclosMoldeA > i){
-                $scope.IdParteMolde[i] = i-(-1);
-                i++;
-            }
-            /*$('input[name="Parte"]:checked').each(function() {
-                $scope.IdParteMolde[i] = $(this).val();
-                console.log(i+$(this).val())
-                i++;
-            });*/
-        }
-        
+            
+            if($scope.estatus != 1){
+                $('input[name="Parte"]:checked').each(function() {
+                    $scope.IdParteMolde[i] = $(this).val();
+                    i++;
+                });
+            }else{
+                while($scope.programacionAceros[$scope.index].CiclosMoldeA > i){
+                    //if($scope.estatus == 1)
+                        $scope.IdParteMolde[i] = i-(-1);
 
+                    i++;
+                }
+            }
+        }
+        $scope.estatus = $scope.estatus == 10 ? 1 : $scope.estatus;
         if($scope.estatus == 3){
             $scope.IdParteMolde = [];
             $('input[name="ParteR"]:checked').each(function() {
                 $scope.IdParteMolde[1] = $(this).val();
             });
         }
-            
+
         var CiclosMoldeA = 0;
         switch ($scope.estatus){
             case 1: CiclosMoldeA = $scope.Reposicion == 'SI' ? (.5) : (1 / $scope.programacionAceros[$scope.index].CiclosMoldeA); break;
             case 3: CiclosMoldeA = $scope.IdSubProceso == 6 || $scope.IdSubProceso == 7 ? 0 : (-.5); break;
         }
-        
-        $scope.programacionAceros[$scope.index].FechaMoldeo2 = $scope.FechaMoldeo2;
+        $scope.programacionAceros[$scope.index].FechaMoldeo2 = $scope.Fecha;
         $scope.programacionAceros[$scope.index].IdEstatus = $scope.Reposicion == 'SI' ? 2 : $scope.estatus;
-        $scope.programacionAceros[$scope.index].Linea = $scope.Linea || null;
-        $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.IdParteMolde;
-        $scope.programacionAceros[$scope.index].SerieInicio = $scope.indexSerie == null ? $scope.programacionAceros[$scope.index].SerieInicio : $scope.listadoseries[$scope.indexSerie].Serie;
+        $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.IdParteMolde; //$scope.series.Serie
+        //$scope.programacionAceros[$scope.index].SerieInicio = $scope.listadoseries[$scope.indexSerie].Serie == null ? $scope.programacionAceros[$scope.index].SerieInicio : $scope.listadoseries[$scope.indexSerie].Serie;
+        if ($scope.IdSubProceso == 9) { $scope.programacionAceros[$scope.index].SerieInicio =  $scope.series.Serie; $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.programacionAceros[$scope.index].IdParteMolde; }
+        if ($scope.IdSubProceso == 7) { 
+            //$scope.programacionAceros[$scope.index].SerieInicio =  $scope.series.Serie; 
+            //$scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.programacionAceros[$scope.index].IdParteMolde; 
+            $scope.programacionAceros[$scope.index].SerieInicio =  $scope.series.Serie == null ? $scope.programacionAceros[$scope.index].SerieInicio :  $scope.series.Serie;
+        }
+
         $scope.indexSerie = null;
         
         if ($scope.programacionAceros[$scope.index].FechaMoldeo == null) {
             $scope.programacionAceros[$scope.index].FechaMoldeo = 0;
         };
+        
         if($scope.programacionAceros[$scope.index].LlevaSerie != 'Si' || ($scope.programacionAceros[$scope.index].LlevaSerie == 'Si' && $scope.programacionAceros[$scope.index].SerieInicio != null))
 
-        //console.log($scope.programacionAceros[$scope.index]);
         return $http.get('save-detalle-acero',{params:{
             Produccion:{
                 IdArea: $scope.IdArea,
@@ -301,23 +336,38 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 
     $scope.getSerie = function(IdParte,IdProducto,estatus,IdSubProceso){
         $scope.ModelParte = IdParte;
+        //console.log(IdProducto);
         if (IdSubProceso == 9) { IdSubProceso = 6; };
-        return $http.get('get-serie',{params:{
-            IdParteMolde:IdParte,
-            IdConfiguracionSerie:IdProducto
-        }})
-        .success(function(data){
-            if (data != 0) {
-                $scope.serieproducto = data;
-                //$scope.MostrarSeries(IdProducto,IdSubProceso);
-                //$('#showseries').removeAttr("disabled", 'false');
-                $scope.showserie = true;
-            }
-            if(data == 0){
-                //$('#showseries').attr("disabled", 'true');
-                $scope.showserie = false;
-            }
-        });
+        if(IdProducto){
+            return $http.get('get-serie',{params:{
+                IdParteMolde:IdParte,
+                IdConfiguracionSerie:IdProducto
+            }})
+            .success(function(data){
+                //console.log(data);            
+                if (data != 0) {
+                    $scope.serieproducto = data;
+                    //$scope.MostrarSeries(IdProducto,IdSubProceso);
+                    $('#showseries').removeAttr("disabled", 'false');
+                    //$('#seriesR').removeAttr("disabled", 'false');
+                    //$('#btn-cerradoR').removeAttr("disabled", 'true');
+                    if($scope.IdSubProceso != 6 && $scope.IdSubProceso != 7)
+                        document.getElementById('btn-cerradoR').disabled = true;
+                    $scope.showserie = true;
+                    //console.log("Entro Verdadero");
+                }
+                if(data == 0){
+                    $('#showseries').attr("disabled", 'true');
+                    if($scope.IdSubProceso != 6 && $scope.IdSubProceso != 7){
+                        $('#seriesR').removeAttr("disabled", 'true');
+                        $('#btn-cerradoR').removeAttr("disabled", 'false');
+                    }
+                    $scope.showserie = false;
+                    //console.log("Entro Falso");
+                    //console.log($scope.programacionAceros[index].LlevaSerie);
+                }
+            });
+        }
     };
     
     $scope.activaBtnCerrado = function(op){
@@ -328,10 +378,52 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             case 4: $('#btn-rechazoK').removeAttr("disabled", 'false'); break;
             case 5: $('#btn-cicloK').removeAttr("disabled", 'false'); break;
             case 6: $('#btn-cicloV').removeAttr("disabled", 'false'); break;
+            case 7: $('#Linea1').removeAttr("disabled", 'false'); $('#Linea2').removeAttr("disabled", 'false'); $('#Linea3').removeAttr("disabled", 'false'); break;
+            case 8 : document.getElementById('btn-cerradoR').disabled = false; break;
+            case 9: 
+                $scope.showpartes = true; 
+                $('input[type=radio]').removeAttr('disabled',false);
+                break;
+            case 10: $('#btn-cerradoOK').removeAttr("disabled", 'false'); break;
+            case 11: $scope.programacionAceros[$scope.index].LlevaSerie == null ? $('#btn-cerradoOK').removeAttr("disabled", 'false') : $scope.showserie = true; break;
+            case 12: $('#LineaOK1').removeAttr("disabled", 'false'); $('#LineaOK2').removeAttr("disabled", 'false'); $('#LineaOK3').removeAttr("disabled", 'false'); break;
+            case 13: 
+                $('#btn-cerradoOK').attr("disabled", 'false'); 
+                setTimeout(function(){
+                    document.getElementById("ComentariosOK").value = ""
+                    $scope.programacionAceros[$scope.index].Linea = "0"
+                    $('input[type=radio]').attr('checked',false);
+                    $scope.series.Serie = "";
+                    //$scope.IdEmpleado = "";
+                },300)
+                break;
+            case 14: 
+                $('#btn-cerradoR').attr("disabled", 'true'); 
+                
+                setTimeout(function(){
+                    document.getElementById("ComentariosC").value = ""
+                    $scope.programacionAceros[$scope.index].IdParteMolde = "0"
+                    $('input[type=radio]').attr('checked',false);
+                    $scope.series.Serie = "";
+                    //$scope.IdEmpleado = "";
+                },300)
+                break;
+            case 15:
+                $('#btn-ciclo').attr("disabled", 'true'); 
+                setTimeout(function(){$('input[type=radio]').attr('checked',false);},300)
+                break;
+            case 16:
+                $('#btn-rechazoK').attr("disabled", 'true'); 
+                setTimeout(function(){$('input[type=radio]').attr('checked',false);},300)
+                break;
+            case 17:
+                $('#btn-cicloV').attr("disabled", 'true'); 
+                setTimeout(function(){$('input[type=radio]').attr('checked',false);},300)
+                break;
+                
 
-        }                        
+        }                
     };
-
     $scope.loadProductosSeries = function(){
         return $http.get('productos-series')
         .success(function(data) {
@@ -415,6 +507,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.loadTiempos = function(){
+
         return $http.get('tiempos',{params:{
                 Fecha: $scope.Fecha,
                 IdMaquina: $scope.IdMaquina,
@@ -717,7 +810,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.saveDetalle = function(index){
-        console.log($scope.detalles[index].IdProgramacion);
+        //console.log($scope.detalles[index].IdProgramacion);
         if($scope.controlClick('detalles',index)){
             if($scope.detalles[index].IdProgramacion == null)
                 $scope.detalles[index].IdProgramacion  =$scope.IdProgramacion;
@@ -926,7 +1019,11 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 		}
 	}
 	
-
+    $scope.selectEmpleado = function(IdEmpleado){
+        console.log($scope.IdEmpleado);
+        $scope.IdEmpleado = IdEmpleado;
+        console.log($scope.IdEmpleado);
+    };
 });// ****************************************** FIN controlador ProduccionAceros
 
 app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $log, $timeout){
@@ -1669,6 +1766,12 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
             $scope.mtto = [];
         });
     };
+    
+    $scope.selectEmpleado = function(IdEmpleado){
+        console.log($scope.IdEmpleado);
+        $scope.IdEmpleado = IdEmpleado;
+        console.log($scope.IdEmpleado);
+    };
 });
 
 
@@ -1976,6 +2079,9 @@ app.controller('PruebasDestructivas', function ($scope, $filter, $modal, $http, 
 
     };
 
-
-
+    $scope.selectEmpleado = function(IdEmpleado){
+        console.log($scope.IdEmpleado);
+        $scope.IdEmpleado = IdEmpleado;
+        console.log($scope.IdEmpleado);
+    };
 });

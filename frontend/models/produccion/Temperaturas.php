@@ -3,7 +3,6 @@
 namespace frontend\models\produccion;
 
 use Yii;
-use yii\data\ArrayDataProvider;
 
 /**
  * This is the model class for table "Temperaturas".
@@ -16,10 +15,12 @@ use yii\data\ArrayDataProvider;
  * @property string $Temperatura2
  * @property integer $IdEmpleado
  * @property integer $Moldes
+ * @property integer $IdProducto
  *
  * @property Empleados $idEmpleado
  * @property Maquinas $idMaquina
  * @property Producciones $idProduccion
+ * @property Productos $idProducto
  */
 class Temperaturas extends \yii\db\ActiveRecord
 {
@@ -38,7 +39,7 @@ class Temperaturas extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccion', 'IdMaquina', 'Fecha', 'IdEmpleado'], 'required'],
-            [['IdProduccion', 'IdMaquina', 'IdEmpleado', 'Moldes'], 'integer'],
+            [['IdProduccion', 'IdMaquina', 'IdEmpleado', 'Moldes', 'IdProducto'], 'integer'],
             [['Fecha'], 'safe'],
             [['Temperatura', 'Temperatura2'], 'number']
         ];
@@ -58,6 +59,7 @@ class Temperaturas extends \yii\db\ActiveRecord
             'Temperatura2' => 'Temperatura2',
             'IdEmpleado' => 'Id Empleado',
             'Moldes' => 'Moldes',
+            'IdProducto' => 'Id Producto',
         ];
     }
 
@@ -84,20 +86,12 @@ class Temperaturas extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Producciones::className(), ['IdProduccion' => 'IdProduccion']);
     }
-    
-    public function getDetalle($produccion){
-        $result = $this->find()->where("IdProduccion = $produccion")->asArray()->all();
 
-        if(count($result)!=0){
-            return new ArrayDataProvider([
-                'allModels' => $result,
-                'id'=>'IdTemperatura',
-                'sort'=>array(
-                    'attributes'=> $result[0],
-                ),
-                'pagination'=>false,
-            ]);
-        }
-        return [];
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdProducto()
+    {
+        return $this->hasOne(Productos::className(), ['IdProducto' => 'IdProducto']);
     }
 }

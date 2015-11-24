@@ -9,12 +9,14 @@ use Yii;
  *
  * @property integer $IdProduccionCiclos
  * @property integer $IdProduccionDetalle
- * @property integer $IdProducto
  * @property integer $IdEstatus
+ * @property string $Tipo
+ * @property string $FechaCreacion
+ * @property integer $Linea
  *
  * @property ProduccionesCiclosDetalle[] $produccionesCiclosDetalles
- * @property ProduccionesDetalle $idProduccionDetalle
  * @property CiclosTipo $idEstatus
+ * @property ProduccionesDetalle $idProduccionDetalle
  */
 class ProduccionesCiclos extends \yii\db\ActiveRecord
 {
@@ -33,7 +35,9 @@ class ProduccionesCiclos extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccionDetalle'], 'required'],
-            [['IdProduccionDetalle',  'IdEstatus'], 'integer']
+            [['IdProduccionDetalle', 'IdEstatus', 'Linea'], 'integer'],
+            [['Tipo'], 'string'],
+            [['FechaCreacion'], 'safe']
         ];
     }
 
@@ -46,6 +50,9 @@ class ProduccionesCiclos extends \yii\db\ActiveRecord
             'IdProduccionCiclos' => 'Id Produccion Ciclos',
             'IdProduccionDetalle' => 'Id Produccion Detalle',
             'IdEstatus' => 'Id Estatus',
+            'Tipo' => 'Tipo',
+            'FechaCreacion' => 'Fecha Creacion',
+            'Linea' => 'Linea',
         ];
     }
 

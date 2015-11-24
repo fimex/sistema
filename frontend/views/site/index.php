@@ -2,7 +2,7 @@
 use yii\helpers\Url;
 
 $area = Yii::$app->session->get('area');
-$this->title = $area['Descripcion'];
+$this->title = $area['Descripcion'];//Define el titulo de la página
 
 $this->params['selected-nav']='home';
 $this->params['content']=[

@@ -51,6 +51,7 @@ class AppAsset extends AssetBundle
         'js/angular/angular-file-upload.js',
         'js/angular.produccion_acero.js',
         'js/angular.produccion.js',
+        'js/angular.productos.js',
         //'js/angular.tratamientos.js',
         //'js/angular.tratamientos.js',
         'js/angular.pruebas.js',

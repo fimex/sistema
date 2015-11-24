@@ -123,15 +123,14 @@ class VProductos extends \yii\db\ActiveRecord
         return $dataProvider;
     }
     
-    public function getProductos($marca,$area){
+    public function getProductos($area){
        /* $area = Yii::$app->session->get('area');
        
         $area = $area['IdArea'];
          $id = $_GET['area'];
          echo 'Area'.$id;*/
         $result = $this->find()->where([
-            'IdPresentacion' => $area,
-            'IdMarca' => $marca
+            'IdPresentacion' => $area
         ])->asArray()->all();
         
         if(count($result)!=0){

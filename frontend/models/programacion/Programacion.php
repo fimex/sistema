@@ -139,7 +139,7 @@ class Programacion extends \yii\db\ActiveRecord
             $from = "f_GetProgramacionesAcero";
         }else{
             $where = "";//"WHERE IdAreaAct = 4";
-            $from = "f_GetProgramaciones";
+            $from = "f_GetProgramacionesAcero";
             
             $sql = "UPDATE dbo.Programaciones SET
                 dbo.Programaciones.IdProgramacionEstatus = 2003,

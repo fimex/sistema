@@ -18,6 +18,7 @@
                     <?php endif;?>
                     <?php if($IdSubProceso == 10): ?>
                     <th>Hornero / Vaciador</th>
+                    <th>Producto</th>
                     <th>Moldes</th>
                     <?php endif;?>
                 </tr>
@@ -43,6 +44,9 @@
                             <option ng-selected="temperatura.IdEmpleado == em.IdEmpleado" ng-repeat="em in empleados" ng-value="{{em.IdEmpleado}}">{{em.NombreCompleto}}</option>
                         </select>
                     </th>
+                    <th><select ng-change="temperatura.change = true" class="form-control" ng-model="temperatura.IdProducto" >
+                        <option ng-selected="temperatura.IdProducto == detalle.IdProductos" value="{{detalle.IdProductos}}" ng-repeat="detalle in detalles">{{detalle.idProductos.Identificacion}}</option>
+                    </select></th>
                     <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Moldes" value="{{temperatura.Moldes}}"/></th>
                     <?php endif;?>
                     <th class="col-md-2">

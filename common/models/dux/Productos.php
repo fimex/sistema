@@ -77,9 +77,9 @@ class Productos extends \yii\db\ActiveRecord
     {
         return [
             [['IdMarca', 'IdPresentacion', 'IdAleacion', 'PiezasMolde', 'CiclosMolde', 'PesoCasting', 'PesoArania'], 'required'],
-            [['IdMarca', 'IdPresentacion', 'IdAleacion', 'IdProductoCasting', 'PiezasMolde', 'CiclosMolde', 'MoldesHora', 'CiclosHora', 'IdProductosEstatus', 'IdAreaAct', 'IdParteMolde', 'FechaMoldeo', 'CiclosVarel', 'IdConfiguracionSerie'], 'integer'],
+            [['IdMarca', 'IdPresentacion', 'IdAleacion', 'IdProductoCasting', 'PiezasMolde', 'MoldesHora', 'CiclosHora', 'IdProductosEstatus', 'IdAreaAct', 'IdParteMolde', 'FechaMoldeo', 'CiclosVarel', 'IdConfiguracionSerie'], 'integer'],
             [['Identificacion', 'Descripcion', 'Ensamble', 'LlevaSerie', 'CodigoCliente'], 'string'],
-            [['PesoCasting', 'PesoArania', 'FactorTiempoDesmoldeo'], 'number']
+            [['PesoCasting', 'PesoArania', 'CiclosMolde', 'FactorTiempoDesmoldeo'], 'number']
         ];
     }
 

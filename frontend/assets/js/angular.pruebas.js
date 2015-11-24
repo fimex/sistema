@@ -64,6 +64,12 @@ app.controller('Pruebas', function($scope, $filter, $http){
         });
     };
     
+    $scope.loadTurnos = function(){
+        return $http.get('turnos',{}).success(function(data) {
+            $scope.turnos = data;
+        });
+    };
+
     $scope.delete = function(url,params){
         return $http.get(url,{params:params}).success(function(data){
             $scope.data.splice(params.index,1);

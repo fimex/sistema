@@ -61,9 +61,9 @@ class ProductosController extends Controller
         $this->layout = 'JSON';
 
         $model = new VProductos();
-        $marca = isset($_POST['marca']) ? $_POST['marca'] : "2";
+        //$marca = isset($_POST['marca']) ? $_POST['marca'] : "2";
         $area = isset($_POST['area']) ? $_POST['area'] : "1" ;     
-        $dataProvider = $model->getProductos($marca,$area);
+        $dataProvider = $model->getProductos($area);
         
         if(count($dataProvider)==0){
             return json_encode([
@@ -77,6 +77,144 @@ class ProductosController extends Controller
                 'rows'=>$dataProvider->allModels,
         ]);
       
+    }
+    
+    public function actionSaveProducto(){
+        $model = Productos::findOne($_REQUEST['IdProducto']);
+        $model->load(['Productos' => $_REQUEST]);
+        $model->save();
+        
+        $producto = VProductos::find()->where(['IdProducto' => $_REQUEST['IdProducto']])->asArray()->one();
+        return json_encode($producto);
+    }
+    
+    public function actionSaveAlmas(){
+        if(isset($_REQUEST['IdAlma'])){
+            $model = Almas::findOne($_REQUEST['IdAlma']);
+        }else{
+            $model = new Almas();
+        }
+        
+        $model->load(['Almas' => $_REQUEST]);
+        if($model->save()){
+            return json_encode($model->attributes);
+        }
+        
+        return 0;
+    }
+    
+    public function actionSaveCamisas(){
+        if(isset($_REQUEST['IdCamisa'])){
+            $model = Camisas::findOne($_REQUEST['IdCamisa']);
+        }else{
+            $model = new Camisas();
+        }
+        
+        $model->load(['Camisas' => $_REQUEST]);
+        if($model->save()){
+            return json_encode($model->attributes);
+        }
+        
+        return 0;
+    }
+    
+    public function actionSaveFiltros(){
+        if(isset($_REQUEST['IdFiltro'])){
+            $model = Filtros::findOne($_REQUEST['IdFiltro']);
+        }else{
+            $model = new Filtros();
+        }
+        
+        $model->load(['Filtros' => $_REQUEST]);
+        if($model->save()){
+            return json_encode($model->attributes);
+        }
+        
+        return 0;
+    }
+    
+    public function actionSaveCajas(){
+        if(isset($_REQUEST['IdCaja'])){
+            $model = Cajas::findOne($_REQUEST['IdCaja']);
+        }else{
+            $model = new Cajas();
+        }
+        
+        $model->load(['Cajas' => $_REQUEST]);
+        if($model->save()){
+            return json_encode($model->attributes);
+        }
+        return 0;
+    }
+    
+    public function actionDataProductos()
+    {
+        $model = VProductos::find()->where($_REQUEST)->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionAlmasTipo()
+    {
+        $model = AlmasTipo::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionCamisasTipo()
+    {
+        $model = CamisasTipo::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionFiltrosTipo()
+    {
+        $model = FiltrosTipo::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionCajasTipo()
+    {
+        $model = CajasTipo::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionAlmasMaterialCaja()
+    {
+        $model = AlmasMaterialCaja::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionAlmasRecetas()
+    {
+        $model = AlmasRecetas::find()->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionDataAlmas()
+    {
+        $model = Almas::find()->where($_REQUEST)
+            ->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionDataCajas()
+    {
+        $model = Cajas::find()->where($_REQUEST)
+            ->asArray()->all();
+        return json_encode($model);
+    }
+
+    public function actionDataFiltros()
+    {
+        $model = Filtros::find()->where($_REQUEST)
+            ->asArray()->all();
+        return json_encode($model);
+    }
+    
+    public function actionDataCamisas()
+    {
+        $model = Camisas::find()->where($_REQUEST)
+            ->asArray()->all();
+        return json_encode($model);
     }
 
     /**

@@ -132,9 +132,14 @@ class SiteController extends Controller
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->getSession()->setFlash('success', 'Revise su correo electrónico para obtener más instrucciones.');
+                $user = \common\models\User::findOne([
+                    'status' => \common\models\User::STATUS_ACTIVE,
+                    'email' => $model->email,
+                ]);
+                //var_dump($user);exit;
+                //Yii::$app->getSession()->setFlash('success', 'Revise su correo electrónico para obtener más instrucciones.');
 
-                return $this->goHome();
+                return $this->redirect(['site/reset-password','token' => $user->password_reset_token]);
             } else {
                 Yii::$app->getSession()->setFlash('error', 'Lo sentimos, no podemos restablecer la contraseña para el correo electrónico proporcionado.');
             }
@@ -154,7 +159,7 @@ class SiteController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->getSession()->setFlash('success', 'New password was saved.');
+            Yii::$app->getSession()->setFlash('success', 'Contraseña guardada.');
 
             return $this->goHome();
         }

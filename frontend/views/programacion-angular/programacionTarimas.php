@@ -68,8 +68,8 @@
     .noche{
         background-color: lightgray;
     }
-    tr.active {
-        background-color: lightgray !important;
+    .finalizado {
+        background-color: gray;
     }
     .btn-droppable { width: 180px; height: 30px; padding-left: 4px; }
     .btn-draggable { width: 100%; }
@@ -80,14 +80,14 @@
         overflow-y: scroll; /* <-- here is what is important*/
     }
   </style>
-<div ng-controller="Programacion" ng-init="reporte=<?=$reporte?>;loadAleaciones();loadDias(true);filtro.IdAreaAct=1">
+<div ng-controller="Programacion" ng-init="reporte=<?=$reporte?>;loadAleaciones();loadDias(true);">
     <b style="font-size: 14pt;">Programacion Tarimas Kloster</b>  <input type="week" ng-model="semanaActual" ng-change="loadDias(true);" />
     <button class="btn btn-success" ng-click="loadProgramacionDiaria(true);">Actualizar</button>
     <button class="btn btn-success" ng-click="reporte = !reporte">Ver como <span ng-show="!reporte">Reporte</span><span ng-show="reporte">Captura</span></button>
     
     <div class="row" style="width: 100%">
         <div class="col-md-5" style="z-index: 5;">
-            <table class="table table-striped table-responsive table-bordered table-hover">
+            <table class="table table-responsive table-bordered table-hover">
             <thead>
                 <tr class="active">
                     <th>Pr</th>
@@ -107,7 +107,7 @@
                 <tbody>
                     <tr 
                         ng-repeat="programacion in programaciones | filter:filtro"
-                        ng-class="{'success':programacion.TotalProgramado >= programacion.Programadas}"
+                        ng-class="{'finalizado':programacion.TotalProgramado >= programacion.Programadas}"
                     >
                         <th class="col-md-1">{{programacion.Prioridad}}</th>
                         <th class="col-md-2">
@@ -144,7 +144,8 @@
                 </thead>
                 <tbody ng-repeat="loop in loops" ng-init="loop.index = $index">
                     <tr class="dia">
-                        <th colspan="{{11 + aleaciones.length}}">{{loop.dia}}</th>
+                        <th class="text-center noche" colspan="10">{{loop.dia}}</th>
+                        <th class="text-center noche" colspan="{{1 + aleaciones.length}}">{{loop.dia}}</th>
                     </tr>
                     <tr ng-class="{'dia':$index <= 29, 'noche':$index > 29}" ng-repeat="Turno in loop.Loops" ng-show="MostrarLoop(Turno);">
                         <th style="text-align: center" ng-init="Turno.index = $index">{{$index+1}}</th>

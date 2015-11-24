@@ -76,6 +76,7 @@ if ($IdAreaAct == 1){
     <?php if($IdSubProceso == 10):?>
         loadAleaciones();
     <?php endif?>
+	loadLances();
 ">
     <?php if ($IdSubProceso == 6):?>
         <h3>Molde <?= $nameAreAc?></h3>
@@ -166,7 +167,7 @@ if ($IdAreaAct == 1){
                     </div>
                 </div>
                 <br>
-                <div class="row">
+               <!-- <div class="row">
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">KellBlocks:</span>
@@ -187,6 +188,7 @@ if ($IdAreaAct == 1){
                         </div>
                     </div>
                 </div>
+				-->
                 <?php endif;?>
                 <?php if($IdSubProceso == 6 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-2">
@@ -306,6 +308,13 @@ if ($IdAreaAct == 1){
                 'subProceso'=>$IdSubProceso,
             ]);?>
         </div>
+		<div class="col-md-4">
+			 <?= $this->render('FormProduccionDetalleProbetasVaciado',[
+                'subProceso'=>$IdSubProceso,
+            ]);?>
+		</div>
+		
+		
     </div>
     <?php endif?>
 

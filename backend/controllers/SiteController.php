@@ -124,6 +124,7 @@ class SiteController extends Controller
 
                 return $this->goHome();
             } else {
+                var_dump($model);exit;
                 Yii::$app->getSession()->setFlash('error', 'Sorry, we are unable to reset password for email provided.');
             }
         }

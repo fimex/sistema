@@ -390,7 +390,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
     };
     
     $scope.saveTarima = function(tarimas){
-        return $http.get('save-tarimas',{params:tarimas}).success(function(data){
+        return $http.post('save-tarimas',tarimas).success(function(data){
             var loop = data.Loop;
             var tarima = 'Tarima'+data.Tarima;
             
@@ -445,7 +445,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
                 IdTurno = loopActual >=30 ? 3 : 1; 
         
                 tarimas.push({
-                    Dia:Dia2,
+                    Dia:Dia2.getTime() / 1000,
                     indexDia:dia,
                     Loop:loopActual,
                     Tarima:tarima,
@@ -455,7 +455,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
                 
                 if(tarima2 != undefined){
                     tarimas.push({
-                        Dia:Dia2,
+                        Dia:Dia2.getTime() / 1000,
                         indexDia:dia,
                         Loop:loopActual,
                         Tarima:tarima2,
