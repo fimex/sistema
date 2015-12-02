@@ -14,23 +14,29 @@
                 <th>SCRAP</th>
                 <!--<th></th>-->
             </tr>
-            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros"ng-init="sumarTotal($index);">
+            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros" ng-init="sumarTotal($index);">
                 <th>{{detalle.Id}}</th>
                 <th>{{detalle.Identificacion}} 
-                <input type="hidden" ng-model="llevaSerie" ng-value="llevaSerie = detalle.LlevaSerie == 'Si' ? true : false"></th>
-                <th><input class="form-control input-sm" type="date" ng-model="detalle.FechaColada" value="" format-date /></th>
-                
+                    <input type="hidden" ng-model="llevaSerie" ng-value="llevaSerie = detalle.LlevaSerie == 'Si' ? true : false">
+                </th>
+                <th>
+                    <input class="form-control input-sm" type="date" ng-model="detalle.FechaColada" value="" format-date />
+                </th>
                 <th>{{detalle.Cantidad}}</th>
                 <th>
                     <input type="text" ng-model="detalle.inspeccionadas" disabled ng-value="{{detalle.inspeccionadas}}">
                 </th>
                 <th>
                     <div ng-click="ModelCapturaA($index, llevaSerie);">
-                        <input type="text" ng-model="detalle.Aceptadas" ng-disabled="llevaSerie" ng-blur="sumarTotal($index);saveDetalleCalidad(1);">
+                        <input type="text" ng-model="detalle.Aceptadas" ng-click="" ng-disabled="llevaSerie" ng-blur="sumarTotal($index);saveDetalleCalidad(1);" ng-value="detalle.Reparaciones">
                     </div>
                 </th>
-                <th><input type="text" ng-model="detalle.Reparaciones" ng-blur="sumarTotal($index);ModelCapturaR($index,1);saveDetalleCalidad(2);"></th>
-                <th><input type="text" ng-model="detalle.Scrap" ng-blur="sumarTotal($index);ModelCapturaR($index,2);saveDetalleCalidad(3);"></th>
+                <th>
+                    <input type="text" ng-model="detalle.Reparaciones" ng-blur="sumarTotal($index);ModelCapturaR($index,1);saveDetalleCalidad(2);" ng-value="detalle.Reparaciones || 0">
+                </th>
+                <th>
+                    <input type="text" ng-model="detalle.Scrap" ng-blur="sumarTotal($index);ModelCapturaR($index,2);saveDetalleCalidad(3);" ng-value="detalle.Scrap || 0">
+                </th>
             </tr>
         </table>
 

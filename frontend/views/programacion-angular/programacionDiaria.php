@@ -89,6 +89,7 @@ $this->title = $title;
                     <?php endif; ?>
                     <th ng-show="mostrar" rowspan="2" ng-click="orden = orden == '+Marca' ? '-Marca' : '+Marca'">Cliente<span id="sorttable_sortfwdind">&nbsp;▾</span><br /><input style="width: 60px;" class="filter" ng-model="filtro.Cliente" /></th>
                     <th ng-show="mostrar" rowspan="2">Pr<br /><input style="width: 33px;" class="filter" ng-model="filtro.Pr" /></th>
+                    <th ng-show="mostrar" rowspan="2" ng-click="orden = orden == '+AreaAct' ? '-AreaAct' : '+AreaAct'">AreaAct<span id="sorttable_sortfwdind">&nbsp;▾</span><br /><input style="width: 60px;" class="filter" ng-model="filtro.AreaAct" /></th>
                     <th rowspan="2" style="width: 33px" ng-click="orden = orden == '+Programadas' ? '-Programadas' : '+Programadas'">Mold</th>
                     <th rowspan="2" style="width: 33px" ng-click="orden = orden == '+TotalProgramado' ? '-TotalProgramado' : '+TotalProgramado'">Prog</th>
                     <th rowspan="2" style="width: 33px" ng-show="mostrar">Falt</th>
@@ -123,6 +124,7 @@ $this->title = $title;
                 Aleacion:filtro.Aleacion,
                 Marca:filtro.Cliente,
                 Prioridad:filtro.Pr,
+                AreaAct:filtro.AreaAct,
             } | orderBy:orden" ng-mousedown="setSelected(programacion);" ng-class="{info:selected.IdProgramacionSemana == programacion.IdProgramacionSemana}">
            
                     <?php if($IdSubProceso != 12): ?>
@@ -136,6 +138,7 @@ $this->title = $title;
                     <?php endif; ?>
                     <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.Marca}}</th>
                     <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar" style="width: 33px;">{{programacion.Prioridad == 0 ? '' : programacion.Prioridad}}</th>
+                    <th ng-class="{warning2: (programacion.TotalProgramado*1) > (programacion.Programadas*1)}" ng-show="mostrar">{{programacion.AreaAct}}</th>
                     <th style="width: 33px" ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.Programadas}}</th>
                     <th style="width: 33px" ng-class="{success: programacion.TotalProgramado >= programacion.Programadas, danger: programacion.TotalProgramado == 0, warning: programacion.TotalProgramado < programacion.Programadas}">{{programacion.TotalProgramado | currency :"":0}}</th>
                     <th style="width: 33px" ng-init="programacion.Faltan = programacion.TotalProgramado - programacion.TotalHecho" ng-class="{success: programacion.Faltan <= 0, danger: programacion.Faltan == programacion.TotalProgramado, warning: (programacion.Faltan < programacion.TotalProgramado && programacion.Faltan > 0 )}" ng-show="mostrar">{{programacion.Faltan | currency :"":0}}</th>

@@ -37,6 +37,43 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.mostrar = true;
     $scope.uploadResult = [];
     $scope.showpartes == false;
+	$scope.OkCiclosMoldeo=0;
+	$scope.RecCiclosMoldeo=0;
+	$scope.RepCiclosMoldeo=0;
+	$scope.OkMoldesMoldeo=0;
+	$scope.RecMoldesMoldeo=0;
+	$scope.OkMoldesCerrados=0;
+	$scope.RecMoldesCerrado=0;
+	$scope.OkMoldesVaciados=0;
+	$scope.RecMoldesVaciados=0;
+	$scope.showModal2=0;
+	
+	$scope.resumen= function($campo,$valor){
+		switch($campo){
+			case'OkCiclosMoldeo' : $scope.OkCiclosMoldeo += $valor; break;
+			case'RecCiclosMoldeo' : $scope.RecCiclosMoldeo += $valor; break;
+			case'RepCiclosMoldeo' : $scope.RepCiclosMoldeo += $valor; break;
+			case'OkMoldesMoldeo' : $scope.OkMoldesMoldeo += $valor; break;
+			case'RecMoldesMoldeo' : $scope.RecMoldesMoldeo += $valor; break;
+			case'OkMoldesCerrados' : $scope.OkMoldesCerrados += $valor; break;
+			case'OkMoldesVaciados' : $scope.OkMoldesVaciados += $valor; break;
+			case'RecMoldesVaciados' : $scope.RecMoldesVaciados += $valor; break;
+			
+		}
+		
+	}
+	$scope.resetResumen = function(){
+		$scope.OkCiclosMoldeo=0;
+		$scope.RecCiclosMoldeo=0;
+		$scope.RepCiclosMoldeo=0;
+		$scope.OkMoldesMoldeo=0;
+		$scope.RecMoldesMoldeo=0;
+		$scope.OkMoldesCerrados=0;
+		$scope.RecMoldesCerrado=0;
+		$scope.OkMoldesVaciados=0;
+		$scope.RecMoldesVaciados=0;
+		
+	}
 	
     $scope.countProduccionesAceros = function(IdSubProceso,IdArea){
 
@@ -153,6 +190,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     }
 
     $scope.loadProgramaciones = function(refresh){
+		$scope.resetResumen
         $scope.programacionAceros = [];
         if($scope.IdSubProceso == 14){
             tipo = refresh == true ? 0 : 1;
@@ -167,37 +205,41 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             }}).success(function(data){
                 $scope.programacionAceros = data;
                 $scope.IdProduccion = $scope.produccion.IdProduccion;
+				$scope.resetResumen();
             });
         }
         else{
+            console.log($scope.showModal2,$scope.showModalCerradoR,$scope.showModalCerrado);
             return $http.get('data-programaciones',{params:{
                 IdArea: $scope.IdArea,
                 IdAreaAct: $scope.IdAreaAct,
                 Dia: $scope.Fecha
                
             }}).success(function(data){
-                $scope.programacionAceros = data;
+                if($scope.showModalCerrado != true && $scope.showModalCerradoR != true && $scope.showModal2 != true){
+                    $scope.programacionAceros = data;
 
-                /************************************************************************
-                        Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
-                ************************************************************************/
-                for(x=0;x<$scope.programacionAceros.length;x++){
-                    $scope.programacionAceros[x].LlevaSerie = $scope.programacionAceros[x].LlevaSerie == "No" ? null : $scope.programacionAceros[x].LlevaSerie;
-                    if($scope.programacionAceros[x].CiclosMolde == 1){
-                        //$scope.programacionAceros[x].OKMoldeo = $scope.programacionAceros[x].OKMoldeo/2;
-                        //$scope.programacionAceros[x].Rechazadas = $scope.programacionAceros[x].Rechazadas/2;
+                    /************************************************************************
+                            Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
+                    ************************************************************************/
+                    for(x=0;x<$scope.programacionAceros.length;x++){
+                        $scope.programacionAceros[x].LlevaSerie = $scope.programacionAceros[x].LlevaSerie == "No" ? null : $scope.programacionAceros[x].LlevaSerie;
+                        if($scope.programacionAceros[x].CiclosMolde == 1){
+                            //$scope.programacionAceros[x].OKMoldeo = $scope.programacionAceros[x].OKMoldeo/2;
+                            //$scope.programacionAceros[x].Rechazadas = $scope.programacionAceros[x].Rechazadas/2;
+                        }
+                       $scope.programacionAceros[x].OkMoldesMoldeoRound =  Math.floor($scope.programacionAceros[x].OkMoldesMoldeo);
                     }
-                   $scope.programacionAceros[x].OkMoldesMoldeoRound =  Math.floor($scope.programacionAceros[x].OkMoldesMoldeo);
-                }
 
-                /************************************************************************
-                        Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
-                ************************************************************************/
-                $scope.loadProduccion();
-                $scope.getDatos();
-                $scope.loadPartesMolde();
+                    /************************************************************************
+                            Solucion Apocrifa (REVISAR CONSULTA v_ProduccionCiclos)
+                    ************************************************************************/
+                    $scope.loadProduccion();
+                    $scope.getDatos();
+                    $scope.loadPartesMolde();
+                }
                 
-                if(refresh == true){
+                if(refresh == true ){
                     $timeout(function(){
                         $scope.loadProgramaciones(true);
                     }, 50000);
@@ -241,8 +283,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     
     $scope.selectSerie = function(indexSerie){
         $scope.indexSerie = indexSerie;
-        
-        //alert($scope.indexSerie);
     };
     
     /*
@@ -292,7 +332,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.calidadSeries();
         });
     }
-
     $scope.saveSeriesDetalles = function(serie, estatus){
         return $http.get('save-series-detalles',{params:{
             IdSerie: serie,
@@ -326,7 +365,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.calidadSeries();
         }
     };
-
     $scope.ModelCapturaR = function(index,tipo){
         $scope.datos = $scope.programacionAceros[index]
         if(tipo == 1){
@@ -358,14 +396,12 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             }
         }
     };
-
     $scope.saveEvidenciasReparacion = function(index){
         for(x=0;x<$scope.datos.preparacion.length;x++){
             console.log($scope.datos.preparacion[x].IdDefectoTipo)
         }
         //console.log($scope.datos.preparacion);
     }
-
     $scope.saveProduccion = function(){
             return $http.get('save-produccion',{params:{
                 Fecha: $scope.Fecha,
@@ -378,10 +414,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             .success(function(data) {
                 $scope.produccion = data[0];
                 $scope.loadProgramaciones(false);
-            });
-        
+            });   
     };
-
     $scope.sumarTotal = function(index){
         console.log
         $scope.acept = $scope.programacionAceros[index].Aceptadas || 0;
@@ -389,7 +423,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.scrap = $scope.programacionAceros[index].Scrap || 0;
         $scope.programacionAceros[index].inspeccionadas = parseInt($scope.acept) + parseInt($scope.repar) + parseInt($scope.scrap);
     };
-
     $scope.saveDetalleCalidad = function (tipo){
         cantidad = tipo == 1 ? ($scope.datos.Aceptadas || 0) : (tipo == 2 ? ($scope.datos.Reparaciones || 0) : ($scope.datos.Scrap || 0));
         return $http.get('save-detalle-calidad',{params:{
@@ -406,7 +439,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         });
         $scope.saveInspeccionadas();
     };
-
     $scope.saveExistencias = function (){
         return $http.get('save-existencias',{params:{
             Id: $scope.datos.Id,
@@ -416,7 +448,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.saveInspeccionadas();
         });
     };
-
     $scope.saveInspeccionadas = function (){
         return $http.get('save-inspeccionadas',{params:{
             IdProducto: $scope.datos.IdProducto,
@@ -427,7 +458,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.loadProgramaciones(0);
         });
     };
-
     $scope.calidadSeries = function(){
         //Espacio para imprimir las series disponibles
         $http.get('mostrar-series',{params:{
@@ -447,8 +477,11 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             IdCentroTrabajo: $scope.datos.IdCentroTrabajoDestino
         }}).success(function(data) {
             $scope.aSeries = data;
+            $scope.Aceptadas = data;
         });
+        $scope.loadProgramaciones(false);
     }
+
     /*
      * END MODULO DE CALIDAD 
      */
@@ -474,7 +507,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         if($scope.IdSubProceso != 9){
             $scope.estatus == 3 ? $scope.showModalCRV = !$scope.showModalCRV : 
                 ($scope.estatus == 4 ? $scope.showModalCRK = !$scope.showModalCRK : 
-                    ($scope.estatus == 10 ? $scope.showModalREP = !$scope.showModalREP : $scope.showModal = !$scope.showModal));
+                    ($scope.estatus == 10 ? $scope.showModalREP = !$scope.showModalREP : 
+                        ($scope.estatus == 11 ? $scope.showModalCAV = !$scope.showModalCAV : $scope.showModal = !$scope.showModal)));
         }
     };
     
@@ -502,33 +536,49 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 Prioridad: model.Prioridad
         }});
     };
+
+    $scope.saveDetalleAcero2 = function(index,tipo){   
+        $scope.index = index;   
+        console.log($scope.Componentes[$scope.index]);
+
+       
+    };
     
     $scope.saveDetalleAcero = function(index,tipo){      
+               
         $scope.index = index;
         $scope.estatus = tipo;
+        console.log($scope.index);
         $scope.Reposicion = $scope.estatus == 10 ? "SI" : "NO";
         $scope.programacionAceros[$scope.index].SerieInicio = $scope.IdSubProceso == 6 || $scope.IdSubProceso ==7 || $scope.IdSubProceso == 17 ? $scope.programacionAceros[$scope.index].SerieInicio : null;
+
+        //$scope.programacionAceros[$scope.index].IdComponente = $scope.IdComponente
         
         if ($scope.IdSubProceso != 9) {
             /*if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
                 return alert("Debes de ingresar la fecha del moldeo");
             };*/
         };
-        
+        //console.log("ff "+$scope.IdComponente);
         i = 0;
         $scope.IdParteMolde = [];
         //console.log($scope.programacionAceros[$scope.index].CiclosMoldeA);
         if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && $scope.estatus == 1){
-        //if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
+            //if($scope.programacionAceros[$scope.index].CiclosMoldeA <= 1 && ($scope.estatus == 1 && $scope.Reposicion != 'SI')){
             $scope.IdParteMolde = $scope.programacionAceros[$scope.index].CiclosMoldeA == (.5) ? [1,2,1,2] : [1,2];
         }else{           
-            
             if($scope.estatus != 1){
                 $('input[name="Parte"]:checked').each(function() {
                     $scope.IdParteMolde[i] = $(this).val();
                     i++;
                 });
-            }else{
+            }else if($scope.estatus == 18){
+                $('input[name="ParteS"]:checked').each(function() {
+                    $scope.IdParteMolde[i] = $(this).val();
+                    i++;
+                });
+            }
+            else{
                 while($scope.programacionAceros[$scope.index].CiclosMoldeA > i){
                     //if($scope.estatus == 1)
                         $scope.IdParteMolde[i] = i-(-1);
@@ -537,13 +587,20 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 }
             }
         }
+
+        /*if($scope.estatus == 10){
+            $scope.IdParteMolde[1] = $scope.IdComponente;
+        }*/
+
         $scope.estatus = $scope.estatus == 10 ? 1 : $scope.estatus;
+        $scope.estatus = $scope.estatus == 18 ? 1 : $scope.estatus;
         if($scope.estatus == 3){
             $scope.IdParteMolde = [];
             $('input[name="ParteR"]:checked').each(function() {
                 $scope.IdParteMolde[1] = $(this).val();
             });
         }
+        console.log("sss "+$scope.IdParteMolde);
 
         var CiclosMoldeA = 0;
         switch ($scope.estatus){
@@ -588,7 +645,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             $scope.loadComponentes();
             $scope.showModal = false;
             window.name = 'NG_ENABLE_DEBUG_INFO!' + window.name;
-        });
+        }); 
     };
 
     $scope.getSerie = function(IdParte,IdProducto,estatus,IdSubProceso){
@@ -677,6 +734,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 $('#btn-cicloV').attr("disabled", 'true'); 
                 setTimeout(function(){$('input[type=radio]').attr('checked',false);},300)
                 break;
+            case 18: $('#btn-cicloA').removeAttr("disabled", 'false'); break;
                 
 
         }                
@@ -768,13 +826,14 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 
         return $http.get('tiempos',{params:{
                 Fecha: $scope.Fecha,
-                IdMaquina: $scope.IdMaquina,
-                IdEmpleado: $scope.IdEmpleado,
+                IdArea: $scope.IdArea,
+                //IdMaquina: $scope.IdMaquina,
+                //IdEmpleado: $scope.IdEmpleado,
                 IdTurno: $scope.IdTurno
             }}).success(function(data) {
             $scope.TiemposMuertos = [];
             $scope.TiemposMuertos = data;
-        });
+        }).error(function(){$scope.TiemposMuertos = [];});
     };
     
     $scope.deleteTiempo = function(index){
@@ -1283,6 +1342,12 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.IdEmpleado = IdEmpleado;
         console.log($scope.IdEmpleado);
     };
+
+    $scope.selectComponente = function(IdComponente){
+        $scope.IdComponente = IdComponente;
+        //console.log("selected "+IdComponente);
+    };
+
 });// ****************************************** FIN controlador ProduccionAceros
 
 app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $log, $timeout){
@@ -1739,6 +1804,40 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         });
     };
 
+	$scope.saveProduccionObs = function (){
+        return $http.get('save-produccion-obs',{params:{
+            IdProduccion: $scope.produccion.IdProduccion,
+            Observaciones:$scope.produccion.Observaciones,
+        }})
+    
+    };
+
+    $scope.updateLances = function (){
+
+        //$scope.produccion.lances.IdLance == null ?  $scope.produccion.lances.IdLance :
+        Kellblocks = $scope.produccion.lances.Kellblocks == null ? null : $scope.produccion.lances.Kellblocks;
+        Lingotes = $scope.produccion.lances.Lingotes == null ? null : $scope.produccion.lances.Lingotes;
+        Probetas = $scope.produccion.lances.Probetas == null ? null : $scope.produccion.lances.Probetas;
+
+        return $http.get('update-lances',{params:{
+            IdLance:$scope.produccion.lances.IdLance,
+            Kellblocks:Kellblocks,
+            Lingotes:Lingotes,
+            Probetas:Probetas,            
+        }})
+        .success(function(data) {
+            /*$scope.produccion = data[0];
+            $scope.erroresP = data[1];
+            if ($scope.erroresP == 1) {
+                $scope.IdProduccion2 = $scope.produccion.IdProduccion;
+                alert("Error ese registro ya fue capturado.");
+            }
+            //$scope.FechaProduccion = $scope.produccion.Fecha;
+            //console.log($scope.erroresP);
+            $scope.index = undefined;*/
+            $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea);
+        });
+    };
 
     /********************************************************************
      *                     DETALLE DE PRODUCCION VACIADO

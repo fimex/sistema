@@ -23,6 +23,8 @@ use common\models\dux\Aleaciones;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use frontend\models\vistas\v_AlmasPorProgramarAC;
+
 
 /**
  * ProgramacionesController implements the CRUD actions for programaciones model.
@@ -428,6 +430,73 @@ class ProgramacionAlmasController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+	
+	public function actionRePrograma(){
+		$sinAlma = v_AlmasPorProgramarAC::find()->asArray()->all();
+		count($sinAlma);
+		 // var_dump($sinAlma);
+		
+		if (count($sinAlma>0)){
+			foreach($sinAlma as $alma){
+					$Prog = (object)array('IdProgramacion' => $alma['IdProgramacion']);
+					$Prod = Productos::findOne( ['IdProducto' => $alma['IdProducto'] ] );
+					// $Prod = (object)array('IdProducto' => $alma['IdProducto']);
+					// var_dump($Prod);
+					 // if ($alma['IdProgramacion'] == 20315)
+						 $this->ProgramarAlmas($Prog,$Prod);
+			}
+		}else{
+				echo "fin"; 
+		}
+		
+	}
+
+	public function actionRePrograma2($idprogramacion,$idproducto){
+		
+					$Prog = (object)array('IdProgramacion' => $idprogramacion);
+					$Prod = Productos::findOne( ['IdProducto' => $idproducto ] );
+					
+						$this->ProgramarAlmas($Prog,$Prod);
+	}
+	
+	public function actionRe($idproducto){
+	
+					$Prod = Productos::findOne( ['IdProducto' => $idproducto ] );
+					echo "count:" .count($Prod);
+					echo "isnull:" .is_null($Prod);					
+					
+	}
+	
+	 public function ProgramarAlmas($Programacion,$producto){
+        $almas = Almas::find()->where(['IdProducto' => $producto->IdProducto])->asArray()->all();
+         // $almas = is_null($almas)  ? Almas::find()->where(['IdProducto' => $producto->IdProductoCasting])->asArray()->all() : $almas;
+
+        if(count($almas)>0){
+            foreach($almas as $alma){
+                $almasProgramadas = ProgramacionesAlma::find()->where([
+                    'IdProgramacion' => $Programacion->IdProgramacion,
+                    'IdAlmas' => $alma['IdAlma'],
+
+                ])->one();
+
+                if(is_null($almasProgramadas)){
+                    $almasProgramadas = new ProgramacionesAlma();
+                    $almas_prog['ProgramacionesAlma'] = [
+                        'IdProgramacion' => $Programacion->IdProgramacion,
+                        'IdEmpleado' => Yii::$app->user->identity->IdEmpleado,
+                        'IdProgramacionEstatus' => 1,
+                        'IdAlmas' => $alma['IdAlma'],
+                        'Programadas' => 0,
+                        'Hechas' => 0,
+                    ];
+                    $almasProgramadas->load($almas_prog);
+                    $almasProgramadas->save();
+					var_dump($almasProgramadas);
+                }
+            }
+        }
+    }
+	
     
     
 }

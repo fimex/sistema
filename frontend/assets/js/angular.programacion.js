@@ -142,7 +142,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
     };
     
     $scope.loadPedidos = function(){
-        return $http.get('pedidos').success(function(data){
+        return $http.get('pedidos',{params:{IdArea:$scope.IdArea}}).success(function(data){
             $scope.pedidos = [];
             $scope.pedidos = data.rows;
         });

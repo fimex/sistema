@@ -59,6 +59,13 @@ if ($IdAreaAct == 1){
     #detalle, #rechazo, #TMuerto, #Temperaturas{
         height:380px;
     }
+    .listaSerie{
+        position:relative;
+        display:inline-block;
+        margin:0 10px 10px 0;
+        border-bottom:#999999 solid 1px;
+        border-right:#999999 solid 1px;
+    }
 </style>
 <div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="
     countProduccionesAceros(<?=$IdSubProceso?>,<?=$IdArea?>);
@@ -126,7 +133,7 @@ if ($IdAreaAct == 1){
                     <div class="col-md-4">
                         <div class="input-group">
                             <span id="Observaciones" class="input-group-addon">Observaciones:</span>
-                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-model="produccion.Observaciones">{{produccion.Observaciones}}</textarea>
+                            <textarea aria-describedby="Observaciones" class="form-control input-sm" ng-change="saveProduccionObs();" ng-model="produccion.Observaciones">{{produccion.Observaciones}}</textarea>
                         </div>
                     </div>
                 </div>
@@ -166,14 +173,14 @@ if ($IdAreaAct == 1){
                         <div class="input-group">
                             <span id="lance" class="input-group-addon">Inicio Lance:</span>
                             <input ng-show="!mostrar" class="form-control" ng-model="inicioLance" ng-value="{{inicioLance}}"/>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.inicioLance}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.inicioLance |limitTo : 5 :0 }}"/>
                         </div>
                     </div>
 					 <div class="col-md-2">
                         <div class="input-group">
                             <span id="lance" class="input-group-addon">Hora Vaciado:</span>
                             <input ng-show="!mostrar" class="form-control" ng-model="horaVaciado" ng-value="{{horaVaciado}}"/>
-                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.horaVaciado}}"/>
+                            <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{ produccion.lances.horaVaciado |limitTo : 5 :0  }}"/>
                         </div>
                      </div>
 					 
@@ -184,21 +191,21 @@ if ($IdAreaAct == 1){
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">KellBlocks:</span>
                             <input ng-show="!mostrar" class="form-control" ng-model="Kellblocks" ng-value="{{Kellblocks}}"/>
-                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Kellblocks" ng-value="{{produccion.lances.Kellblocks}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Kellblocks" ng-change="updateLances();" ng-value="{{produccion.lances.Kellblocks}}"/>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">Lingotes:</span>
 							<input ng-show="!mostrar" class="form-control" ng-model="Lingotes" ng-value="{{Lingotes}}"/>
-                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Lingotes" ng-value="{{produccion.lances.Lingotes}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Lingotes" ng-change="updateLances();" ng-value="{{produccion.lances.Lingotes}}"/>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="input-group">
                             <span id="consecutivo" class="input-group-addon">Probetas:</span>
 							<input ng-show="!mostrar" class="form-control" ng-model="Probetas" ng-value="{{Probetas}}"/>
-                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Probetas" ng-value="{{produccion.lances.Probetas}}"/>
+                            <input ng-show="mostrar" class="form-control" ng-model="produccion.lances.Probetas" ng-change="updateLances();" ng-value="{{produccion.lances.Probetas}}"/>
 
                         </div>
                     </div>

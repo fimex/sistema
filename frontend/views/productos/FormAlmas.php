@@ -2,6 +2,7 @@
     <div class="panel-heading">Almas</div>
     <div class="panel-body">
         <button class="btn btn-info" ng-disabled="!producto" ng-click="addDato('almas')">Agregar Alma</button>
+        <button class="btn btn-info"  onclick="window.location='./programacion-almas/re-programa'">Actualiza Programacion</button>
     </div>
     <div id="almas" class="scrollable" style="max-height: 200px">
         <table fixed-table-headers="almas" class="table table-striped table-bordered table-hover table-hovered">

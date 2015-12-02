@@ -48,7 +48,7 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     {
         return [
             [['IdProduccion', 'IdProgramacion', 'IdProductos', 'Eficiencia'], 'required'],
-            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas'], 'integer'],
+            [['IdProduccion', 'IdProgramacion', 'IdProductos', 'CiclosMolde', 'PiezasMolde', 'Programadas', 'IdEstatus'], 'integer'],
             [['Inicio', 'Fin'], 'safe'],
 			[['FechaMoldeo'], 'string'],
             [['Eficiencia','Hechas','Rechazadas'], 'number']
@@ -74,6 +74,7 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
             'Hechas' => 'Hechas',
             'Rechazadas' => 'Rechazadas',
             'Eficiencia' => 'Eficiencia',
+            'IdEstatus' => 'IdEstatus',
         ];
     }
 
@@ -100,7 +101,13 @@ class ProduccionesDetalle extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Programaciones::className(), ['IdProgramacion' => 'IdProgramacion']);
     }
-
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIdEstatus()
+    {
+        return $this->hasOne(Productos::className(), ['IdEstatus' => 'IdEstatus']);
+    }
     /**
      * @return \yii\db\ActiveQuery
      */

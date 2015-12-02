@@ -53,7 +53,8 @@
                         <input ng-disabled="detalle.LlevaSerie == 'Si'" type="text" name="Vaciadas" id="Vaciadas" ng-model="detalle.Hechas" ng-value="{{detalle.Hechas}}" >
                     </th>  
                     <th>
-                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,1,1);">Series</button>
+                        <!-- encaso de agregar cerrado a moldeo especial quitar la validacion "detalle.IdAreaAct == 3 ? 17 : del codigo" -->
+                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,detalle.IdAreaAct == 3 ? 17 : 9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,1,1);">Series</button>
                         <button class="btn btn-success btn-xs" ng-show="detalle.LlevaSerie != 'Si'" ng-click="saveDetalleVaciado($index,0,1)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
                     </th>
                   
@@ -61,7 +62,8 @@
                         <input ng-disabled="detalle.LlevaSerie == 'Si'" type="text" name="RechazosV" id="RechazosV" ng-model="detalle.Rechazadas" ng-value="{{detalle.Rechazadas}}" >
                     </th>
                     <th>
-                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
+                        <!-- encaso de agregar cerrado a moldeo especial quitar la validacion "detalle.IdAreaAct == 3 ? 17 : del codigo" -->
+                        <button class="btn btn-primary" ng-show="detalle.LlevaSerie == 'Si'" ng-click="MostrarSeries(detalle.IdProducto,detalle.IdAreaAct == 3 ? 17 : 9); ModelMoldeo(detalle.Producto, detalle.IdProducto,$index,8,0,0);">Series</button>
                         <button class="btn btn-success btn-xs" ng-show="detalle.LlevaSerie != 'Si'" ng-click="saveDetalleVaciado($index,0,0)"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
                     </th>  
 
@@ -80,14 +82,14 @@
 
 <!--########################### Series ########################-->
 <modal title="Series Disponibles" visible="showModalSeries">
-    <div style="height:320px; width:330px;" >
+    <div style="height:320px; width:330px;overflow:auto" >
         <div class="form-group">
             <label for="producto">No Parte: </label> <label style="color:green;" >{{producto}}</label>
             <input type="hidden" class="form-control" ng-model="idproducto" value="idproducto" id="Producto" />
         </div>
-        <div style="float:left; width:30%;">
+        <div style="float:left; width:70%;">
             <label>Series</label><br>
-            <div ng-repeat="series in listadoseries">            
+            <div ng-repeat="series in listadoseries" class="listaSerie">
                 <input type="checkbox" name="Series[]" ng-model="IdSerie" value="{{series.IdSerie}}"> {{series.Serie}} 
             </div>
         </div>

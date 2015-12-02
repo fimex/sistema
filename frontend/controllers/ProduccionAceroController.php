@@ -31,6 +31,7 @@ use frontend\models\produccion\Series;
 use frontend\models\produccion\VCapturaExceleada;
 use frontend\models\produccion\VProduccionCiclos;
 use frontend\models\produccion\VProgramacionesCiclos;
+use frontend\models\produccion\VProgramacionesCiclosSemana;
 use frontend\models\produccion\VCiclosComponentes;
 use frontend\models\produccion\FechaMoldeo;
 use frontend\models\produccion\FechaMoldeoDetalle;
@@ -139,18 +140,23 @@ class ProduccionAceroController extends InventarioController
     public function actionCalidadL(){
         return $this->CapturaProduccion(20,2,1049);
     }
+    
     public function actionCalidadP(){
         return $this->CapturaProduccion(21,2,1046);
     }
+    
     public function actionCalidadR(){
         return $this->CapturaProduccion(22,2,1048);
     }
+    
     public function actionCalidadU(){
         return $this->CapturaProduccion(23,2,1047);
     }
+    
     public function actionCalidadV(){
         return $this->CapturaProduccion(24,2,1045);
     }
+    
     public function CapturaSeries()
     {
         $this->layout = 'produccionAceros';
@@ -182,59 +188,81 @@ class ProduccionAceroController extends InventarioController
     }
     
     /*
-     *    INICIA CODIGO AGREGADO POR IVAN DE SANTIAGO
-     */
+    *    INICIA CODIGO AGREGADO POR IVAN DE SANTIAGO
+    */
     
     function actionDataProgramaciones(){
+        $Fecha = date('Y-m-d',  strtotime($_REQUEST['Dia']));
         $_REQUEST['Dia'] = date('Y-m-d',  strtotime($_REQUEST['Dia']));
+        $_REQUEST['Semana'] = date('W',  strtotime($_REQUEST['Dia']));
+        unset($_REQUEST['Dia']);
         //var_dump($_REQUEST);
-        $model = VProgramacionesCiclos::find()->where($_REQUEST)->orderBy('Prioridad ASC')->asArray()->all();
+        $model = VProgramacionesCiclosSemana::find()->where($_REQUEST)->orderBy('Prioridad ASC')->asArray()->all();
 
         foreach ($model as &$value) {
-           
+            $diario = VProgramacionesCiclos::find()->where([
+                'IdProducto' =>  $value['IdProducto'],
+                'Dia' => $Fecha,
+            ])->orderBy('Prioridad ASC')->asArray()->one();
+            
             $OkCiclos = VProduccionCiclos::find()->select('count(Hechas) AS total')->where([
                 'IdProductos' =>  $value['IdProducto'],
-                'Fecha' => $value['Dia'],
+                'Fecha' => $Fecha,
                 'Tipo' => 'C',
                 'IdEstatus' => 1
             ])->asArray()->one();
             $RecCiclos = VProduccionCiclos::find()->select('count(Rechazadas) AS total')->where([
                 'IdProductos' =>  $value['IdProducto'],
-                'Fecha' => $value['Dia'],
+                'Fecha' => $Fecha,
                 'Tipo' => 'C',
                 'IdEstatus' => 3
             ])->asArray()->one();
             $RepCiclos = VProduccionCiclos::find()->select('count(Rechazadas) AS total')->where([
                 'IdProductos' =>  $value['IdProducto'],
-                'Fecha' => $value['Dia'],
+                'Fecha' => $Fecha,
                 'Tipo' => 'C',
                 'IdEstatus' => 2
             ])->asArray()->one();
-
             $vaciadoOK = VProduccionCiclos::find()->select('Sum(Hechas) AS total')->where([
                 'IdProductos' =>  $value['IdProducto'],
-                'Fecha' => $value['Dia'],
+                'Fecha' => $Fecha,
                 'IdSubProceso' => 10
             ])->asArray()->one();
             $vaciadoRec = VProduccionCiclos::find()->select('Sum(Rechazadas) AS total')->where([
                 'IdProductos' =>  $value['IdProducto'],
-                'Fecha' => $value['Dia'],
+                'Fecha' => $Fecha,
                 'IdSubProceso' => 10
             ])->asArray()->one();
+            
+            $value['OkMoldesCerradosSemana'] = $value['OkMoldesCerrados'];
+            $value['OkMoldesCerrados'] = $diario['OkMoldesCerrados'] * 1;
+            
             if($_GET['IdAreaAct'] == 2 || $_GET['IdAreaAct'] == 3){////VAREL
                 /*****CALCULOS DE MOLDES****/
 
-                    //Moldes Rechazados Cerrados
-                    $value['RecMoldesCerrado'] = $value['RecComponentesCerrado'] == 0 ? 0 : $value['RecComponentesCerrado'] / $value['BaseDivicion']; 
+                    //Moldes Rechazados Cerrados Diario
+                    $value['RecMoldesCerrado'] = $diario['RecComponentesCerrado'] == 0 ? 0 : $diario['RecComponentesCerrado'] / $value['BaseDivicion']; 
 
                     //Moldes Rechazados
-                    $value['RecMoldesMoldeo'] = $value['RecComponentesMoldeo'] == 0 ? 0 : $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
+                    $value['RecMoldesMoldeo'] = $diario['RecComponentesMoldeo'] == 0 ? 0 : $diario['RecComponentesMoldeo'] / $value['BaseDivicion'];
 
                     //Moldes Reparados
-                    $value['RepMoldesMoldeo'] = $value['RepComponentesMoldeo'] == 0 ? 0 : $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+                    $value['RepMoldesMoldeo'] = $diario['RepComponentesMoldeo'] == 0 ? 0 : $diario['RepComponentesMoldeo'] / $value['BaseDivicion']; 
 
                     //Moldes Ok
-                    $value['OkMoldesMoldeo'] = $value['OkComponentesMoldeo'] == 0 ? 0 : ($value['OkComponentesMoldeo'] / $value['BaseDivicion']) - $value['RecMoldesCerrado'] - $value['RecMoldesMoldeo'] + $value['RepMoldesMoldeo']; 
+                    $value['OkMoldesMoldeo'] = $diario['OkComponentesMoldeo'] == 0 ? 0 : ($diario['OkComponentesMoldeo'] / $value['BaseDivicion']) - $value['RecMoldesCerrado'] - $value['RecMoldesMoldeo'] + $value['RepMoldesMoldeo']; 
+                    
+                    //Moldes Rechazados Cerrados Semana
+                    $value['RecMoldesCerradoSemana'] = $value['RecComponentesCerrado'] == 0 ? 0 : $value['RecComponentesCerrado'] / $value['BaseDivicion'];
+
+                    //Moldes Rechazados
+                    $value['RecMoldesMoldeoSemana'] = $value['RecComponentesMoldeo'] == 0 ? 0 : $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
+
+                    //Moldes Reparados
+                    $value['RepMoldesMoldeoSemana'] = $value['RepComponentesMoldeo'] == 0 ? 0 : $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+
+                    //Moldes Ok
+                    $value['OkMoldesMoldeoSemana'] = $value['OkComponentesMoldeo'] == 0 ? 0 : ($value['OkComponentesMoldeo'] / $value['BaseDivicion']) - $value['RecMoldesCerradoSemana'] - $value['RecMoldesMoldeoSemana'] + $value['RepMoldesMoldeoSemana']; 
                 /****FIN DE CALCULOS DE MOLDES****/
 
                 /****CALCULOS DE CICLOS****/
@@ -260,45 +288,46 @@ class ProduccionAceroController extends InventarioController
 
                 /****CALCULOS INICIALES****/
                     //Ciclos requeridos para moldeo
-                    $value['CiclosRequeridosMoldeo'] = ($value['CiclosMoldeA'] * $value['Programadas']) - $value['OkCiclosMoldeo'];
-
-                    $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeo'] + $value['RecMoldesCerrado'] + ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
-                    $value['FaltaNCerradasV'] = $value['OkMoldesMoldeo'] - $value['OkMoldesCerrados'] - $value['RecMoldesCerrado'] - ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
+                    $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeoSemana'] + $value['RecMoldesCerradoSemana'] + ($value['RecMoldesMoldeoSemana'] - $value['RepMoldesMoldeoSemana']);
+                    $value['FaltaNCerradasV'] = $value['OkMoldesMoldeoSemana'] - $value['OkMoldesCerradosSemana'] - $value['RecMoldesCerradoSemana'] - ($value['RecMoldesMoldeoSemana'] - $value['RepMoldesMoldeoSemana']);
                 /****FIN CALCULOS INICIALES****/                
-               
-                if(!is_null($vaciadoOK)){
-                    $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
-                }
-
-                if(!is_null($vaciadoRec)){
-                    $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
-                }
             }
             elseif($_GET['IdAreaAct'] == 1){/////KLOSTER
+                //CALCULOS CLICLOS
                 $value['RecCiclosMoldeo'] = $RecCiclos['total'] * 1;
                 $value['OkCiclosMoldeo'] = $OkCiclos['total'] * 1;
                 $value['RepCiclosMoldeo'] = $RepCiclos['total'] * 1;
-                $value['RecMoldesMoldeo'] = $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
-                $value['RecMoldesCerrado'] = $value['RecComponentesCerrado'] / $value['BaseDivicion'];  
-                //$value['RecCiclosMoldeo'] = round($value['RecMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
-                $value['OkMoldesMoldeo'] = $value['OkComponentesMoldeo'] / $value['BaseDivicion'] - $value['RecMoldesCerrado'] + ($value['RepCiclosMoldeo']/ $value['BaseDivicion']); 
+                //$value['OkCiclosMoldeo'] = (($value['OkComponentesMoldeo'] / $value['BaseDivicion'])*$value['CiclosMoldeA']) + ($value['RepCiclosMoldeo']);
                 
-                $value['RepMoldesMoldeo'] = $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
-                //$value['RepCiclosMoldeo'] = round($value['RepMoldesMoldeo']*$value['CiclosMoldeA'],0, PHP_ROUND_HALF_UP);
-                //$value['OkCiclosMoldeo'] = round($value['OkMoldesMoldeo']*$value['CiclosMoldeA'] +$value['RepCiclosMoldeo'] ,0, PHP_ROUND_HALF_UP);
-                
-                $value['OkCiclosMoldeo'] = (($value['OkComponentesMoldeo'] / $value['BaseDivicion'])*$value['CiclosMoldeA']) + ($value['RepCiclosMoldeo']);
+                //CALCULOS CLICLOS MOLDES DIA
+                $value['RecMoldesMoldeo'] = $diario['RecComponentesMoldeo'] / $value['BaseDivicion'];
+                $value['RecMoldesCerrado'] = $diario['RecComponentesCerrado'] / $value['BaseDivicion'];
+                $value['RepMoldesMoldeo'] = $diario['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+                $value['OkMoldesMoldeo'] = ($diario['OkComponentesMoldeo'] / $value['BaseDivicion']) - $value['RecMoldesCerrado'] + $value['RepMoldesMoldeo']; 
+                /*if($value['Producto'] =='360-3261-00A1'){
+                    var_dump($value);
+                    var_dump($diario);
+                }*/
+                //CALCULOS CLICLOS MOLDES SEMANA
+                $value['RecMoldesMoldeoSemana'] = $value['RecComponentesMoldeo'] / $value['BaseDivicion'];
+                $value['RecMoldesCerradoSemana'] = $value['RecComponentesCerrado'] / $value['BaseDivicion'];
+                $value['RepMoldesMoldeoSemana'] = $value['RepComponentesMoldeo'] / $value['BaseDivicion']; 
+                $value['OkMoldesMoldeoSemana'] = $value['OkComponentesMoldeo'] / $value['BaseDivicion'] - $value['RecMoldesCerradoSemana'] + $value['RepMoldesMoldeoSemana'];
 
-                $value['CiclosRequeridosMoldeo'] = ($value['CiclosMoldeA'] * $value['Programadas']) - $value['OkCiclosMoldeo'] + $value['RecCiclosMoldeo'] + ($value['RecComponentesCerrado']);
-                $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeo'] + $value['RecMoldesCerrado'] + ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
-                $value['FaltaNCerradasV'] = $value['OkMoldesMoldeo'] - $value['OkMoldesCerrados'] - $value['RecMoldesCerrado'] - ($value['RecMoldesMoldeo'] - $value['RepMoldesMoldeo']);
-                if(!is_null($vaciadoOK)){
-                    $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
-                }
-                
-                if(!is_null($vaciadoRec)){
-                    $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
-                }
+                //$value['CiclosRequeridosMoldeo'] = ($value['CiclosMoldeA'] * $value['Programadas']) - $value['OkCiclosMoldeo'] + $value['RecCiclosMoldeo'] + ($value['RecComponentesCerrado']);
+                $value['FaltanLlenadasV'] = $value['Programadas'] - $value['OkMoldesMoldeoSemana'] + $value['RecMoldesCerradoSemana'] + ($value['RecMoldesMoldeoSemana'] - $value['RepMoldesMoldeoSemana']);
+                $value['FaltaNCerradasV'] = $value['OkMoldesMoldeoSemana'] - $value['OkMoldesCerradosSemana'] - $value['RecMoldesCerradoSemana'] - ($value['RecMoldesMoldeoSemana'] - $value['RepMoldesMoldeoSemana']);
+            }
+            
+            $value['FaltanLlenadasV'] *= 1; 
+            $value['CiclosRequeridosMoldeo'] = round($value['CiclosMoldeA'] * $value['FaltanLlenadasV'],0, PHP_ROUND_HALF_UP);
+            
+            if(!is_null($vaciadoOK)){
+                $value['OkMoldesVaciados'] = $vaciadoOK['total'] * 1;
+            }
+
+            if(!is_null($vaciadoRec)){
+                $value['RecMoldesVaciados'] = $vaciadoRec['total'] * 1;
             }
             
         }
@@ -343,7 +372,7 @@ class ProduccionAceroController extends InventarioController
             case  6: $title = 'Moldeo Kloster';break;
             case  7: $title = 'Moldeo Varel';break;
             case  8: $title = 'Pintado ';break;
-            case  9: $title = 'Cerrado '. ($IdAreaActual == 1 ? 'Kloster' : $IdAreaActual == 2 ? 'Varel' : 'Especial') ;break;
+            case  9: $title = 'Cerrado '. ($IdAreaActual == 1 ? 'Kloster' : ($IdAreaActual == 2 ? 'Varel' : 'Especial'));break;
             case 10: $url = 'CapturaProduccion'; $title = 'Vaciado';break;
             case 17: $title = 'Moldeo Especial';break;
             case 20: $title = 'Calidad - Liquidos Penetrantes'; $subProceso = 14; break;
@@ -432,10 +461,25 @@ class ProduccionAceroController extends InventarioController
     public function actionGetCantidad() {
         if(isset($_GET['IdProduccion'])){
             $model = new ProduccionCalidad();
+        
             $IdProduccion   = $_GET['IdProduccion'];
             $IdSubProceso   = $_GET['IdSubProceso'];
             $IdCentroTrabajo= $_GET['IdCentroTrabajo'];
             $prb = $model->GetCantidad($IdProduccion, $IdSubProceso, $IdCentroTrabajo);
+            foreach ($prb as &$key) { 
+                $key['Aceptadas'] = ($key['Aceptadas'] == "")  ? 0 : number_format($key['Aceptadas'],0);
+                $key['Reparaciones'] = ($key['Reparaciones'] == "")  ? 0 : number_format($key['Reparaciones'],0);
+                $key['Scrap'] = ($key['Scrap'] == "")  ? 0 : number_format($key['Scrap'],0);
+                if($key['LlevaSerie'] == "Si"){                    
+                    $modelo = Series::find()->where([
+                        'Estatus' =>  'B',
+                        'IdCentroTrabajo' => $key['IdCentroTrabajoDestino'],
+                        'IdProducto' => $key['IdProducto'],
+                        'IdSubProceso' => $key['IdSubProceso']
+                    ])->asArray()->all();
+                    $key['Aceptadas'] = count($modelo);
+                }
+            }
             return json_encode($prb);
         }
     }
@@ -473,11 +517,13 @@ class ProduccionAceroController extends InventarioController
     public function actionSaveDetalleCalidad(){
         $model = new ProduccionesDetalle();
         $model = ProduccionesDetalle::find('IdProduccionDetalle')->where('IdProduccion = '.$_GET['IdProduccion'].' AND IdProductos = '.$_GET['IdProductos'].' AND IdEstatus = '.$_GET['IdEstatus'])->asArray()->one();
+
         $IdProduccionDetalle = $model['IdProduccionDetalle'];
         $model = new ProduccionesDetalle();
         if($IdProduccionDetalle == ''){//Es nuevo, hay que agregarlo
             $model->load(['ProduccionesDetalle' => $_GET]);
             $model->save();
+            var_dump($model);
         }
         else{//Ya existe, actualizar en base al IdProduccionDetalle obtenido
             $model = ProduccionesDetalle::findOne($IdProduccionDetalle);
@@ -505,8 +551,31 @@ class ProduccionAceroController extends InventarioController
     }
 
     public function actionRecibe(){
-        var_dump($_FILES);
-        var_dump($_POST);        
+        //var_dump($_FILES);
+        //var_dump($_POST);
+        if($_FILES){
+            $anio = date('Y');
+            $mes = date('m');
+            $fecha_dia = date('Ymd'); 
+
+            if(file_exists("frontend/assets/img/Calidad/$anio/$mes/") == false){
+                mkdir("frontend/assets/img/Calidad/$anio/$mes/", 0755, true);
+            }
+
+            $path = 'frontend/assets/img/Calidad/'.$anio.'/'.$mes.'/';
+
+            $uploadfile = $path . basename($_FILES[$_POST['nombreImagen']]['name']);
+            move_uploaded_file($_FILES[$_POST['nombreImagen']]['tmp_name'], $uploadfile);
+            $data['url'] = $uploadfile;
+            http_response_code(200);
+            header('Content-Type: application/json');
+            echo json_encode($data);
+        } else {
+            $data['error'] = 'No se pudo subir la imagen';
+            http_response_code(201);
+            header('Content-Type: application/json');
+            echo json_encode($data);
+        }
     }
     /*
      * END CODIGO PARA EL APARTADO DE CALIDAD   
@@ -802,18 +871,16 @@ class ProduccionAceroController extends InventarioController
     }
 
     public function actionTiempos(){
-        if(isset($_REQUEST['IdMaquina'])){
-            $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
-            $model = TiemposMuerto::find()->where("IdEmpleado = ".$_REQUEST['IdEmpleado']." AND Fecha = '".$_REQUEST['Fecha']."' ")->orderBy('Inicio ASC')->asArray()->all();
-            //var_dump($model);
+        $_REQUEST['Fecha'] = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+        $model = \common\models\vistas\VTiemposMuertos::find()->where($_REQUEST)->orderBy('Inicio ASC')->asArray()->all();
+        //var_dump($model);
 
-            foreach($model as &$mod){
-                $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
-                $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
-            }
-
-            return json_encode($model);
+        foreach($model as &$mod){
+            $mod['Inicio'] = date('H:i',strtotime($mod['Inicio']));
+            $mod['Fin'] = date('H:i',strtotime($mod['Fin']));
         }
+
+        return json_encode($model);
     }
 
     public function actionTurnos(){
@@ -1109,10 +1176,9 @@ class ProduccionAceroController extends InventarioController
     }
 
     public function actionSaveProduccion(){
-        
         $data['Producciones'] = $_REQUEST;
         $update = false;
-       // exit();
+        //var_dump($data['Producciones'] ); exit();
         if ($data['Producciones']['IdSubProceso'] == 9) {
             $data['Producciones']['IdMaquina'] = 1;
             $data['Producciones']['IdCentroTrabajo'] = 1;
@@ -1185,6 +1251,34 @@ class ProduccionAceroController extends InventarioController
         $datos[0] = $model;
         $datos[1] = 0;
         return json_encode($datos);
+    }
+
+	
+	public function actionSaveProduccionObs(){ 
+        $data['Producciones'] = $_REQUEST;
+        $update = false;
+        //var_dump($data['Producciones'] ); exit();
+        
+            $model = Producciones::findOne($data['Producciones']['IdProduccion']);
+            $update = true;
+        
+        
+        $model->load($data);
+        $model->Observaciones = isset($data['Producciones']['Observaciones']) ? $data['Producciones']['Observaciones'] : "";
+
+        
+           $model->save();
+        
+    }
+
+    function actionUpdateLances(){
+
+        $model = Lances::find()->where("IdLance = ".$_GET['IdLance']."")->one();
+        
+        $model->Kellblocks = isset($_REQUEST['Kellblocks']) == true ? $_REQUEST['Kellblocks'] : '';
+        $model->Lingotes = isset($_REQUEST['Lingotes']) == true ? $_REQUEST['Lingotes'] : '';
+        $model->Probetas = isset($_REQUEST['Probetas']) == true ? $_REQUEST['Probetas'] : '';
+        $model->update();
     }
     
     function actionCerradoOk(){
@@ -1296,7 +1390,7 @@ class ProduccionAceroController extends InventarioController
         
         $this->actualizaHechas($produccionDetalle,$_REQUEST);
         
-        $encabezado = $this->actionGetInventario([
+       /* $encabezado = $this->actionGetInventario([
             'Fecha' => $produccion['Fecha'],
             'IdEmpleado' => $produccion['IdEmpleado']
         ]);
@@ -1308,7 +1402,7 @@ class ProduccionAceroController extends InventarioController
             'IdProducto' => $produccionDetalle->IdProductos,
             'Cantidad' => $_REQUEST['Hechas'],
         ]);
-        var_dump($movimiento);
+        var_dump($movimiento);*/
         //Generar Transacciones
        
         return json_encode(
@@ -1378,6 +1472,7 @@ class ProduccionAceroController extends InventarioController
     
     function actionSaveDetalleAcero(){
         
+
         $data['Producciones'] = json_decode($_REQUEST['Produccion'],true);
         $data['ProduccionesDetalleMoldeo'] = json_decode($_REQUEST['ProduccionesDetalleMoldeo'],true);
         $data['Producciones']['Fecha'] = date('Y-m-d',strtotime($data['Producciones']['Fecha']));
@@ -2162,18 +2257,12 @@ class ProduccionAceroController extends InventarioController
         //return $model;
 	 }
 	 
-	 public function actionDeleteprobetasdetallett(){
-		
-		   $model = TratamientosProbetas::findOne($_REQUEST['idTratamientoProbetas'])->delete();
-		 
-	 }
-	 
-	 
-	 
-	 public function actionUploadtt(){
+	public function actionDeleteprobetasdetallett(){
+        $model = TratamientosProbetas::findOne($_REQUEST['idTratamientoProbetas'])->delete(); 
+	}
 
+	public function actionUploadtt(){
         if ($_FILES) {
-
             $anio = date('Y');
             $mes = date('m');
             $fecha_dia = date('Ymd'); 

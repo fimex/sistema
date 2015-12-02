@@ -22,9 +22,9 @@
                     ng-class="{'warning': tiempos.change == true}"
                 >
                     <th>
-                        <select ng-change="tiempos.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="tiempos.IdMaquina">
-                            <option ng-selected="tiempos.IdMaquina == maquina.IdMaquina" ng-if="maquina.Maquina && maquina.ClaveMaquina != 'NI'" ng-repeat="maquina in maquinas" value="{{maquina.IdCausa}}">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
-                        </select>
+                        <select ng-change="TiemposMuertos[index].IdMaquina = tiempos.IdMaquina;tiempos.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="tiempos.IdMaquina">
+                            <option ng-selected="tiempos.IdMaquina == maquina.IdMaquina" ng-if="maquina.Maquina && maquina.ClaveMaquina != 'NI'" ng-repeat="maquina in maquinas" value="{{maquina.IdMaquina}}">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
+                        </select>{{TiemposMuertos[index] | json}}
                     </th>
                     <th>
                         <select ng-change="tiempos.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="tiempos.IdCausa">

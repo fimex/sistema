@@ -234,13 +234,12 @@ $this->title = $title;
      */
 </style>
 <!--Codigo para subir archivos por medio de ajax-->
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+
 <script>
     function sendImagen(id){
         varIdNew = id.split("_");
         var valor = document.getElementById(id).value;
         idNew = "formuploadajax_"+varIdNew[1];
-        console.log(idNew);
         var formData = new FormData(document.getElementById(idNew));
         formData.append("name", valor);
         $.ajax({
@@ -264,12 +263,27 @@ $this->title = $title;
     <?php else:?>
         IdMaquina = <?= $IdAreaAct == 1 ? 1751 : ($IdAreaAct == 2 ? 1610 : 1755) ?>;
     <?php endif?>
+    <?php if( ($IdAreaAct == 2 && $IdArea == 2) || ($IdSubProceso == 7 && $IdArea == 2) ):?>
+		IdCentroTrabajo = 38;
+	<?php endif?>
+	<?php if( ($IdAreaAct == 1 && $IdArea == 2) || ($IdSubProceso == 6 && $IdArea == 2) ):?>
+		IdCentroTrabajo = 29;
+	<?php endif?>
+	
     
     IdArea = <?= $IdArea?>;
     IdEmpleado = <?=$IdEmpleado?>;  
     loadProgramaciones(true);
-    loadComponentes();
-    loadPartesMolde();
+    <?php if($IdSubProceso == 14):?>
+        saveProduccion();
+        loadEmpleados('4-5');
+        loadDefectos();        
+    <?php else:?>
+        loadComponentes();
+        loadPartesMolde();
+        loadTiempos(); 
+        loadFallas();
+    <?php endif?> 
     loadTurnos();
     <?php if($IdAreaAct == 2): ?>
         loadEmpleados('1-3');
@@ -282,17 +296,9 @@ $this->title = $title;
     <?php endif; ?>
     <?php if($IdSubProceso == 8): ?>
         IdMaquina = 1632;
-    <?php endif; ?>
-    <?php if($IdSubProceso == 14):?>
-        saveProduccion();
-        loadEmpleados('4-5');
-        loadDefectos();        
-    <?php else:?>
-        loadPartesMolde();
-        loadTiempos(); 
-        loadFallas();
-    <?php endif?>    
+    <?php endif; ?>   
 ">
+    {{IdCentroTrabajoDestino}}
     <!---Espacio para div que cubre toda la pantalla y pide informacion para hacer la busqueda-->
     <div id="completo" ng-model="completo" >
         <div class="centrado">
@@ -408,41 +414,34 @@ $this->title = $title;
     <?php }
     else{?>
     <div class="row">
-        <div class="col-md-8">
-            <div class="row" style="width:150%">
+        <div class="col-md-9">
+            <div class="row">
                 <?php if($IdSubProceso == 7):?> 
-                    <div class="col-md-4" style="width:80%" >
-                            <?= $this->render('FormProduccionDetalleAceroMoldeoVarel',[
-                                'IdSubProceso'=>$IdSubProceso,
-                                'IdAreaAct' => $IdAreaAct,
-                            ]);?>
-                    </div>
-                  
-                </div>
-            <div class="row" style="width:110%">
-                <div class="col-md-6" style="width:110%">
-                    <?php elseif($IdSubProceso == 6):?>
-                        <?= $this->render('FormProduccionDetalleAceroMoldeoKlooster',[
-                            'IdSubProceso'=>$IdSubProceso,
-                            'IdAreaAct' => $IdAreaAct,
-                        ]);?>
-                    <?php elseif($IdSubProceso == 9):?>
-                        <?= $this->render('FormProduccionDetalleAceroCerrado',[
-                            'IdSubProceso'=>$IdSubProceso,
-                            'IdAreaAct' => $IdAreaAct,
-                        ]);?>
-                    <?php else:?>
-                        <?= $this->render('FormProduccionDetalleAcero',[
-                            'IdSubProceso'=>$IdSubProceso,
-                            'IdAreaAct' => $IdAreaAct,
-                        ]);?>
-                    <?php endif ?>
-                </div>
+                    <?= $this->render('FormProduccionDetalleAceroMoldeoVarel',[
+                        'IdSubProceso'=>$IdSubProceso,
+                        'IdAreaAct' => $IdAreaAct,
+                    ]);?>
+                <?php elseif($IdSubProceso == 6):?>
+                    <?= $this->render('FormProduccionDetalleAceroMoldeoKlooster',[
+                        'IdSubProceso'=>$IdSubProceso,
+                        'IdAreaAct' => $IdAreaAct,
+                    ]);?>
+                <?php elseif($IdSubProceso == 9):?>
+                    <?= $this->render('FormProduccionDetalleAceroCerrado',[
+                        'IdSubProceso'=>$IdSubProceso,
+                        'IdAreaAct' => $IdAreaAct,
+                    ]);?>
+                <?php else:?>
+                    <?= $this->render('FormProduccionDetalleAcero',[
+                        'IdSubProceso'=>$IdSubProceso,
+                        'IdAreaAct' => $IdAreaAct,
+                    ]);?>
+                <?php endif ?>
             </div>
         </div>
     </div>
     <?php }?>
-    <modal title="Control de Tiempos Muertos" visible="showModal2">
+    <modal title="Control de Tiempos Muertos" visible="showModal2" width="80%">
         <?= $this->render('FormTiemposMuerto');?>
     </modal>
 </div>

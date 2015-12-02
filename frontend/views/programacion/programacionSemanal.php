@@ -325,7 +325,7 @@ if($IdArea == 4){
             </tr>
             <tr>
                 <th>TON PRG</th>
-                <th>{{ resumen.TonPrgK == 0 ? 0 : resumen.TonPrgK | currency:'':3}}</th>
+                <th>{{resumen.TonPrgK == 0 ? 0 : resumen.TonPrgK | currency:'':3}}</th>
                 <th>{{resumen.TonPrgV | currency:'':3}}</th>
                 <th>{{resumen.TonPrgE | currency:'':3}}</th>
             </tr>
@@ -346,6 +346,10 @@ if($IdArea == 4){
                 <th>{{resumen.MolPrgK}}</th>
                 <th>{{resumen.MolPrgV}}</th>
                 <th>{{resumen.MolPrgE}}</th>
+            </tr>
+            <tr>
+                <th>Total {{aleacion}}</th>
+                <th colspan="3" ng-repeat="Aleacion in resumen.aleaciones" ng-if="Aleacion.Aleacion == aleacion">{{Aleacion.Total}}</th>
             </tr>
         </table>
     </div>

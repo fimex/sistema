@@ -108,7 +108,7 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
 }).directive('modal', function () {
     return {
         template: '<div class="modal fade">' + 
-              '<div class="modal-dialog modal-lg">' + 
+              '<div class="modal-dialog modal-{{ size }}" style="{{ width }}">' + 
                 '<div class="modal-content">' + 
                   '<div class="modal-header">' + 
                     '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>' + 
@@ -124,6 +124,8 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
         scope:true,
         link: function postLink(scope, element, attrs) {
             scope.title = attrs.title;
+            scope.width = attrs.width !== undefined ? 'width:' + attrs.width + ';' : '';
+            scope.size = attrs.size !== undefined ? attrs.size : 'lg';
 
             scope.$watch(attrs.visible, function(value){
               if(value == true)

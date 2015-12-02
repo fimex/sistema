@@ -15,7 +15,7 @@ use common\models\catalogos\Aleaciones;
  * @property integer $Lance
  * @property integer $HornoConsecutivo
  * @property integer $Kellblocks
- * @property integer $Lingotes
+ * @property double  $Lingotes
  * @property integer $Probetas
  * @property string $inicioLance
  * @property string $horaVaciado
@@ -38,10 +38,11 @@ class Lances extends \yii\db\ActiveRecord
      */
     public function rules()
     {
-        return [
+         return [
             [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo'], 'required'],
-            [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo', 'Kellblocks', 'Lingotes', 'Probetas'], 'integer'],
-			 [['inicioLance', 'horaVaciado'], 'safe']
+            [['IdProduccion', 'IdAleacion', 'Colada', 'Lance', 'HornoConsecutivo', 'Kellblocks', 'Probetas'], 'integer'],
+            [['Lingotes'], 'number'],
+            [['inicioLance', 'horaVaciado'], 'safe']
         ];
     }
 

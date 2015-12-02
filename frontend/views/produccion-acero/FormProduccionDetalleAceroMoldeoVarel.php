@@ -59,11 +59,16 @@
                 <th>{{detalle.CiclosTotal}}</th>
                 <th colspan="4" ng-show="!detalle.SerieInicio && detalle.LlevaSerie">Configurar serie para poder capturar</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
-                    <button type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
+                    <!--Cuando es el molde por partes-->
+                    <button ng-show="detalle.MoldeCompleto" type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,11);" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                    <!---Cuando es el molde completo-->
+                    <button ng-show="!detalle.MoldeCompleto" type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
+                <th ng-init=" resumen('OkCiclosMoldeo',detalle.OkCiclosMoldeo)"  ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(17);ModelMoldeo($index,3);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
@@ -75,16 +80,33 @@
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th>{{detalle.RepCiclosMoldeo}}</th>
-                <th>{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
-                <th>{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
+                <th ng-init="resumen('RepCiclosMoldeo',detalle.RepCiclosMoldeo) ">{{detalle.RepCiclosMoldeo}}</th>
+                <th ng-init="resumen('OkMoldesMoldeo',detalle.OkMoldesMoldeo) ">{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
+                <th ng-init=" resumen('RecMoldesMoldeo',detalle.RecMoldesMoldeo) ">{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
                      
-                <th>{{detalle.OkMoldesCerrados | currency:"":2 || 0}}</th>
-                <th>{{detalle.RecMoldesCerrado | currency:"":2 || 0}}</th>
+                <th  ng-init=" resumen('OkMoldesCerrados',detalle.OkMoldesCerrados) ">{{detalle.OkMoldesCerrados | currency:"":2 || 0}}</th>
+                <th ng-init=" resumen('RecMoldesCerrado',detalle.RecMoldesCerrado) ">{{detalle.RecMoldesCerrado | currency:"":2 || 0}}</th>
 
-                <th>{{detalle.OkMoldesVaciados || 0}}</th>
-                <th>{{detalle.RecMoldesVaciados || 0}}</th>
+                <th ng-init=" resumen('OkMoldesVaciados',detalle.OkMoldesVaciados) ">{{detalle.OkMoldesVaciados || 0}}</th>
+                <th ng-init=" resumen('RecMoldesVaciados',detalle.RecMoldesVaciados) ">{{detalle.RecMoldesVaciados || 0}}</th>
             </tr>
+			<tr>
+					<td colspan="11"></td>
+					<td colspan="1">{{OkCiclosMoldeo}}</td>
+					<td colspan="2">{{RecCiclosMoldeo}}</td>
+					<td colspan="3">{{RepCiclosMoldeo}}</td>
+					<td></td>
+					<td></td>
+					<td>{{OkMoldesMoldeo}}</td>
+					<td>{{RecMoldesMoldeo}}</td>
+					<td colspan="2"></td>
+					<td>{{OkMoldesCerrados}}</td>
+					<td>{{RecMoldesCerrado}}</td>
+					<td></td>
+					
+					<td>{{OkMoldesVaciados}}</td>
+					<td>{{RecMoldesVaciados}}</td>
+			</tr>
         </table>
 
         <!--########################### CICLOS REPOSICION VAREL ########################-->
@@ -166,6 +188,46 @@
                 </div>
             </div>
         </modal> 
+        <!--########################### CICLOS ACEPTADOS POR PARTES ########################-->
+        <modal title="Ciclos Aceptados" visible="showModalCAV">
+            <h3>{{title}}</h3>
+            <div style="height: 500px;">
+                <div class="form-group">
+                    <label for="producto">No Parte: </label> <label style="color:green;" >{{programacionAceros[index].Producto}}</label>
+                    <input type="hidden" class="form-control" ng-model="idproducto" value="idproducto" id="Producto" />
+                </div>
+
+                <div style="float:left; width:30%;">
+                    <label>Parte del Molde</label><br>
+                    <div ng-repeat="parte in partes">
+                        <label ng-if="parte.Identificador != 'Cabeza'">
+                            <label ng-if="parte.Num <= programacionAceros[index].CiclosMolde">
+                                <input 
+                                type="radio" 
+                                name="ParteS" 
+                                ng-model="IdParteMolde" 
+                                ng-click="activaBtnCerrado(18);selectParte(parte.IdParteMolde);" 
+                                ng-value="parte.IdParteMolde" 
+                                id="{{parte.Identificador}}"> 
+                                {{parte.Identificador}} 
+                            </label>
+                        </label><br/>
+                    </div>
+                </div>
+
+                <div style="float:left; width:60%;" >
+                    <label style="text-align:center;" ng-show="programacionAceros[index].SerieInicio && showserie" >
+                        Serie: 
+                        <label ng-show="programacionAceros[index].IdParteMolde == IdParteMolde"style="color:green; font-size:15pt;">{{programacionAceros[index].SerieInicio}}</label>
+                    </label>
+
+                    <fieldset id="btn-cicloA" disabled="true">
+                        <button class="btn btn-success" data-dismiss="modal" ng-click="saveDetalleAcero(index,18);" class="btn btn-default">Agregar</button>
+                    </fieldset>
+                </div>
+            </div>
+        </modal>
+         
     </div>
 </div>
 

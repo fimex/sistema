@@ -146,6 +146,23 @@ class ProductosController extends Controller
         }
         return 0;
     }
+
+    public function actionPartesMolde(){
+        $model = PartesMolde::find()->asArray()->all();
+        $i = 1;
+        $IdAreaAct = isset($_REQUEST['IdAreaAct']) == false ? 1 : $_REQUEST['IdAreaAct'];  
+        foreach ($model as &$key ) {
+            if (($IdAreaAct == 1 || $IdAreaAct == 3) && $i <= 2) {
+                $key['Num'] = $i;
+                $key['Ciclos'] = 2;
+            }elseif ($IdAreaAct == 2 && $i <= $_REQUEST['CiclosVarel']) {
+                $key['Num'] = $i;
+                $key['Ciclos'] = $_REQUEST['CiclosVarel'];
+            }
+            $i++;
+        }
+        return json_encode($model);
+    }
     
     public function actionDataProductos()
     {

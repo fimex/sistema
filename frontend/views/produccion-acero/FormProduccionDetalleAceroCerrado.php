@@ -34,19 +34,14 @@
                     <th class="width-40">Ok</th>
                     <th class="width-30">Rech</th>
                 </tr> 
-                <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
+                <tr ng-class="{'info': indexDetalle == $index}" ng-init="resetResumen()" ng-repeat="detalle in programacionAceros">
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
-
-
-
                     <th>
-                        <span ng-if="IdAreaAct != 2" >{{detalle.Programadas - detalle.OkMoldesMoldeo + detalle.RecMoldesCerrado | currency:"":1}} </span>
-                        <span ng-if="IdAreaAct == 2" >{{detalle.FaltanLlenadasV | currency:"":1}} </span>
+                        <span>{{detalle.FaltanLlenadasV | currency:"":1}} </span>
                     </th>
                     <th>
-                        <span ng-if="IdAreaAct != 2" >{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados - detalle.RecMoldesCerrado | currency:"":1}}</span>
-                        <span ng-if="IdAreaAct == 2" >{{detalle.FaltaNCerradasV | currency:"":1}}</span>
+                        <span>{{detalle.FaltaNCerradasV | currency:"":1}}</span>
                     </th>
                     <td class="col-md-3">{{detalle.Producto}}</td>
                     <th>{{detalle.Aleacion}}</th>
@@ -57,21 +52,34 @@
                     </th>
                     <th>{{detalle.RecMoldesMoldeo + detalle.RecMoldesCerrado | currency:"":1}}</th>-->
 
-                    <th>{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
-                    <th>{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
-                    
-                    <th><button type="button" ng-disabled="detalle.OkMoldesMoldeoRound > detalle.OkMoldesCerrados ? false : true" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
-                    <th>{{detalle.OkMoldesCerrados | currency:"":1}}</th>
+                    <th ng-init=" resumen('OkMoldesMoldeo',detalle.OkMoldesMoldeo)" >{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
+                    <th ng-init=" resumen('RecMoldesMoldeo',detalle.RecMoldesMoldeo)" >{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
+                    <!--<th><button type="button" ng-disabled="detalle.OkMoldesMoldeoRound > detalle.OkMoldesCerrados ? false : true" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>-->
+                    <th><button type="button" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
+                    <th ng-init=" resumen('OkMoldesCerrados',detalle.OkMoldesCerrados)" >{{detalle.OkMoldesCerrados | currency:"":1}}</th>
                     <th>
                         <button type="button" ng-click="activaBtnCerrado(14);ModelMoldeo($index,3);" class="btn btn-danger btn-sm">
                             <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                         </button>
                     </th>
-                    <th>{{detalle.RecMoldesCerrado | currency:"":1}}</th>
+                    <th ng-init=" resumen('RecMoldesCerrado',detalle.RecMoldesCerrado)">{{detalle.RecMoldesCerrado | currency:"":1}}</th>
 
-                    <th>{{detalle.OkMoldesVaciados || 0}}</th>
-                    <th>{{detalle.RecMoldesVaciados || 0}}</th>
+                    <th ng-init=" resumen('OkMoldesVaciados',detalle.OkMoldesVaciados)">{{detalle.OkMoldesVaciados || 0}}</th>
+                    <th ng-init=" resumen('RecMoldesVaciados',detalle.RecMoldesVaciados)">{{detalle.RecMoldesVaciados || 0}}</th>
                 </tr>
+				<tr>
+					<td colspan="8"></td>
+					<td >{{OkMoldesMoldeo}}</td>
+					<td >{{RecMoldesMoldeo}}</td>
+					<td></td>
+					<td colspan="2">{{OkMoldesCerrados}}</td>
+					<td colspan="2">{{RecMoldesCerrado}}</td>
+					<td></td>
+					<td>{{OkMoldesVaciados}}</td>
+					<td colspan="2">{{RecMoldesVaciados}}</td>
+					
+
+				</tr>
         </table>
 
         <!--#####################################################

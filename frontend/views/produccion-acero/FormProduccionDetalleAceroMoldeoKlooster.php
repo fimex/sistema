@@ -17,7 +17,8 @@
         </div>
     </div>
     <div id="detalle">
-        <table ng-table class="table table-condensed table-striped table-bordered">
+        <table ng-table class="table table-condensed table-striped table-bordered" 	
+				ng-init = "">
             <tr>
                 <th class="width-40" colspan="2" ></th>
                 <th class="width-20 text-center" colspan="2"  >Faltan</th>
@@ -56,8 +57,8 @@
             <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros | filter:filtro" ng-init="detalle.Prioridad != 'true' ? 'false' : 'true'">
                 <th><input ng-click="detalle.Prioridad = !detalle.Prioridad; saveProgramacion(detalle)" ng-checked="detalle.Prioridad == 1" type="checkbox" /></th>
                 <th>{{detalle.Programadas}}</th>
-                <th><span>{{detalle.Programadas - detalle.OkMoldesMoldeo + detalle.RecMoldesCerrado | currency:"":1}} </span></th>
-                <th><span>{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados - detalle.RecMoldesCerrado | currency:"":1}}</span></th>
+                <th><span>{{detalle.FaltanLlenadasV | currency:"":1}} </span></th>
+                <th><span>{{detalle.FaltaNCerradasV | currency:"":1}}</span></th>
                 <td class="col-md-3">{{detalle.Producto}}</td>
                 <th>{{detalle.Aleacion}}</th>
                 <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">{{detalle.SerieInicio || '--'}}</th>
@@ -69,29 +70,47 @@
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
+                <th ng-init=" resumen('OkCiclosMoldeo',detalle.OkCiclosMoldeo)" ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(16);ModelMoldeo($index,4); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
+                <th ng-init="resumen('RecCiclosMoldeo',detalle.RecCiclosMoldeo) " ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,10);" class="btn btn-info btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RepCiclosMoldeo}}</th>
-                <th>{{detalle.OkMoldesMoldeo | currency:"":1}}
+                <th ng-init="resumen('RepCiclosMoldeo',detalle.RepCiclosMoldeo) " ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RepCiclosMoldeo}}</th>
+                <th ng-init="resumen('OkMoldesMoldeo',detalle.OkMoldesMoldeo) " >{{detalle.OkMoldesMoldeo | currency:"":1}}
                 <!--{{(detalle.Llenadas -(-detalle.REPMoldeo)) | currency:"":1}}--></th>
-                <th>{{detalle.RecMoldesMoldeo}}</th>
+                <th ng-init=" resumen('RecMoldesMoldeo',detalle.RecMoldesMoldeo) ">{{detalle.RecMoldesMoldeo}}</th>
                 
-                <th>{{detalle.OkMoldesCerrados | currency:"":1 || 0}}</th>
-                <th>{{detalle.RecMoldesCerrado | currency:"":1 || 0}}</th>
+                <th ng-init=" resumen('OkMoldesCerrados',detalle.OkMoldesCerrados) ">{{detalle.OkMoldesCerrados | currency:"":1 || 0}}</th>
+                <th ng-init=" resumen('RecMoldesCerrado',detalle.RecMoldesCerrado) ">{{detalle.RecMoldesCerrado | currency:"":1 || 0}}</th>
 
-                <th>{{detalle.OkMoldesVaciados || 0}}</th>
-                <th>{{detalle.RecMoldesVaciados || 0}}</th>
+                <th ng-init=" resumen('OkMoldesVaciados',detalle.OkMoldesVaciados) ">{{detalle.OkMoldesVaciados || 0}}</th>
+                <th ng-init=" resumen('RecMoldesVaciados',detalle.RecMoldesVaciados) ">{{detalle.RecMoldesVaciados || 0}}</th>
             </tr>
+			<tr>
+					<td colspan="11"></td>
+					<td colspan="2">{{OkCiclosMoldeo}}</td>
+					<td colspan="2">{{RecCiclosMoldeo}}</td>
+					<td colspan="2">{{RepCiclosMoldeo}}</td>
+					<td></td>
+					<td>{{OkMoldesMoldeo}}</td>
+					<td>{{RecMoldesMoldeo}}</td>
+					<td colspan="2"></td>
+					<td>{{OkMoldesCerrados}}</td>
+					<td>{{RecMoldesCerrado}}</td>
+					<td></td>
+					<td>{{OkMoldesVaciados}}</td>
+					<td>{{RecMoldesVaciados}}</td>
+			</tr>
+			
+			
+			
         </table>
 
         <!--#####################################################

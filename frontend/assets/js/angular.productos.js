@@ -61,6 +61,18 @@ app.controller('Productos', function($scope, $filter, $modal, $http, $log, $time
             
         });
     };
+
+    $scope.loadPartesMolde = function(){
+        console.log(2);
+        return $http.get('/fimex/productos/partes-molde',{params:{
+            IdAreaAct:$scope.producto.IdAreaAct,
+            CiclosVarel:$scope.producto.CiclosVarel,
+            CiclosMolde:$scope.producto.CiclosMolde
+        }})
+        .success(function(data){  
+            $scope.partes = data;
+        });
+    };
     
     $scope.selectProducto = function(datos){
         $scope.producto = datos;
@@ -91,6 +103,8 @@ app.controller('Productos', function($scope, $filter, $modal, $http, $log, $time
         }).error(function(){
             
         });
+
+        $scope.loadPartesMolde();
     };
     
     $scope.saveMoldeo = function(){

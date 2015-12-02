@@ -279,6 +279,11 @@ class ReportesController extends Controller
         return $this->render('PromolSemana', ['Semanaini' => $sem ]);                 
     }
     
+	 public function actionSeriesA(){
+ 
+        return $this->render('SeriesBirt');                 
+    }
+	
     
     public function actionMaterial(){
         

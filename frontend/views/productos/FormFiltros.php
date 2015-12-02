@@ -7,7 +7,7 @@
         <table fixed-table-headers="almas" class="table table-striped table-bordered table-hover table-hovered">
             <thead>
                 <tr>
-                    <th class="center">Camisa</th>
+                    <th class="center">Filtro</th>
                     <th class="center">Cantidad</th>
                 </tr>
             </thead>
