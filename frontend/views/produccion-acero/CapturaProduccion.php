@@ -117,7 +117,6 @@ if ($IdAreaAct == 1){
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.idMaquina.Identificador}} - {{produccion.idMaquina.Descripcion}}"/>
                         </div>
                     </div>
-
                     <?php endif;?> 
                     <?php if($IdSubProceso == 12 || $IdSubProceso == 6 || $IdSubProceso == 2 || $IdSubProceso == 16 || $IdSubProceso == 3 || $IdSubProceso == 10 || $IdSubProceso == 7 || $IdSubProceso == 17):?>
                     <div class="col-md-4">
@@ -143,7 +142,7 @@ if ($IdAreaAct == 1){
                         <div class="input-group">
                             <span id="Aleaciones" class="input-group-addon">Aleacion:</span>
                             <select ng-show="!mostrar" id="aleacion" aria-describedby="Aleaciones"  class="form-control" ng-model="IdAleacion" required>
-                                <option ng-selected="produccion.lances.IdAleacion == a.IdAleacion" ng-repeat="a in aleaciones" ng-value="{{a.IdAleacion}}">{{a.Identificador}}</option>
+                                <option ng-selected="produccion.lances.IdAleacion == a.IdAleacion" ng-repeat="a in aleaciones" ng-value="{{a.IdAleacion}}">{{a.Descripcion}}</option>
                             </select>
                             <input ng-show="mostrar" disabled="" class="form-control input-sm" value="{{produccion.lances.idAleacion.Identificador}}"/>
                         </div>

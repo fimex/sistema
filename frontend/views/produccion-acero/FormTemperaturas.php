@@ -11,7 +11,7 @@
                     <?php if($IdSubProceso != 2): ?>
                     <th>Maquina</th>
                     <?php endif;?>
-                    <th>Hora</th>
+                    <th ng-if="IdSubProceso !== 10">Hora</th>
                     <th><?php if($IdSubProceso == 2): ?>Placa Izquierda<?php else:?>Temperatura<?php endif;?></th>
                     <?php if($IdSubProceso == 2): ?>
                     <th>Placa Derecha</th>
@@ -31,7 +31,7 @@
                         <option ng-show="maquina.IdMaquina === produccion.IdMaquina || maquinas[indexMaquina].IdCentroTrabajo !== maquina.IdCentroTrabajo" ng-selected="temperatura.IdMaquina == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}} - {{maquina.Maquina}}</option>
                     </select></th>
                     <?php endif;?>
-                    <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Fecha" value="{{temperatura.Fecha | date:'HH:mm'}}" /></th>
+                    <th ng-if="IdSubProceso !== 10"><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Fecha" value="{{temperatura.Fecha | date:'HH:mm'}}" /></th>
                     <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Temperatura" value="{{temperatura.Temperatura}}"/></th>
                     <?php if($IdSubProceso == 2): ?>
                     <th><input ng-change="temperatura.change = true" class="form-control" ng-model-options="{updateOn: 'blur'}" ng-model="temperatura.Temperatura2" value="{{temperatura.Temperatura2}}"/></th>

@@ -49,8 +49,62 @@ $this->title = $title;
         border-left: 1px solid #ccc;
         border-top: 1px solid #ccc;
     }
+    #completo{
+        width:97%;
+        height:91%;
+        position:absolute;
+        display:block;
+        background: #999999;
+        z-index:99999;
+        opacity:1;
+        margin:0%;
+        -webkit-transition: all 1s ease-in-out;
+        -moz-transition: all 1s ease-in-out;
+        -o-transition: all 1s ease-in-out;
+        transition: all 1s ease-in-out;
+    }
+    .centrado{
+        width:50%;
+        max-width: 400px;
+        height:auto;
+        position:relative;
+        display:block;
+        margin:auto;
+        border:red solid 1px;
+        top:30%;
+        background:#ffffff;
+        border:white solid 1px;
+        padding:30px;
+    }
+    .error{
+        width:100%;
+        border:none;
+    }
 </style>
-<div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="loadProductosSeries(); loadProductos();">
+<div class="container-fluid" ng-controller="ProduccionAceros2" ng-init="loadProductosSeries(); loadProductos();
+role = <?= $role?>;
+username = '<?= $username?>';">
+    <!---Espacio para div que cubre toda la pantalla y pide informacion para hacer la busqueda-->
+    <div id="completo" ng-model="completo" >
+        <div class="centrado" ng-show="!(role == 1)">
+            No tienes permitido entrar a esta seccion
+        </div>
+        <div class="centrado" ng-show="role == 1">
+            <div class="input-group">
+                <span class="input-group-addon">Usuario</span>
+                <input class="form-control input-sm" type="text" ng-change="" ng-model="username" ng-value="username"/>
+            </div><br />
+            <input type="hidden" ng-model="FechaMoldeo2">
+            <div class="input-group">
+                <span class="input-group-addon">Clave:</span>
+                <input class="form-control input-sm" type="password" ng-change="" ng-model="clave" />                   
+            </div><br />
+            <div class="input-group" ><input type="text" class="error" ng-model="msgError"></div><br />
+            <div class="input-group" >
+                <button class="btn btn-info" ng-click="accesar()">Accesar</button>
+            </div>
+        </div>
+    </div>
     <div class="col-md-12">
     <div class="panel panel-primary">
         <!-- Default panel contents -->

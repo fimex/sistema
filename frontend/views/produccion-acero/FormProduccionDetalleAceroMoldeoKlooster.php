@@ -54,7 +54,7 @@
                 <th class="width-40">OK</th>
                 <th class="width-30">Rech</th>
             </tr> 
-            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros | filter:filtro" ng-init="detalle.Prioridad != 'true' ? 'false' : 'true'">
+            <tr ng-class="{'info': indexCiclo == $index}" ng-repeat="detalle in programacionAceros | filter:filtro" ng-mousedown="selectCiclo($index);" ng-init="detalle.Prioridad != 'true' ? 'false' : 'true'">
                 <th><input ng-click="detalle.Prioridad = !detalle.Prioridad; saveProgramacion(detalle)" ng-checked="detalle.Prioridad == 1" type="checkbox" /></th>
                 <th>{{detalle.Programadas}}</th>
                 <th><span>{{detalle.FaltanLlenadasV | currency:"":1}} </span></th>

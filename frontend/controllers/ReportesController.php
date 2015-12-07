@@ -104,6 +104,62 @@ class ReportesController extends Controller
         return $this->render('index');
     }
 
+    public function actionVaciadoAcero(){
+        return $this->render('VaciadoAceros');
+    }
+    
+    public function actionDataVaciado(){
+        
+        if(!isset($_REQUEST['Fecha'])){
+            return "";
+        }
+        
+        $Fecha = date('Y-m-d',strtotime($_REQUEST['Fecha']));
+        
+        $model = Producciones::find()->where([
+            'IdArea' => 3,
+            'IdSubProceso' => 10,
+            'Fecha' => $Fecha
+        ])
+        ->with('lances')
+        ->with('produccionesDetalles')
+        ->asArray()
+        ->all();
+        
+        $lances = [];
+        $productos = [];
+        $material = [];
+        
+        foreach($model as $mod){
+            $lances[] = [
+                'Colada' => $mod['lances']['Colada'],
+                'Lance' => $mod['lances']['Lance'] * 1,
+                'HornoConsecutivo' => $mod['lances']['HornoConsecutivo'],
+                'Peso' => 0
+            ];
+            
+            foreach($mod['produccionesDetalles'] as $producto){
+                $lances[count($lances)-1]['Peso'] += ($producto['Hechas'] + $producto['Rechazadas']) * $producto['idProductos']['PesoArania'];
+                
+                $productos[$producto['IdProductos']]['Producto'] = $producto['idProductos']['Identificacion'];
+                $productos[$producto['IdProductos']]['PiezasMolde'] = $producto['idProductos']['PiezasMolde'];
+                $productos[$producto['IdProductos']]['Moldes'] = (isset($productos[$producto['IdProductos']]['Moldes']) ? $productos[$producto['IdProductos']]['Moldes'] : 0 ) + (($producto['Hechas'] + $producto['Rechazadas']) * 1);
+                $productos[$producto['IdProductos']]['Piezas'] = $producto['idProductos']['PiezasMolde'] * $productos[$producto['IdProductos']]['Moldes'];
+                
+                $productos[$producto['IdProductos']]['Lance'. $mod['lances']['Lance']]['MoldesOk'] = $producto['Hechas'] * 1;
+                $productos[$producto['IdProductos']]['Lance'. $mod['lances']['Lance']]['Moldesrec'] = $producto['Rechazadas'] * 1;
+                $productos[$producto['IdProductos']]['Lance'. $mod['lances']['Lance']]['PiezasOk'] = $producto['Hechas']  * $producto['idProductos']['PiezasMolde'];
+                $productos[$producto['IdProductos']]['Lance'. $mod['lances']['Lance']]['Piezasrec'] = $producto['Rechazadas'] * $producto['idProductos']['PiezasMolde'];
+
+            }
+            //$productos[];
+        }
+        return json_encode([
+            'lances' => $lances,
+            'productos' => $productos
+        ]);
+    }
+    
     public function actionMoldeo()
     {
         return $this->render('index',[
@@ -288,29 +344,37 @@ class ReportesController extends Controller
     public function actionMaterial(){
         
         $semanas = '';
+        $cantidad = isset($_GET['cantidad']) && $_GET['cantidad'] != ''? $_GET['cantidad'] : 4;
         if(isset($_GET['semana'])){
-           $semana = explode('-W',$_GET['semana']);
-           $cantidad = $_GET['cantidad'];
-           $anio = $semana[0];
-           $semana = $semana[1];
+            $semana = explode('-W',$_GET['semana']);
+            $anio = $semana[0];
+            $semana = $semana[1];
+            $fecha = strtotime($anio."W".$semana."1");
+            $fecha = date('Y-m-d',$fecha);
         }  else { 
-            $cantidad = 4;
             $semana = date("W");
             $anio = date("Y");
+            $fecha = strtotime($anio."W".$semana."1");
+            $fecha = date('Y-m-d',$fecha);
         }
+        //var_dump($_GET['semana']);exit;
         
-        for ($i = 0; $i < $cantidad; $i++){
-            $sem = $semana + $i;
-            $semanas .= "[".$sem."],";
-        } 
+        $semanas['semana1'] = ['year'=>$anio,'week'=>$semana,'val'=>$fecha];
+        $sem[] = "[".$semanas['semana1']['year']."-S".($semanas['semana1']['week']*1)."]";
+        
+        for($x=1; $x < $cantidad; $x++){
+            $semanas['semana'.($x+1)] = $this->checarSemana($semanas['semana'.$x]);
+            $sem[] = "[".$semanas['semana'.($x+1)]['year']."-S".($semanas['semana'.($x+1)]['week']*1)."]";
+        }
         
         $model = VMaterialArania::find()->asArray()->all();
         $commad = new VMaterialArania();
-        $Material = $commad->getMaterial(substr($semanas,0,-1),$anio,$cantidad,$semana,$this->areas->getCurrent());
-        $MaterialCasting = $commad->getMaterialCasting(substr($semanas,0,-1),$anio,$cantidad,$semana,$this->areas->getCurrent());
+        $Material = $commad->getMaterial($sem,$cantidad,$this->areas->getCurrent());
+        $MaterialCasting = $commad->getMaterialCasting($sem,$cantidad,$this->areas->getCurrent());
        
         //var_dump($Material);
         return $this->render('Material',[
+            'semanas'=>$semanas,
             'model'=>$Material,
             'model2'=>$MaterialCasting,
         ]);

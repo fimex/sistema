@@ -20,7 +20,7 @@ app.controller('vaciado_cont', function ($scope, $http){
 });*/
 
 app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $log, $timeout, $window, $upload){
-    $scope.Fecha = new Date();
+    $scope.semanaActual = new Date();
     $scope.IdProduccion = null;
     $scope.IdProduccionEstatus = 1;
     $scope.indexSerie = null;
@@ -34,6 +34,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.turno = [];
     $scope.tiempos = [];
     $scope.lenghtPartes = [];
+    $scope.monitoreos = [];
     $scope.mostrar = true;
     $scope.uploadResult = [];
     $scope.showpartes == false;
@@ -46,7 +47,11 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.RecMoldesCerrado=0;
 	$scope.OkMoldesVaciados=0;
 	$scope.RecMoldesVaciados=0;
+
 	$scope.showModal2=0;
+	$scope.showModal3=0;
+	
+	
 	
 	$scope.resumen= function($campo,$valor){
 		switch($campo){
@@ -191,7 +196,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 
     $scope.loadProgramaciones = function(refresh){
 		$scope.resetResumen
-        $scope.programacionAceros = [];
         if($scope.IdSubProceso == 14){
             tipo = refresh == true ? 0 : 1;
             return $http.get('get-cantidad',{params:{
@@ -263,6 +267,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             //document.getElementById("msgError").innerHTML = "Es necesario selecionar una fecha de moldeo";
 
     }
+
     $scope.loadPartesMolde = function(){
         return $http.get('partes-molde',{params:{
             IdArea: $scope.IdArea,
@@ -288,7 +293,35 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     /*
      * MODULO DE CALIDAD 
      */
-
+    $scope.consumibles = [];
+    $scope.addMatUsado = function() {
+        if($scope.IdProduccion != null){
+            $scope.inserted = {
+                IdMaterialVaciado: null,
+                IdProduccion: $scope.IdProduccion,
+                IdMaterial: null,
+                Cantidad: 0,
+            };
+            $scope.consumibles.push($scope.inserted);
+        }
+    };
+    $scope.loadMaterialPadre = function(){
+        return $http.get('material-padre',{params:{
+        }})
+        .success(function(data){  
+            $scope.materialesP = data;
+        });
+    }
+    $scope.loadMateriales = function(){
+        return $http.get('materiales',{params:{
+            IdSubProceso: $scope.IdSubProceso,
+            IdArea: $scope.IdArea,
+            IdCentroTrabajo: $scope.IdAreaAct,
+        }})
+        .success(function(data){  
+            $scope.materiales = data;
+        });
+    }
     $scope.ModelCalidad = function(){
         if($scope.datos.inspeccionadas > 0){
             $scope.saveExistencias();
@@ -318,8 +351,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 'Imagen': ''
             });
         }
-        //console.log()
-        //sendImagen();
     };
     $scope.saveSeriesAceptadas = function(serie,centroTrabajo){
         return $http.get('save-series-aceptadas',{params:{
@@ -433,11 +464,46 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             IdEstatus:tipo, //
             IdProgramacion: $scope.datos.IdProgramacion,//
             Eficiencia:1, //
+            IdCentroTrabajo: $scope.datos.IdCentroTrabajo,
         }})
         .success(function(data) {
             $scope.datos.IdProduccionesDetalle = data;
+            $scope.getIdProdCalidad();
         });
         $scope.saveInspeccionadas();
+    };
+
+    $scope.getIdProdCalidad = function (){
+        return $http.get('id-prod-calidad',{params:{
+            IdProduccion: $scope.IdProduccion,//
+            IdCentroTrabajo: $scope.datos.IdCentroTrabajo,
+        }})
+        .success(function(data) {
+            $scope.datos.IdProduccionesCalidad = data;
+            //$scope.saveMaterialesUsadosLP();
+        });
+    };
+
+    $scope.saveMaterialesUsadosLP = function(){ 
+        return $http.get('save-usados',{params:{
+            IdProduccionesCalidad: $scope.datos.IdProduccionesCalidad,//
+            Materiales:{
+                RemMar:        $scope.RemMar,
+                RemTip:        $scope.RemTip,
+                PenMar:        $scope.PenMar,
+                PenTip:        $scope.PenTip,
+                RevMar:        $scope.RevMar,
+                RevTip:        $scope.RevTip
+            },
+            Lotes:{
+                LoteRemovedor: $scope.loteRemovedor,
+                LotePenetrante:$scope.LotePenetrante,
+                LoteRevelador: $scope.LoteRevelador
+            }
+        }})
+        .success(function(data) {
+            $scope.datos.IdProduccionesCalidad = data;
+        });
     };
     $scope.saveExistencias = function (){
         return $http.get('save-existencias',{params:{
@@ -537,11 +603,62 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }});
     };
 
-    $scope.saveDetalleAcero2 = function(index,tipo){   
-        $scope.index = index;   
-        console.log($scope.Componentes[$scope.index]);
+    $scope.saveReposicion = function(index,tipo){   
 
-       
+        $scope.index = index;
+        $scope.estatus = tipo;
+        $scope.Reposicion = $scope.estatus == 10 ? "SI" : "NO";
+        $scope.IdParteMolde = [];
+        $scope.Componentes[$scope.index].SerieInicio = $scope.IdSubProceso == 6 || $scope.IdSubProceso ==7 || $scope.IdSubProceso == 17 ? $scope.Componentes[$scope.index].SerieInicio : null;
+
+        if($scope.estatus == 10){
+            $scope.IdParteMolde[1] = $scope.IdComponente;
+        }
+
+        $scope.estatus = $scope.estatus == 10 ? 1 : $scope.estatus;
+        var CiclosMoldeA = 0;
+        switch ($scope.estatus){
+            case 1: CiclosMoldeA = $scope.Reposicion == 'SI' ? (.5) : (1 / $scope.Componentes[$scope.index].CiclosMoldeA); break;
+            case 3: CiclosMoldeA = $scope.IdSubProceso == 6 || $scope.IdSubProceso == 7 ? 0 : (-.5); break;
+        }
+        //$scope.programacionAceros[$scope.index].FechaMoldeo2 = $scope.Fecha;
+        $scope.Componentes[$scope.index].IdEstatus = $scope.Reposicion == 'SI' ? 2 : $scope.estatus;
+        $scope.Componentes[$scope.index].IdPartesMoldes = $scope.IdParteMolde; 
+        //$scope.programacionAceros[$scope.index].SerieInicio = $scope.listadoseries[$scope.indexSerie].Serie == null ? $scope.programacionAceros[$scope.index].SerieInicio : $scope.listadoseries[$scope.indexSerie].Serie;
+        //if ($scope.IdSubProceso == 9) { $scope.programacionAceros[$scope.index].SerieInicio =  $scope.series.Serie; $scope.programacionAceros[$scope.index].IdPartesMoldes = $scope.programacionAceros[$scope.index].IdParteMolde; }
+        if ($scope.IdSubProceso == 7) { 
+            $scope.Componentes[$scope.index].SerieInicio = $scope.series.Serie == null ? $scope.Componentes[$scope.index].SerieInicio : $scope.series.Serie;
+        }
+
+        $scope.indexSerie = null;
+        
+        /*if ($scope.programacionAceros[$scope.index].FechaMoldeo == null) {
+            $scope.programacionAceros[$scope.index].FechaMoldeo = 0;
+        };*/
+        
+        if($scope.Componentes[$scope.index].LlevaSerie != 'Si' || ($scope.Componentes[$scope.index].LlevaSerie == 'Si' && $scope.Componentes[$scope.index].SerieInicio != null))
+
+        return $http.get('save-detalle-acero',{params:{
+            Produccion:{
+                IdArea: $scope.IdArea,
+                Fecha: $scope.Fecha,
+                IdEmpleado: $scope.IdEmpleado,
+                IdMaquina: $scope.IdMaquina,
+                IdSubProceso: $scope.IdSubProceso,
+                IdTurno: $scope.IdTurno
+            },
+            ProduccionesDetalleMoldeo:$scope.Componentes[$scope.index]
+            
+        }}).success(function(data) {
+            $scope.loadProgramaciones();
+            $scope.listadoSeries = [];
+            $scope.indexSerie = null;
+            $scope.loadPartesMolde();
+            $scope.loadComponentes();
+            $scope.showModal = false;
+            window.name = 'NG_ENABLE_DEBUG_INFO!' + window.name;
+        }); 
+
     };
     
     $scope.saveDetalleAcero = function(index,tipo){      
@@ -551,15 +668,13 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         console.log($scope.index);
         $scope.Reposicion = $scope.estatus == 10 ? "SI" : "NO";
         $scope.programacionAceros[$scope.index].SerieInicio = $scope.IdSubProceso == 6 || $scope.IdSubProceso ==7 || $scope.IdSubProceso == 17 ? $scope.programacionAceros[$scope.index].SerieInicio : null;
-
-        //$scope.programacionAceros[$scope.index].IdComponente = $scope.IdComponente
         
         if ($scope.IdSubProceso != 9) {
             /*if ($scope.programacionAceros[$scope.index].FechaMoldeo == 1 && !$scope.FechaMoldeo2) {
                 return alert("Debes de ingresar la fecha del moldeo");
             };*/
         };
-        //console.log("ff "+$scope.IdComponente);
+        
         i = 0;
         $scope.IdParteMolde = [];
         //console.log($scope.programacionAceros[$scope.index].CiclosMoldeA);
@@ -588,10 +703,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             }
         }
 
-        /*if($scope.estatus == 10){
-            $scope.IdParteMolde[1] = $scope.IdComponente;
-        }*/
-
         $scope.estatus = $scope.estatus == 10 ? 1 : $scope.estatus;
         $scope.estatus = $scope.estatus == 18 ? 1 : $scope.estatus;
         if($scope.estatus == 3){
@@ -600,7 +711,6 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
                 $scope.IdParteMolde[1] = $(this).val();
             });
         }
-        console.log("sss "+$scope.IdParteMolde);
 
         var CiclosMoldeA = 0;
         switch ($scope.estatus){
@@ -777,7 +887,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     $scope.buscar2 = function(){
         $scope.showModal2 = !$scope.showModal2;
         $scope.loadMaquinas(true);
-    };
+	}
   
     $scope.loadTurnos = function(){
         return $http.get('turnos',{}).success(function(data) {
@@ -814,8 +924,8 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 
     $scope.loadFallas = function(){
         return $http.get('fallas',{params:{
-                IdSubProceso: 6,
-                IdArea: 2
+                IdSubProceso: $scope.IdSubProceso,
+                IdArea: $scope.IdArea
             }}).success(function(data) {
             $scope.fallas = [];
             $scope.fallas = data;
@@ -827,6 +937,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         return $http.get('tiempos',{params:{
                 Fecha: $scope.Fecha,
                 IdArea: $scope.IdArea,
+				 IdSubProceso: $scope.IdSubProceso,
                 //IdMaquina: $scope.IdMaquina,
                 //IdEmpleado: $scope.IdEmpleado,
                 IdTurno: $scope.IdTurno
@@ -859,6 +970,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.saveTiempo = function(index){
+		$scope.TiemposMuertos[index].Descripcion = $scope.TiemposMuertos[index].Observaciones ;
         if(($scope.TiemposMuertos[index].Incio != '00:00' && $scope.TiemposMuertos[index].Fin != '00:00') || $scope.TiemposMuertos[index].IdCausa != null){
             return $http.get('save-tiempo',{params:$scope.TiemposMuertos[index]}).success(function(data) {
                 $scope.TiemposMuertos[index] = data;
@@ -1347,14 +1459,179 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.IdComponente = IdComponente;
         //console.log("selected "+IdComponente);
     };
+	
+	
+	//**********************************************edicion ciclos
+	$scope.ciclos =[];
+	$scope.ciclosdetalle =[];
+	$scope.indexCiclo = 0;
+	$scope.indexDetalleCiclo = 0;
+	
+	$scope.buscar3 = function(){
+        $scope.showModal3 = !$scope.showModal3;
+		$scope.ciclos =[];
+		$scope.ciclosdetalle =[];
+        $scope.loadCiclos();
+    };
+	
+	$scope.loadCiclos = function(){
+		
+		 return $http.get('loadciclo',{params:{
+                IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+               // Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+               // Anio: $scope.programacionAceros[$scope.indexCiclo].Anio,
+                //Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+				IdSubProceso:$scope.IdSubProceso,
+				Fecha: $scope.Fecha,
+            }}).success(function(data){
+            $scope.ciclos = [];
+            $scope.ciclos = data;
+        });
+		
+	}
+	$scope.loadCliclosDetalle = function(){
+		console.log( "Entro detalle");
+		return $http.get('load-ciclo-detalle',{params:{
+                IdProduccionCiclos: $scope.ciclos[$scope.indexDetalleCiclo].IdProduccionCiclos
+            }}).success(function(data){
+            $scope.ciclosdetalle = [];
+            $scope.ciclosdetalle = data;
+        });
+		
+	}
+	
+	
+	$scope.deleteCiclosDetalle = function(index){
+		if ($scope.ciclosdetalle[index].serie != null ) alert("tiene serie"); 
+		
+        if($scope.confirm()){
+			
+            
+            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('delete-ciclos-detalle',{params:
+			
+			{
+                IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
+                IdProductos: $scope.ciclosdetalle[index].IdProductos,
+                IdSubProceso: $scope.ciclosdetalle[index].IdSubProceso,
+                serie: $scope.ciclosdetalle[index].serie,
+            }
+			
+			}).success(function(data) {
+               $scope.loadCliclosDetalle();
+            }).error(function(){
+          
+        });
+        }
+    };
+	
+	$scope.deleteCiclos = function(index){
+		
+		
+        if($scope.confirm()){
+			
+            
+            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('delete-ciclos',{params:
+			
+			{
+                IdProduccionCiclos: $scope.ciclos[index].IdProduccionCiclos,
+                IdProductos: $scope.ciclos[index].IdProductos,
+                IdSubProceso: $scope.ciclos[index].IdSubProceso,
+                serie: $scope.ciclos[index].serie,
+				
+            }
+			
+			}).success(function(data) {
+               $scope.loadCliclosDetalle();
+            }).error(function(){
+          
+        });
+        }
+    };
+	
+	 $scope.selectCiclo = function(index){
+        if($scope.indexCiclo != null){
+           			
+            $scope.indexCiclo = null;
+        }
+        $scope.indexCiclo = index;
+    };
 
+    $scope.selectDetalleCiclo = function(index){
+         
+        if($scope.indexDetalleCiclo != null){
+            
+            $scope.indexDetalleCiclo = null;
+        }
+        $scope.indexDetalleCiclo = index;
+ 
+        $scope.loadCliclosDetalle();
+        
+    };
+       
+    //#################  DATOS DE ESTATUS MONITOREO  ###################
+    $scope.loadDatosEstatusMonitoreo = function(){
+        console.log("dd "+$scope.semanaActual);
+
+        return $http.get('datos-estatus-monitoreo',{params:{
+                Semana: $scope.semanaActual,
+            }}).success(function(data){
+            $scope.monitoreos = [];
+            $scope.monitoreos = data;
+        });
+    }
+
+    $scope.SaveEstatusMonitoreo = function(index){
+        $scope.index = index;
+        $scope.monitoreos[$scope.index].Semana = 46;
+        return $http.get('save-estatus-monitoreo',{params:{
+            estatusMonitoreo:$scope.monitoreos[$scope.index]
+        }}).success(function(data){
+           $scope.loadDatosEstatusMonitoreo();
+        });
+    }
+
+    $scope.MostrarEstatus = function(monitoreo,tipo){
+        return $http.get('tipo-monitoreo',{params:{
+            IdTipoMonitoreo: monitoreo,
+            Tipo: tipo,
+        }}).success(function(data){
+            $scope.tipomonitoreo = [];
+            $scope.tipomonitoreo = data;
+            $scope.ResumenMonitoreo(monitoreo,tipo);
+        });
+    }
+
+    $scope.ResumenMonitoreo = function(monitoreo,tipo){
+        return $http.get('resumen-monitoreo',{params:{
+            IdTipoMonitoreo: monitoreo,
+            Tipo: tipo,
+        }}).success(function(data){
+            $scope.resumenMonitoreo = [];
+            $scope.resumenMonitoreo = data;
+        });
+    }
+
+    $scope.ModalEstatus = function(index,tipo,monitoreo,t){
+        $scope.index = index;
+        $scope.tipo = tipo;
+     
+        $scope.title = $scope.tipo == 1 ? 'Estatus Desarrollo' : ($scope.tipo == 2 ? 'Estatus Almas' : ($scope.tipo == 3 ? 'Estatus Modelos' : ($scope.tipo == 4 ? 'Estatus Cajas Almas' : ( $scope.tipo == 5 ? 'Ubicacion Modelos' : 'Ubicacion Cajas Almas' ) ) ) );
+        $scope.colorestatus = $scope.tipo == 1 ? '#6F3198' : ($scope.tipo == 2 ? '#FF5050' : ($scope.tipo == 3 ? '#00B7EF' : '#0072BC') );
+        $scope.showModal = !$scope.showModal;
+    };
+
+	
 });// ****************************************** FIN controlador ProduccionAceros
 
 app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $log, $timeout){
 	
-	    $scope.campostt= false;
-    $scope.Fecha = new Date();
-    $scope.produccion = [{
+	$scope.campostt= false;
+        $scope.Fecha = new Date();
+        $scope.produccion = [{
         Fecha: new Date(),
         IdArea: null,
         IdCentroTrabajo:null,
@@ -1424,6 +1701,19 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
 	inicioLance = '';
 	horaVaciado = '';
 
+    $scope.accesar = function(){
+        if($scope.clave == "permitido"){
+            $scope.msgError = "Acceso concedido";
+            //document.getElementById('msgError').innerHTML  = "Acceso concedido";
+            setTimeout(function(){
+                document.getElementById("completo").style.marginTop = "-100%";
+            },2000);
+        }
+        else{
+            //document.getElementById('msgError').innerHTML  = "Credenciales incorrectas";
+            $scope.msgError = "Credenciales incorrectas";
+        }
+    }
 
     $scope.countProduccionesAceros = function(IdSubProceso,IdArea){
         return $http.get('count-produccion',{params:{IdSubProceso:IdSubProceso, IdArea:IdArea,}}).success(function(data){
@@ -1715,7 +2005,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
                 IdTemperatura: null,
                 IdProduccion: $scope.produccion.IdProduccion,
                 IdMaquina: $scope.produccion.IdMaquina,
-                Fecha: null,
+                Fecha: '00:00:00',
                 Fecha2: $scope.produccion.Fecha,
                 Temperatura: 0,
                 Temperatura2: 0,
@@ -1727,6 +2017,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
     };
     
     $scope.saveTemperatura = function(index){
+		 if($scope.IdSubProceso== 10 ) $scope.temperaturas[index].Fecha = '00:00';
         return $http.get('save-temperatura',{params:$scope.temperaturas[index]}).success(function(data) {
             if(data != false){
                 $scope.temperaturas[index] = data;
@@ -1814,7 +2105,6 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
 
     $scope.updateLances = function (){
 
-        //$scope.produccion.lances.IdLance == null ?  $scope.produccion.lances.IdLance :
         Kellblocks = $scope.produccion.lances.Kellblocks == null ? null : $scope.produccion.lances.Kellblocks;
         Lingotes = $scope.produccion.lances.Lingotes == null ? null : $scope.produccion.lances.Lingotes;
         Probetas = $scope.produccion.lances.Probetas == null ? null : $scope.produccion.lances.Probetas;
@@ -1826,15 +2116,6 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
             Probetas:Probetas,            
         }})
         .success(function(data) {
-            /*$scope.produccion = data[0];
-            $scope.erroresP = data[1];
-            if ($scope.erroresP == 1) {
-                $scope.IdProduccion2 = $scope.produccion.IdProduccion;
-                alert("Error ese registro ya fue capturado.");
-            }
-            //$scope.FechaProduccion = $scope.produccion.Fecha;
-            //console.log($scope.erroresP);
-            $scope.index = undefined;*/
             $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea);
         });
     };
@@ -2173,8 +2454,7 @@ app.controller('PruebasDestructivas', function ($scope, $filter, $modal, $http, 
             if ($scope.producciones == '') {
                 $scope.producciones.IdProduccion = '';
             };
-           
-            if($scope.index == undefined){
+                       if($scope.index == undefined){
                 $scope.index = $scope.producciones.length - 1;
                 $scope.loadProduccion();
                 $scope.loadAleaciones();

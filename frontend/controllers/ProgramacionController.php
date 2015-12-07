@@ -18,6 +18,7 @@ use frontend\models\programacion\ProgramacionesAlmaSemana;
 use frontend\models\programacion\ProgramacionesAlmaDia;
 use common\models\datos\Almas;
 use frontend\models\programacion\VResumenDiario;
+use frontend\models\programacion\ProductosEnsamble;
 use frontend\models\programacion\VResumenAcero;
 use common\models\datos\Programaciones;
 use common\models\datos\Areas;
@@ -716,8 +717,9 @@ class ProgramacionController extends Controller
         
         if($agrupado == 1){
             $where['Agrupado'] = $agrupado;
-            $Programacion = Programaciones::find()->where($where)->one();
         }
+        
+        $Programacion = Programaciones::find()->where($where)->one();
         
         if(is_null($Programacion)){
             $Programacion = new Programaciones();
@@ -746,12 +748,11 @@ class ProgramacionController extends Controller
         $area = Areas::findOne("$area");
         
         foreach($data as $dat){
-            
             $Pedido = VPedidos::find()->where(['IdPedido' => $dat])->one();
             $Producto = Productos::findOne($Pedido->IdProducto);
 
             if ($Producto->Ensamble == 1) { //Explosion de valvulas
-                $Producto = $this->ExplosionValvulas($Producto['IdProducto']);
+                $Productos = $this->ExplosionValvulas($Producto->IdProducto);
             }else{
                 $Productos = Productos::find()->where(['IdProducto' => $Pedido->IdProducto])->asArray()->all();
             }
@@ -820,7 +821,7 @@ class ProgramacionController extends Controller
     
     public function ExplosionValvulas($producto){
         
-        $explosion = ProductosEnsamble::find()->select('')->where('IdProducto = '.$producto['IdProducto'].' AND SeCompra = 0')->asArray()->all();
+        $explosion = ProductosEnsamble::find()->select('')->where('IdProducto = '.$producto.' AND SeCompra = 0')->asArray()->all();
 
         foreach ($explosion as $key){
             $prod = Productos::findOne($key['IdComponente']);

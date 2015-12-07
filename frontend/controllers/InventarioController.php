@@ -2,10 +2,12 @@
 
 namespace frontend\controllers;
 
+use Yii;
 use frontend\models\inventario\VExistencias;
 use frontend\models\inventario\Inventarios;
 use frontend\models\inventario\InventarioMovimientos;
 use frontend\models\inventario\Existencias;
+use common\models\datos\Bitacora;
 
 use common\models\catalogos\CentrosTrabajo;
 
@@ -104,6 +106,25 @@ class InventarioController extends \yii\web\Controller
 
     function actionDesafectar(){
         
+    }
+    
+    function SetBitacora($descripcion,$tabla,$campo,$valorNuevo,$valorAnterior){
+        $data = [
+            'Bitacora' => [
+                'Descripcion' => $descripcion,
+                'Tabla' => $tabla,
+                'Campo' => $campo,
+                'ValorNuevo' => $valorNuevo,
+                'ValorAnterior' => $valorAnterior,
+                'IP' => getHostByName(getHostName()),
+                'IdUsuario' => Yii::$app->user->identity->username
+            ]
+        ];
+        
+        $model = new Bitacora();
+        $model->load($data);
+        $model->save();
+        var_dump($model);
     }
     
 }

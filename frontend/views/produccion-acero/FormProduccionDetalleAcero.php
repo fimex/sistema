@@ -9,8 +9,10 @@
     <div id="detalle">
         <table ng-table class="table table-condensed table-striped table-bordered">
                 <tr>
-                    <th class="width-40" colspan="2" ></th>
-                    <th class="width-20 text-center" colspan="2"  >Faltan</th>
+                    <th rowspan="2">Pr</th>
+                    <th rowspan="2" class="width-40">Prg</th>
+                    <th ng-if="IdSubProceso !== 17" class="width-20 text-center" colspan="2">Faltan</th>
+                    <th ng-if="IdSubProceso === 17" class="width-20 text-center" rowspan="2">Faltan</th>
                     <th rowspan="{{programacionAceros.length + 2}}"></th>
                     <th colspan="5" class="text-center" >Datos</th>
                     <th rowspan="{{programacionAceros.length + 2}}"></th>
@@ -28,10 +30,8 @@
                     <th colspan="2" class="text-center"  >Vaciados</th>
                 </tr>
                 <tr>
-                    <th>Pr</th>
-                    <th class="width-40">Prg</th>
-                    <th class="width-20">Llenado</th>
-                    <th class="width-20">Cerrado</th>
+                    <th ng-if="IdSubProceso !== 17" class="width-20">Llenado</th>
+                    <th ng-if="IdSubProceso !== 17" class="width-20">Cerrado</th>
                     <th class="width-50">No Parte</th>
                     <th>Aleacion</th>
                     <th>Serie</th>
@@ -56,7 +56,7 @@
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
                     <th>{{detalle.Programadas - detalle.OkMoldesMoldeo | currency:"":1}}</th>
-                    <th>{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados | currency:"":1}}</th>
+                    <th ng-if="IdSubProceso !== 17">{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados | currency:"":1}}</th>
                     <td class="col-md-3">{{detalle.Producto}}</td>
                     <th>{{detalle.Aleacion}}</th>
                     <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">{{detalle.SerieInicio || '--'}}</th>

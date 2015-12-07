@@ -233,29 +233,9 @@ $this->title = $title;
      * 14/10/15
      */
 </style>
-<!--Codigo para subir archivos por medio de ajax-->
-
-<script>
-    function sendImagen(id){
-        varIdNew = id.split("_");
-        var valor = document.getElementById(id).value;
-        idNew = "formuploadajax_"+varIdNew[1];
-        var formData = new FormData(document.getElementById(idNew));
-        formData.append("name", valor);
-        $.ajax({
-            url: "recibe",
-            type: "post",
-            dataType: "html",
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false
-        });
-    }
-</script>
-<!--Codigo para subir archivos por medio de ajax-->
 <div class="container-fluid" ng-controller="ProduccionAceros" ng-init="
     IdTurno = 1;
+    Fecha = '<?= date('Y-m-d')?>';
     IdSubProceso = <?=$IdSubProceso?>;
     IdAreaAct = <?= is_null($IdAreaAct) ? 'null' : $IdAreaAct ?>;
     <?php if($IdSubProceso == 14):?>
@@ -332,7 +312,7 @@ $this->title = $title;
                     <div class="col-md-5">
                         <div class="input-group">
                             <span class="input-group-addon">Fecha de captura:</span>
-                            <input class="form-control input-sm" type="date" ng-change="loadProgramaciones(false); loadComponentes();" ng-model="Fecha" format-date />
+                            <input class="form-control input-sm" type="date" ng-change="loadProgramaciones(false); loadComponentes();" ng-model="Fecha" format-date/>
                         </div>
                         <?php if($IdSubProceso != 9):?>
                         <!--<div class="input-group">
@@ -360,6 +340,7 @@ $this->title = $title;
                     <div class="col-md-2" style="margin-left:40px">
                         <div class="input-group" >
                             <button ng-click="buscar2();" class="btn btn-info">Control de Tiempos Muertos</button>
+							<button ng-click="buscar3();" class="btn btn-info">Edicion</button>
                         </div>
                     </div>
                     <?php }?>
@@ -443,5 +424,8 @@ $this->title = $title;
     <?php }?>
     <modal title="Control de Tiempos Muertos" visible="showModal2" width="80%">
         <?= $this->render('FormTiemposMuerto');?>
+    </modal>
+	 <modal title="Edicion" visible="showModal3" width="80%">
+        <?= $this->render('FormEdicion');?>
     </modal>
 </div>

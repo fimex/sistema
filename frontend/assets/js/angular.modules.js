@@ -97,10 +97,10 @@ var app = angular.module("programa", ['ngTable','ui.bootstrap','ngDraggable','an
                     var fecha = new Date(modelValue.getFullYear() + "-" + (modelValue.getMonth() +1) + "-" + modelValue.getDate());
                 }else{
                     var fecha = new Date(modelValue);
+                    var zn = fecha.getTimezoneOffset() * 1000 * 60;
+                    fecha.setTime(fecha.getTime()+zn);
                 }
                 
-                var zn = fecha.getTimezoneOffset() * 1000 * 60;
-                fecha.setTime(fecha.getTime()+zn);
                 return fecha;
             });
         }
