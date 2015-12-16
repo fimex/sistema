@@ -104,7 +104,15 @@ app.controller('Productos', function($scope, $filter, $modal, $http, $log, $time
             
         });
 
+        $http.post('/fimex/productos/data-serie-cavidad',{IdProducto:$scope.producto.IdProducto}).success(function(data){
+            $scope.seriecavidad = [];
+            $scope.seriecavidad = data;
+        }).error(function(){
+            
+        });
+
         $scope.loadPartesMolde();
+        
     };
     
     $scope.saveMoldeo = function(){
@@ -133,8 +141,22 @@ app.controller('Productos', function($scope, $filter, $modal, $http, $log, $time
         var datos = {
             IdProducto: $scope.producto.IdProducto
         };
-        
         $scope[model].push(datos);
+    };
+
+    $scope.seriecavidad = [];
+    $scope.addCavidad = function(model){
+       
+        $scope.datos = {
+            IdProducto: $scope.producto.IdProducto
+        };
+        $scope.seriecavidad.push($scope.datos);
+
+        /*for (var i = 1; i < $scope.producto.PiezasMolde; i++) {
+            $scope.seriecavidad.push(datos); 
+            console.log(i+" d: "+$scope.producto.PiezasMolde);
+        }*/
+
     };
     
     $scope.addCamisa = function(){

@@ -95,7 +95,7 @@ $colspan = $IdProceso == 1 && $IdArea == 3 ? 3 : $colspan;
                         <span ng-click="orden('Casting',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Casting',3);"></span>
                         <input style="width: 70px;" class="filter" ng-model="filtro.Casting" />
                     </th>
-                    <th rowspan="2"  ng-show="IdProceso == 1">
+                    <th  ng-show="IdProceso == 1">
                         Mold x Hrs<br />
                         <span ng-click="orden('MoldesHora',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('MoldesHora',1);"></span>
                         <span ng-click="orden('MoldesHora',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('MoldesHora',2);"></span>
@@ -130,37 +130,20 @@ $colspan = $IdProceso == 1 && $IdArea == 3 ? 3 : $colspan;
                         <span ng-click="orden('Prioridad',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Prioridad',3);"></span>
                         <input style="width: 33px;" class="filter" ng-model="filtro.Pr" />
                     </th>
-                    <th rowspan="2" style="width: 33px" ng-show="IdProceso == 1">
+                    <th style="width: 33px" ng-show="IdProceso == 1">
                         Mold<br />
                         <span ng-click="orden('Programadas',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Programadas',1);"></span>
                         <span ng-click="orden('Programadas',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Programadas',2);"></span>
                         <span ng-click="orden('Programadas',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Programadas',3);"></span>
                     </th>
-                    <th rowspan="2" style="width: 33px">
+                    <th style="width: 33px">
                         Prog<br />
                         <span ng-click="orden('TotalProgramado',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('TotalProgramado',1);"></span>
                         <span ng-click="orden('TotalProgramado',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('TotalProgramado',2);"></span>
                         <span ng-click="orden('TotalProgramado',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('TotalProgramado',3);"></span>
                     </th>
-                    <th rowspan="2" style="width: 33px" ng-show="mostrar">Falt</th>
-                    <th class="cap" colspan="<?= $colspan?>" ng-repeat="dia in dias">{{dia}}</th>
-                </tr>
-                <tr>
-                    <?php for($x=1;$x<=6;$x++):?>
-                    <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
-                    <th class="cap" style="width: 100px;">Maq</th>
-                    <th class="cap" style="width: 36px">
-                        Prg<br />
-                        <span ng-click="orden('Programadas<?=$x?>',1)" class="seleccion glyphicon glyphicon-triangle-bottom" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',1);"></span>
-                        <span ng-click="orden('Programadas<?=$x?>',2)" class="seleccion glyphicon glyphicon-triangle-top"aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',2);"></span>
-                        <span ng-click="orden('Programadas<?=$x?>',3)" class="seleccion glyphicon glyphicon-remove" aria-hidden="true" ng-show="mostrarBoton('Programadas<?=$x?>',3);"></span>
-                    </th>
-                    <th ng-show="IdArea == 3" class="cap" style="width: 36px">Hrs</th>
-                    <th class="<?=$class?>" style="width: 36px" ng-show="IdProceso == 1"><span ng-show="IdArea == 2">L</span><span ng-show="IdArea == 3">Mol</span></th>
-                    <th ng-show="IdArea == 2 && IdProceso == 1" class="<?=$class?>">C</th>
-                    <th class="<?=$class?>" style="width: 36px" ng-show="IdProceso == 1"><span ng-show="IdArea == 2">V</span><span ng-show="IdArea == 3">Vac</span></th>
-                    <th class="<?=$class?>" style="width: 36px" ng-show="IdProceso == 1">F</th>
-                    <?php endfor;?>
+                    <th style="width: 33px" ng-show="mostrar">Falt</th>
+                    <th class="cap" ng-repeat="dia in dias">{{dia}}</th>
                 </tr>
             </thead>
             <tbody style="font-size: 10pt">
@@ -187,10 +170,8 @@ $colspan = $IdProceso == 1 && $IdArea == 3 ? 3 : $colspan;
 
                 <?php for($x=1;$x<=6;$x++):?>
                     <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
-                    <th class="cap"><select ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.Maquina<?=$x?>">
-                        <option ng-selected="programacion.Maquina<?=$x?> == maquina.IdMaquina" value="{{maquina.IdMaquina}}" ng-repeat="maquina in maquinas">{{maquina.ClaveMaquina}}</option>
-                    </select></th>
-                    <th class="cap"><input class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>"></th>
+                    
+                    <th class="cap"><input ng-init="programacion.Maquina<?=$x?>" ng-disabled="programacion.Estatus == 'Cerrado'" class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>"></th>
                     <th ng-show="IdProceso == 1" class="cap">{{programacion.Programadas<?=$x?> / programacion.MoldesHora | currency:"":1}}</th>
                     <th ng-show="IdProceso == 1" class="<?=$class?>">{{programacion.Llenadas<?=$x?>}}</th>
                     <th ng-show="IdProceso == 1" class="<?=$class?>">{{programacion.Cerradas<?=$x?>}}</th>

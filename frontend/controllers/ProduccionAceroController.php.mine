@@ -42,10 +42,6 @@ use frontend\models\produccion\VProgramacionDiaAcero;
 use frontend\models\produccion\VProgramacionCiclosAcero;
 use frontend\models\produccion\MantenimientoHornos;
 use frontend\models\produccion\VSeries;
-use frontend\models\produccion\VEstatusMonitoreo;
-use frontend\models\produccion\VTipoMonitoreo;
-use frontend\models\produccion\VMonitoreos;
-use frontend\models\produccion\EstatusMonitoreo;
 use frontend\models\calidad\VCalidad;
 use frontend\models\calidad\VExistenciasCalidad;
 use frontend\models\calidad\Existencias;
@@ -78,7 +74,6 @@ use frontend\models\produccion\TratamientosProbetas;
 use frontend\models\vistas\VCiclosEdit;
 use frontend\models\vistas\v_CiclosDetalleEdit;
 use frontend\models\vistas\v_SeriesHistorial;
-use frontend\models\SeriesDetalleProdCiclosDetalle;
 
 use frontend\models\Archivos;
 use yii\web\UploadedFile;
@@ -192,10 +187,6 @@ class ProduccionAceroController extends InventarioController
 
     public function actionPruebasmecanicas(){
         return $this->CapturaPruebasDestructivas(14,2,2243,1050);
-    }
-
-    public function actionEstatusMonitoreo(){
-        return $this->CapturaMonitoreo();
     }
 
      function actionDataComponentes(){
@@ -428,14 +419,6 @@ class ProduccionAceroController extends InventarioController
             'IdSubProceso'=> 9,    
             'Proceso' => 'Cerrado',  
             'IdEmpleado' => $IdEmpleado == ' ' ? Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'] : $IdEmpleado,
-        ]);
-    }
-
-    public function CapturaMonitoreo(){
-        $this->layout = 'produccionAceros';
-
-        return $this->render('CapturaMonitoreo',[
-            'title' => 'Estatus Monitoreo',
         ]);
     }
 
@@ -987,7 +970,6 @@ class ProduccionAceroController extends InventarioController
         $_REQUEST['Inicio'] = str_replace('.',':',$_REQUEST['Inicio']);
         $_REQUEST['Fin'] = str_replace('.',':',$_REQUEST['Fin']);
         $_REQUEST['Fin'] = ($_REQUEST['Fin'] < $_REQUEST['Inicio'] ? $_REQUEST['Fecha'] : date('Y-m-d',strtotime( '+1 day' ,strtotime($_REQUEST['Fecha'])))) . " " . $_REQUEST['Fin'];
-        $_REQUEST['Descripcion'] = $_REQUEST['Observaciones'];
                // var_dump($_REQUEST); exit();
 
         if(!isset($_REQUEST['IdTiempoMuerto'])){
@@ -1243,23 +1225,16 @@ class ProduccionAceroController extends InventarioController
 
         if(isset($_REQUEST['IdConfiguracionSerie'])){
             $model = ConfiguracionSeries::findOne($_REQUEST['IdConfiguracionSerie']);
-            $antes = $model->SerieInicio;
             $model->SerieInicio = $_REQUEST['idConfiguracionSerie']['SerieInicio'];
-            if(!$model->update()){
-                var_dump($model);
-                return false;
-            }
-            $this->SetBitacora("Serie actualizada para el Producto ". $producto->Identificacion,"ConfiguracionSeries","SerieInicio",$_REQUEST['idConfiguracionSerie']['SerieInicio'],"$antes");
+            $model->update();
         }else{
             $model = new ConfiguracionSeries();
             $model->load([
                 'ConfiguracionSeries'=>$_REQUEST['idConfiguracionSerie']
             ]);
             if(!$model->save()){
-                var_dump($model);
-                return false;
+                
             }
-            $this->SetBitacora("Serie generada para el Producto ". $producto->Identificacion,"ConfiguracionSeries","SerieInicio",$_REQUEST['idConfiguracionSerie']['SerieInicio'],"");
         }
         $producto->IdConfiguracionSerie = $model->IdConfiguracionSerie;
         $producto->update();
@@ -1491,13 +1466,12 @@ class ProduccionAceroController extends InventarioController
         
         $encabezado = $this->actionGetInventario([
             'Fecha' => $produccion['Fecha'],
-            'IdEmpleado' => $produccion['IdEmpleado'],
-            'IdSubProceso' => $produccion['IdSubProceso']
+            'IdEmpleado' => $produccion['IdEmpleado']
         ]);
         
         //var_dump($encabezado);exit;
         $movimiento = $this->actionGetMovimientos([
-            'IdInventario' => $encabezado->IdInventario,
+            'IdInventario' => $encabezado->IdInventarios,
             'IdCentroTrabajo' => 1,
             'IdProducto' => $produccionDetalle->IdProductos,
             'Cantidad' => $_REQUEST['Hechas'],
@@ -1571,8 +1545,7 @@ class ProduccionAceroController extends InventarioController
     }
     
     function actionSaveDetalleAcero(){
-        echo "entro";
-		 
+        
 
         $data['Producciones'] = json_decode($_REQUEST['Produccion'],true);
         $data['ProduccionesDetalleMoldeo'] = json_decode($_REQUEST['ProduccionesDetalleMoldeo'],true);
@@ -1609,7 +1582,6 @@ class ProduccionAceroController extends InventarioController
         }
 
         //var_dump($ProduccionesCiclos);
-		$ProduccionesCiclosDetalle_arr = [];
         foreach ($data['ProduccionesDetalleMoldeo']['IdPartesMoldes'] as $parte) {
             //if ($parte && $produccion['IdSubProceso'] != 17) { Se modifico el dia 9 Nov. 2015 para moldeo especial 
             if ($parte) {
@@ -1657,7 +1629,6 @@ class ProduccionAceroController extends InventarioController
                     'IdParteMolde' => $parte
                 ])->asArray()->one();
                 $IdParteMolde = $model['IdParteMolde'] == $data['ProduccionesDetalleMoldeo']['IdParteMolde'] ? $model['IdParteMolde'] : $IdParteMolde;
-				array_push($ProduccionesCiclosDetalle_arr,$ProduccionesCiclosDetalle->IdProduccionCiclosDetalle);
             }
         }
         //echo "IDPARET MOLDE".$IdParteMolde;
@@ -1679,18 +1650,6 @@ class ProduccionAceroController extends InventarioController
                 $cicloGenerado = true;
             }
             $ProduccionesCiclos->save();
-			
-			// se inserta producciociclodetalle para cerrado (para moldeo esta mas arriba ene for)
-			    $ProduccionesCiclosDetalle = new ProduccionesCiclosDetalle();
-                
-                $ProduccionesCiclosDetalle->load([
-                    'ProduccionesCiclosDetalle' => [
-                        'IdProduccionCiclos' => $ProduccionesCiclos->IdProduccionCiclos,
-                        'IdParteMolde' => 13 // parte molde indica que es molde en tabla ParteMolde
-                    ]
-                ]);
-                
-                $ProduccionesCiclosDetalle->save();
         }
 
         //if ($produccion['IdSubProceso'] != 17) { Se modifico el dia 9 Nov. 2015 para moldeo especial 
@@ -1707,7 +1666,7 @@ class ProduccionAceroController extends InventarioController
             $produccionDetalle->Rechazadas = $totalREC['Ciclos'] == 0 ? 0 : $totalREC['Ciclos'] / $data['ProduccionesDetalleMoldeo']['CiclosMolde'];
 
             $produccionDetalle->update();
-            // var_dump($produccionDetalle);
+            var_dump($produccionDetalle);
 
        // }
 
@@ -1737,25 +1696,6 @@ class ProduccionAceroController extends InventarioController
                 'Estatus' => $estatus,
                 'Comentarios' =>  isset($data['ProduccionesDetalleMoldeo']['Descripcion']) == true ? $data['ProduccionesDetalleMoldeo']['Descripcion'] : ''
             ]);
-			 
-			
-			// relaciona seriedetalle con produccionciclodetalle
-			if( isset($ProduccionesCiclosDetalle)){
-					foreach ( $ProduccionesCiclosDetalle_arr as $ciclosDetalle){
-						echo  " UNION ".$ciclosDetalle;
-							$SeriesDetalleProdCiclosDetalle  = new SeriesDetalleProdCiclosDetalle();
-							
-							$SeriesDetalleProdCiclosDetalle->idSeriesDetalle = $serie->IdSeriesDetalles;
-							$SeriesDetalleProdCiclosDetalle->idprodCiclosDetalle = $ciclosDetalle;
-							
-							$SeriesDetalleProdCiclosDetalle->save();
-							
-							var_dump($SeriesDetalleProdCiclosDetalle);
-					}
-			}else{
-				echo "no existe detalle ciclo"; 
-			}
-			
         }
         
         //// CONTROL DE SERIES -----> FIN
@@ -2421,77 +2361,6 @@ class ProduccionAceroController extends InventarioController
         }
        
     }
-
-    public function actionDatosEstatusMonitoreo(){
-        $_REQUEST['Semana'] = date('W',  strtotime($_REQUEST['Semana']));
-        $model = VEstatusMonitoreo::find()->where($_REQUEST)->asArray()->all();
-
-        foreach ($model as &$key) {
-
-            $monitoreo1 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Desarrollo' AND Tipo = 1 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-            $monitoreo2 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Almas' AND Tipo = 1 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-            $monitoreo3 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Modelos' AND Tipo = 1 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-            $monitoreo4 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Modelos' AND Tipo = 2 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-            $monitoreo5 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Cajas Alma' AND Tipo = 1 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-            $monitoreo6 = VMonitoreos::find()->where("IdProducto = ".$key['IdProducto']." AND IdProgramacionSemana = ".$key['IdProgramacionSemana']." AND Concepto = 'Cajas Alma' AND Tipo = 2 ")->limit('1')->orderBy('IdEstatuMonitoreo DESC')->asArray()->one();
-
-            $key['ComentDesarrollo'] = $monitoreo1['Comentarios'];
-            $key['EstatusDesarrollo'] = $monitoreo1['Descripcion'];
-            $key['ComentAlmas'] = $monitoreo2['Comentarios'];
-            $key['EstatusAlmas'] = $monitoreo2['Descripcion'];
-
-            $key['ComentModelos'] = $monitoreo3['Comentarios'];
-            $key['EstatusModelos'] = $monitoreo3['Descripcion'];
-            $key['ComentUbicModelos'] = $monitoreo4['Comentarios'];
-            $key['UbicModelos'] = $monitoreo4['Descripcion'];
-
-            $key['ComentCajas'] = $monitoreo5['Comentarios'];
-            $key['EstatusCajas'] = $monitoreo5['Descripcion'];
-            $key['ComentUbicCajas'] = $monitoreo6['Comentarios'];
-            $key['UbicCajas'] = $monitoreo6['Descripcion'];
-        }
-        return json_encode($model);
-    }
-
-    public function actionTipoMonitoreo(){
-        $model = VTipoMonitoreo::find()->where($_REQUEST)->asArray()->all();
-        //var_dump($model);
-        return json_encode($model);
-    }
-
-      public function actionResumenMonitoreo(){
-        $model = VMonitoreos::find()->where($_REQUEST)->asArray()->all();
-        foreach ($model as &$key) {
-            $key['Fecha'] = date('Y-m-d',strtotime($key['Fecha']));
-        }
-        return json_encode($model);
-    }
-
-    public function actionSaveEstatusMonitoreo(){
-        $data['estatusMonitoreo'] = json_decode($_REQUEST['estatusMonitoreo'],true);
-
-        $tipomonitoreo = VTipoMonitoreo::find()->where("IdTipoEstatusMonitoreo = ".$data['estatusMonitoreo']['IdTipoEstatusMonitoreo']."")->asArray()->one();
-        //var_dump($tipomonitoreo); 
-       // echo "string ".$tipomonitoreo['IdTipoEstatusUbic']; 
-        //exit();
-        if ($tipomonitoreo != null) {   
-            $EstatusMonitoreo = new EstatusMonitoreo();
-            $EstatusMonitoreo->load([
-                'EstatusMonitoreo' => [
-                    'IdProducto' => $data['estatusMonitoreo']['IdProducto'],
-                    'IdProgramacionSemana' => $data['estatusMonitoreo']['IdProgramacionSemana'],
-                    'IdTipoEstatusUbic' => $tipomonitoreo['IdTipoEstatusUbic'],
-                    'IdTipoMonitoreo' => $tipomonitoreo['IdTipoMonitoreo'],
-                    'Fecha' => date('Y-m-d H:i:s'),
-                    'Comentarios' => $data['estatusMonitoreo']['Comentarios']
-                ]
-            ]);
-
-            $EstatusMonitoreo->save();
-            var_dump($EstatusMonitoreo);
-        }
-    }
-
 	// edicion ciclos
 	public function actionLoadciclo(){
 			 // 'Anio' => string '2015' (length=4)
@@ -2517,47 +2386,20 @@ class ProduccionAceroController extends InventarioController
 	}
 	
 	public function actionLoadCicloDetalle(){
-			   // 'Fecha' => string '2015-12-07' (length=10)
-			  // 'IdArea' => string '2' (length=1)
+			 // 'Anio' => string '2015' (length=4)
+			 // 'Semana' => string '49' (length=2)
+			 // 'Fecha' => string '2015-12-02T18:34:06.046Z' (length=24)
+			 // 'IdArea' => string '2' (length=1)
 			  // 'IdAreaAct' => string '2' (length=1)
-			  // 'IdProductos' => string '17796' (length=5)
+			  // 'IdProducto' => string '17796' (length=5)
+			  // 'IdSubProceso' => string '7' (length=1)
+			  // 'Semana' => string '49' (length=2)
+			  
 				
 				 
-			  // var_dump($_GET);
+			// var_dump($_GET);exit;
 			 $model = v_CiclosDetalleEdit::find()
-					->select (
-								[ 
-								'numeroRegistroConsultado' => "ROW_NUMBER() over(ORDER BY [IdProduccionCiclos],[IdProduccionDetalle] )" ,
-									 'IdProduccion',
-									 'Fecha',
-									 'IdArea',
-									 'IdSubProceso',
-									 'IdAreaAct',
-									 'IdProduccionDetalle',
-									 'IdProduccionCiclos',
-									 'estatus',
-									 'tipo',
-									 'Linea',
-									 'IdProductos',
-									 'Identificacion',
-									 'idProduccionCiclosDetalle',
-									 'IdParteMolde',
-									 'Identificador',
-									 'IdConfiguracionSerie',
-									 'parteSerie',
-									 'Serie',
-									 'FechaHora',
-									 'LlevaSerie',
-								]
-						)
-					->where(
-						[
-						'Fecha'  => $_REQUEST['Fecha'],
-						'IdArea'  => $_REQUEST['IdArea'],
-						'IdAreaAct'  => $_REQUEST['IdAreaAct'],
-						'IdProductos'  => $_REQUEST['IdProductos'],
-						] 
-					)
+					->where($_REQUEST)
 					->asArray()
 					->all();
 			return json_encode($model);
@@ -2566,209 +2408,35 @@ class ProduccionAceroController extends InventarioController
 	
 	}
 	
-	
-	
 	public function actionDeleteCiclosDetalle(){
-		$serie = isset( $_REQUEST['serie'] ) ?  (int)$_REQUEST['serie']-1: null; // serie del producto actual = serie disponible -1 
+		$serie = (int)$_REQUEST['serie']-1; // serie del producto actual = serie disponible -1 
 		echo 
 		' ultimosub'.$this->UltimoSubproceso($_REQUEST['IdProductos'],$serie).
 		'actualsub'. $_REQUEST['IdSubProceso'].
 		'serie'.$serie;
 		
-		 $fecha =  substr ( $_REQUEST['Fecha'],0, 10 )   ; 
-	
-		$diario = VProgramacionesCiclos::find()->where([
-                'IdProducto' =>  $_REQUEST['IdProductos'],
-                'Dia' => $fecha,
-           ])->asArray()->one();
+		if  ( 
+			($this->UltimoSubproceso($_REQUEST['IdProductos'],$serie) == $_REQUEST['IdSubProceso'])
+			&& $_REQUEST['serie'] != null
+			) // tiene serie y  ultmosubproceso igual al al proceso actual
+		{ 
 			
-			// var_dump($diario);exit;
-		
-		
-		// busco lo ultimo 
-		 // $modelCiclosDia = v_CiclosDetalleEdit::find()
-					// ->select("TOP 3 ")
-					// ->where(
-						// [
-						// 'Fecha'  => $fecha,
-						// 'IdArea'  => $_REQUEST['IdArea'],
-						// 'IdAreaAct'  => $_REQUEST['IdAreaAct'],
-						// 'IdProductos'  => $_REQUEST['IdProductos'],
-						// 'Estatus'  => $_REQUEST['Estatus'],
-						// ] 
-					// )
-					// ->orderBy('IdProduccionCiclos desc ,IdProduccionCiclosDetalle')
-					// ->one();
-					
-		
-				$IdArea	  = $_REQUEST['IdArea'];
-				$IdAreaAct = 	$_REQUEST['IdAreaAct'];
-				$IdProductos = 	$_REQUEST['IdProductos'];
-				$estatus	=  $_REQUEST['Estatus'];
-				$cilcosmolde = (int)$diario['CiclosMolde'];
-				
-				
-			$connection = Yii::$app->db;
-			 
-			 
-				$command = $connection->createCommand(
-				"
-			
-					SELECT top $cilcosmolde * FROM v_CiclosDetalleEdit 
-					WHERE (Fecha= '$fecha'  ) 
-					AND (IdArea= $IdArea  ) 
-					AND (IdAreaAct= $IdAreaAct  ) 
-					AND (IdProductos= $IdProductos  ) 
-					AND (estatus= '$estatus' )
-					ORDER BY IdProduccionCiclos desc ,IdProduccionCiclosDetalle
-			 
-			
-				"
-				);
-
-				$modelCiclosDia = $command->queryAll();
-				 $ciclos = $modelCiclosDia; // se corre el for each para moldeo
-			if (   $_REQUEST['IdSubProceso'] == 9 ){
-				$command2 = $connection->createCommand(
-				"
-			
-					SELECT top 1 e.*,Serie as serie1 FROM v_CiclosDetalleEdit as e
-					LEFT JOIN SeriesDetalleProdCiclosDetalle as un on un.idprodCiclosDetalle = e.IdProduccionCiclosDetalle
-					left join SeriesDetalles as sd on sd.IdSeriesDetalles = un.idSeriesDetalle
-					WHERE (e.Fecha= '$fecha' ) 
-					AND (e.IdArea= $IdArea ) 
-					AND (e.IdAreaAct= $IdAreaAct ) 
-					AND (e.IdProductos= $IdProductos ) 
-					AND (e.estatus= '$estatus' )
-					ORDER BY e.IdProduccionCiclos desc ,e.IdProduccionCiclosDetalle
-			 
-			
-				"
-				);
-
-				$moldeoSerie = $command2->queryAll();
-				$serie = $moldeoSerie[0]['serie1'];
-				$ciclos=$moldeoSerie ;  // corre el foreach para cerrado
-			}
-				 var_dump($serie);
-		
-			
-			
-		switch ($_REQUEST['Estatus']) {
-			case  'OK':
-				$estatus = $_REQUEST['Estatus'] = '1';
-				break;
-			case  'Rechazo':
-				$estatus = $_REQUEST['Estatus'] = '3';
-				break;
-			case  'Rep':
-				$estatus = $_REQUEST['Estatus'] = '2';
-				break;
+			echo "entro";  exit ;
 		}
 		
 		
-		foreach ($ciclos as $comp ){
-				
-				$model = ProduccionesCiclosDetalle::findOne(
-						 ['IdProduccionCiclos'  => $comp['IdProduccionCiclos'] ,
-									]);
-				// borrar   tabla union  varel sub 7 si tiene serie
-				if  ( $serie != null 	)
-						 $modDetSerieDetCiclDet = SeriesDetalleProdCiclosDetalle::deleteAll( 'idprodCiclosDetalle  = :id ' , [ ':id' => $model->IdProduccionCiclosDetalle] );
-			
-				// borrado serie
-				if  ( 
-					($this->UltimoSubproceso($_REQUEST['IdProductos'],$serie) == $_REQUEST['IdSubProceso'])
-					&& $serie != null
-					) // tiene serie y  ultmosubproceso igual al al proceso actual
-				{ 
-						// var_dump($modDetSerieDetCiclDet);
-					$this->deleteSerie($_REQUEST['IdProductos'] , $_REQUEST['IdSubProceso'],$serie);
-				}
-			
-				//borro el ciclos detalle seleccionado
-				$model->delete(); 
-						
-				$modelciclos = ProduccionesCiclos::findOne(
-						 ['IdProduccionCiclos'  => $comp['IdProduccionCiclos'] ,
-									'IdEstatus' =>  $estatus ,
-									])
-						->delete()
-						;
+         // $model = ProduccionesCiclosDetalle::findOne($_REQUEST['IdProduccionCiclosDetalle'])->delete(); 
+	}
+	
+	public function actionDeleteCiclos(){
 		
-				
+		if  ( $this->UltimoSubproceso($_REQUEST['IdProductos']) == $_REQUEST['IdSubProceso']){ 
+			echo "entro";  exit ;
 		}
 		
-		// busco si tiene hijos y si no borro ciclos
-		// $modelciclosdetalle = ProduccionesCiclosDetalle::findOne($_REQUEST['idProduccionesCiclos']); 
-		// if ($modelciclosdetalle == null)
-					// $modelciclos = ProduccionesCiclos::findOne($_REQUEST['idProduccionesCiclos'])->delete();     
-
+         $model = ProduccionesCiclos::findOne($_REQUEST['idProduccionesCiclos'])->delete(); 
 	}
 	
-	
-	
-	public function deleteSerie($IdProductos,$IdSubProceso,$serie ){
-		$sub = v_SeriesHistorial::find()->where(
-		[
-		'IdProducto' => $IdProductos,
-		'IdSubProceso' => $IdSubProceso,
-		'serie' => $serie,
-		]
-		)->asArray()->one();
-		echo "AQUI SUB";
-		 var_dump($sub);
-		
-		
-		$model_seried = SeriesDetalles::findOne(
-						['IdSeriesDetalles' => $sub['IdSeriesDetalles'] ])
-						// ->asArray()->all()
-						->Delete()
-						;
-		
-		if ( $IdSubProceso == 9 ){
-		// si esta en cerrado se pone el status de la serie B
-				$model_serie =  Series::findOne($sub['IdSerie']);
-				echo "ACTUALIZA Estatus serie";
-				// var_dump($model_serie);
-				$model_serie->Estatus = 'B';
-				// $model_serie->IdSubProceso = 'B'; // buscar
-				$model_serie->save();
-			
-		}else{
-		// si esta en moldeo se elimina 
-		$model_serie = Series::findOne(
-						['IdSerie' => $sub['IdSerie'] ])
-						// ->asArray()->one()
-						->Delete()
-						;
-						echo "ACTUALIZA SERIE";
-						var_dump($model_serie);
-		}			
-		var_dump($model_serie);
-		
-		var_dump($model_seried);
-		
-		// si es el ultimo restar en confseries 
-			// trae de producto el IdConfiguracionSerie
-			
-			$prod = Productos::findOne($IdProductos);
-			var_dump($prod);
-			$confS = ConfiguracionSeries::findOne($prod->IdConfiguracionSerie);
-			var_dump($confS);
-			
-			// sacar de IdConfiguracionSerie  laserie ultima registrada
-			// comparar con serie registrada en model model_seried del actual porducto 
-			echo "comprobacion:  ";
-			echo "serie actual del producto: " .$model_serie['Serie'] ;
-			echo "serie disponible  $confS->SerieInicio" ;
-			
-			// if ($model_serie['Serie']+1  ==  $confS->SerieInicio){
-										echo " OK $confS->IdConfiguracionSerie";
-			if ( $IdSubProceso != 9 ) // solo decrementa cuando esta en moldeo si esta en cerrado no decrementa
-				$this->RestaConfSeries($confS->IdConfiguracionSerie );
-			// }
-	}
 	
 	public function UltimoSubproceso($producto,$serie){
 		
@@ -2783,12 +2451,5 @@ class ProduccionAceroController extends InventarioController
 		return $sub;
 		
 	}
-	
-	function RestaConfSeries($IdConfiguracionSerie){
-        $configuracion = ConfiguracionSeries::findOne($IdConfiguracionSerie);
-        $configuracion->SerieInicio-= 1;
-        $configuracion->update();
-        //var_dump($configuracion);
-     }
 	 
 }

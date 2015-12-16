@@ -32,7 +32,7 @@
             </select>
         </p>
     </div>
-    <div class="col-md-1">
+    <div class="col-md-1" ng-if="IdArea == 3">
           <input type="checkbox" ng-model="Filtro"/> TM ETE
     </div>
     <button ng-click="load('data-tiempos-muertos',{

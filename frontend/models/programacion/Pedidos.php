@@ -130,10 +130,12 @@ class Pedidos extends \yii\db\ActiveRecord
         return [];
     }
     
-    public function getMarcas()
+    public function getMarcas($area = '')
     {
-        $area = Yii::$app->session->get('area');
-        $area = $area['IdArea'];
+        if($area == ''){
+            $area = Yii::$app->session->get('area');
+            $area = $area['IdArea'];
+        }
 
         $command = \Yii::$app->db;
         $result =$command->createCommand("SELECT Distinct 

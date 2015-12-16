@@ -199,7 +199,7 @@ class Producciones extends \yii\db\ActiveRecord
      */
     public function getTemperaturas()
     {
-        return $this->hasMany(Temperaturas::className(), ['IdProduccion' => 'IdProduccion']);
+        return $this->hasMany(Temperaturas::className(), ['IdProduccion' => 'IdProduccion'])->with('idMaquina');
     }
 
     /**

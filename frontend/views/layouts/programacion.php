@@ -22,6 +22,57 @@ AppAsset::register($this);
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
+    <style>
+        .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+            padding: 0 8px;
+        }
+        .form-control, .filter{
+            //width: 100px;
+            height: 30px;
+            font-size: 10pt;
+        }
+        th, td{
+            text-align: center;
+        }
+
+        .success2{
+            background-color: lightgreen;
+        }
+
+        .scrollable {
+            margin: auto;
+            height: 742px;
+            border: 2px solid #ccc;
+            overflow-y: scroll; /* <-- here is what is important*/
+        }
+        #pedidos{
+            height: 300px;
+        }
+        thead {
+            background: white;
+        }
+        table {
+            width: 100%;
+            border-spacing:0;
+            margin:0;
+        }
+        table th , table td  {
+            border-left: 1px solid #ccc;
+            border-top: 1px solid #ccc;
+        }
+        .par{
+            background-color: #BFB2CF;
+        }
+        .par2{
+            background-color: #DFDBE7;
+        }
+        .impar{
+            background-color: #A4D5E2;
+        }
+        .impar2{
+            background-color: #D1EAF0;
+        }
+    </style>
 </head>
 <body onkeypress="return getkey(event,this)">
     <?php $this->beginBody() ?>

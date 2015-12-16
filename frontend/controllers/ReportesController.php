@@ -117,12 +117,13 @@ class ReportesController extends Controller
         $Fecha = date('Y-m-d',strtotime($_REQUEST['Fecha']));
         
         $model = Producciones::find()->where([
-            'IdArea' => 3,
+            'IdArea' => 2,
             'IdSubProceso' => 10,
             'Fecha' => $Fecha
         ])
         ->with('lances')
         ->with('produccionesDetalles')
+        ->with('temperaturas')
         ->asArray()
         ->all();
         
@@ -131,10 +132,29 @@ class ReportesController extends Controller
         $material = [];
         
         foreach($model as $mod){
+            $TempHorno = '';
+            $x = 1;
+            foreach ($mod['temperaturas'] as $temperatura){
+                if($mod['IdMaquina'] == $temperatura['IdMaquina']){
+                    $TempHorno = $temperatura['Temperatura'] * 1;
+                }else{
+                    ${"Olla$x"} = $temperatura['Temperatura'] * 1;
+                    $x++;
+                }
+                //var_dump($temperatura);
+            }
+            
             $lances[] = [
                 'Colada' => $mod['lances']['Colada'],
                 'Lance' => $mod['lances']['Lance'] * 1,
                 'HornoConsecutivo' => $mod['lances']['HornoConsecutivo'],
+                'Probetas' => $mod['lances']['Probetas'],
+                'KellBlock' => $mod['lances']['Kellblocks'],
+                'Lingotes' => $mod['lances']['Lingotes'],
+                'TempHorno' => $TempHorno,
+                'TempOlla1' => $Olla1,
+                'TempOlla2' => $Olla2,
+                'TempOlla3' => isset($Olla3) ? $Olla3 : '',
                 'Peso' => 0
             ];
             
@@ -231,6 +251,15 @@ class ReportesController extends Controller
             'IdArea' => 3
         ]);
     }
+    
+    public function actionTiemposMuertosAceros(){
+        return $this->render('index',[
+            'vista' => 'TiemposMuertos',
+            'IdSubProceso' => 6,
+            'IdArea' => 2
+        ]);
+    }
+    
     public function actionSeriesAceros(){
         if (isset($_GET['serie'])) {
             $serie = $_GET['serie'];

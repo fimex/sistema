@@ -7,13 +7,12 @@ use Yii;
 /**
  * This is the model class for table "Existencias".
  *
- * @property integer $Id
- * @property integer $IdProducto
+ * @property integer $IdExistencias
+ * @property integer $IdSubProceso
  * @property integer $IdCentroTrabajo
+ * @property string $FechaMoldeo
+ * @property integer $IdProducto
  * @property integer $Cantidad
- *
- * @property Productos $idProducto
- * @property CentrosTrabajo $idCentroTrabajo
  */
 class Existencias extends \yii\db\ActiveRecord
 {
@@ -31,8 +30,9 @@ class Existencias extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProducto', 'IdCentroTrabajo', 'Cantidad'], 'required'],
-            [['IdProducto', 'IdCentroTrabajo', 'Cantidad'], 'integer']
+            [['IdSubProceso', 'IdCentroTrabajo', 'IdProducto'], 'required'],
+            [['IdSubProceso', 'IdCentroTrabajo', 'IdProducto', 'Cantidad'], 'integer'],
+            [['FechaMoldeo'], 'string']
         ];
     }
 
@@ -42,26 +42,12 @@ class Existencias extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'Id' => 'ID',
-            'IdProducto' => 'Id Producto',
+            'IdExistencias' => 'Id Existencias',
+            'IdSubProceso' => 'Id Sub Proceso',
             'IdCentroTrabajo' => 'Id Centro Trabajo',
+            'FechaMoldeo' => 'Fecha Moldeo',
+            'IdProducto' => 'Id Producto',
             'Cantidad' => 'Cantidad',
         ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdProducto()
-    {
-        return $this->hasOne(Productos::className(), ['IdProducto' => 'IdProducto']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getIdCentroTrabajo()
-    {
-        return $this->hasOne(CentrosTrabajo::className(), ['IdCentroTrabajo' => 'IdCentroTrabajo']);
     }
 }

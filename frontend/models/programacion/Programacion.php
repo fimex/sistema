@@ -129,7 +129,7 @@ class Programacion extends \yii\db\ActiveRecord
         return $this->hasMany(ProgramacionesAlma::className(), ['IdProgramacion' => 'IdProgramacion']);
     }
     
-    public function getProgramacionSemanal($IdArea,$IdProceso,$data)
+    public function getProgramacionSemanal($IdArea,$IdProceso,$data,$Estatus = '')
     {
         //obtengo datos desde un f_GetProgramaciones mediante un SELECT
         $command = \Yii::$app->db;
@@ -138,7 +138,7 @@ class Programacion extends \yii\db\ActiveRecord
             $where = "";//"WHERE IdAreaAct IN(1,2,3)";
             $from = "f_GetProgramacionesAcero";
         }else{
-            $where = "";//"WHERE IdAreaAct = 4";
+            $where = $Estatus !== '' ? "WHERE Estatus = '$Estatus'" : "";//"WHERE IdAreaAct = 4";
             $from = "f_GetProgramacionesAcero";
             
             $sql = "UPDATE dbo.Programaciones SET
@@ -154,7 +154,8 @@ class Programacion extends \yii\db\ActiveRecord
                 WHERE
                 dbo.Pedidos.SaldoCantidad <= 0 AND
                 dbo.Programaciones.IdProgramacionEstatus = 1 AND
-                dbo.Programaciones.IdArea = 3";
+                dbo.Programaciones.IdArea = 3 AND
+                dbo.Programaciones.Agrupado <> 1";
             $result =$command->createCommand($sql)->execute();
         }
 
@@ -167,17 +168,17 @@ class Programacion extends \yii\db\ActiveRecord
         $params = implode(",",$arreglo);
         
         $sql = "SELECT *, 
-                IIF( PiezasMolde != 0, (Cantidad / PiezasMolde), 0 ) AS Moldes,
-                CASE 
-                    WHEN  IdArea = 3 THEN (PLB + CTB + PCC)
-                    WHEN  IdArea = 2 THEN (PLA + CTA + CTA2 + PLA2)
-                END AS Cast, 
-                CASE 
-                    WHEN  IdArea = 3 THEN (PMB + PTB + TRB) 
-                    WHEN  IdArea = 2 THEN (PMA + PMA2 + PTA)
-                END AS Maq
-                FROM $from($IdArea,$IdProceso,$params) 
-                $where ORDER BY Producto, Estatus, FechaEmbarque ASC";
+            IIF( PiezasMolde != 0, (Cantidad / PiezasMolde), 0 ) AS Moldes,
+            CASE 
+                WHEN  IdArea = 3 THEN (PLB + CTB + PCC)
+                WHEN  IdArea = 2 THEN (PLA + CTA + CTA2 + PLA2)
+            END AS Cast, 
+            CASE 
+                WHEN  IdArea = 3 THEN (PMB + PTB + TRB) 
+                WHEN  IdArea = 2 THEN (PMA + PMA2 + PTA)
+            END AS Maq
+            FROM $from($IdArea,$IdProceso,$params) 
+            $where ORDER BY Producto, Estatus, FechaEmbarque ASC";
         //echo $sql;
         $result =$command->createCommand($sql)->queryAll();
         if(count($result)!=0){

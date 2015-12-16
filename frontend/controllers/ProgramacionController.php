@@ -273,7 +273,7 @@ class ProgramacionController extends Controller
                 $maq = $maquinas->find()->where("IdMaquina = $maquina")->asArray()->all();
                 $IdCentroTrabajo = $maq[0]['IdCentroTrabajo'];
             }
-            $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".$dat['Prioridad'].",".$dat['Programadas'].",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
+            $datosSemana = $dat['IdProgramacionSemana'].",'".$dat['Dia']."',".(isset($dat['Prioridad'])?$dat['Prioridad']:'NULL').",".$dat['Programadas'].",".$dat['IdTurno'].",$maquina,$IdCentroTrabajo";
             $model->setProgramacionDiaria($datosSemana);
 
             if(isset($dat['Tarimas'])){
@@ -430,10 +430,11 @@ class ProgramacionController extends Controller
     public function actionDataSemanal(){
         $IdArea = $_REQUEST['IdArea'];
         $IdProceso = $_REQUEST['IdProceso'];
+        $Estatus = $_REQUEST['Estatus'];
         $semanas = $this->LoadSemana(!isset($_REQUEST['semana1']) ? '' : $_REQUEST['semana1'],$IdArea);
 
         $programacion = new Programacion();
-        $dataProvider = $programacion->getProgramacionSemanal($IdArea,$IdProceso,$semanas);
+        $dataProvider = $programacion->getProgramacionSemanal($IdArea,$IdProceso,$semanas,$Estatus);
      
         $Producto = '';
         

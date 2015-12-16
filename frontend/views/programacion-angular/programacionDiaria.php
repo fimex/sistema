@@ -145,9 +145,9 @@ $this->title = $title;
 
                 <?php for($x=1;$x<=6;$x++):?>
                     <?php $class = $x % 2 != 0 ?'par' : 'impar'; ?>
-                    <th class="cap"><input class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>"></th>
+                    <th class="cap"><input ng-disabled="programacion.Estatus == 'Cerrado'" class="filter" style="width: 33px; font-size: 9pt;" ng-model-options="{updateOn: 'blur'}" onkeypress="return justNumbers(event)" ng-change="saveProgramacionDiaria(programacion,<?=$x?>);" ng-model="programacion.Programadas<?=$x?>"></th>
                     <?php if($IdSubProceso == 12): ?>
-                    <th class="<?=$class?>"><select ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.IdCentroTrabajo<?=$x?>">
+                    <th class="<?=$class?>"><select ng-disabled="programacion.Estatus == 'Cerrado'" ng-model-options="{updateOn: 'blur'}" ng-change="saveProgramacionDiaria(<?=$x?>);" ng-model="programacion.IdCentroTrabajo<?=$x?>">
                         <option ng-selected="programacion.IdCentroTrabajo<?=$x?> == maquina.IdCentroTrabajo" value="{{maquina.IdCentroTrabajo}}" ng-repeat="maquina in maquinas">{{maquina.Descripcion}}</option>
                     </select></th>
                     <?php else: ?>

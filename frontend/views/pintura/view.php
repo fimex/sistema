@@ -45,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'area',
             'base',
             'base_cant',
-            'timestamp',
+           
         ],
     ]) ?>
 

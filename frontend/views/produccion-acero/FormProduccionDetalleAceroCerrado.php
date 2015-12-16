@@ -55,11 +55,17 @@
                     <th ng-init=" resumen('OkMoldesMoldeo',detalle.OkMoldesMoldeo)" >{{detalle.OkMoldesMoldeo | currency:"":2}}</th>
                     <th ng-init=" resumen('RecMoldesMoldeo',detalle.RecMoldesMoldeo)" >{{detalle.RecMoldesMoldeo | currency:"":2 }}</th>
                     <!--<th><button type="button" ng-disabled="detalle.OkMoldesMoldeoRound > detalle.OkMoldesCerrados ? false : true" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>-->
-                    <th><button type="button" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></th>
+                    <th>
+						<button type="button" ng-click="activaBtnCerrado(13);ModelMoldeo($index,1);" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                        <button type="button" ng-click="undoCiclos($index,'OK');" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+					</th>
                     <th ng-init=" resumen('OkMoldesCerrados',detalle.OkMoldesCerrados)" >{{detalle.OkMoldesCerrados | currency:"":1}}</th>
                     <th>
                         <button type="button" ng-click="activaBtnCerrado(14);ModelMoldeo($index,3);" class="btn btn-danger btn-sm">
                             <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                        </button>
+						 <button type="button" ng-click="undoCiclos($index,'Rechazo');" class="btn btn-danger btn-sm">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                         </button>
                     </th>
                     <th ng-init=" resumen('RecMoldesCerrado',detalle.RecMoldesCerrado)">{{detalle.RecMoldesCerrado | currency:"":1}}</th>

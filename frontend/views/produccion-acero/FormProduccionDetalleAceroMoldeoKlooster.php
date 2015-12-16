@@ -69,17 +69,27 @@
                     <button type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
+					 <button type="button"  ng-click="undoCiclos($index,'OK');" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </button>
+					
                 </th>
                 <th ng-init=" resumen('OkCiclosMoldeo',detalle.OkCiclosMoldeo)" ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(16);ModelMoldeo($index,4); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
+					<button type="button" ng-click="undoCiclos($index,'Rechazo');"  class="btn btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                    </button>
                 </th>
                 <th ng-init="resumen('RecCiclosMoldeo',detalle.RecCiclosMoldeo) " ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,10);" class="btn btn-info btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+					<button type="button" ng-click="undoCiclos($index,'Repo');" class="btn btn-info btn-sm">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th ng-init="resumen('RepCiclosMoldeo',detalle.RepCiclosMoldeo) " ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RepCiclosMoldeo}}</th>

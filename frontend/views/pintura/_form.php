@@ -36,7 +36,7 @@ use yii\widgets\ActiveForm;
 	
 	<?= $form->field($model, 'fecha')->widget(\yii\jui\DatePicker::classname(), [
 			//'language' => 'ru',
-			'dateFormat' => 'yyyy-MM-dd',
+			'dateFormat' => 'yyyyMMdd',
 			]) ?>
 			
 	
@@ -56,7 +56,9 @@ use yii\widgets\ActiveForm;
 			<?= $form->field($model, 'area')->dropDownList(
 														[
 																'kloster' => 'Kloster',
-																'varel' => 'Varel'
+																'varel' => 'Varel',
+																'Almas' => 'Almas',
+																'Especial' => 'Especial',
 																] ,[]) ?>
 			</div>
 			<div class = "pintura2">
@@ -79,6 +81,7 @@ use yii\widgets\ActiveForm;
 														'Ceramic Shield New G 819' => 'Ceramic Shield New G 819',
 														'Recobar 1010i' => 'Recobar 1010i',
 														'Recobar 1017' => 'Recobar 1017',
+														'Refcohol 1010' => 'Refcohol 1010',
 														'Holdcote 300-85' => 'Holdcote 300-85',
 														'TOP-211' => 'TOP-211',
 														] ,[]) ?>
@@ -104,7 +107,7 @@ use yii\widgets\ActiveForm;
 	</div>
 
 
-    <?= $form->field($model, 'timestamp')->hiddeninput()->label(false) ?>
+   
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

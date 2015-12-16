@@ -23,7 +23,7 @@ use Yii;
  * @property string $area
  * @property string $base
  * @property double $base_cant
- * @property string $timestamp
+
  */
 class PinturaControl extends \yii\db\ActiveRecord
 {
@@ -41,8 +41,8 @@ class PinturaControl extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['fecha', 'turno', 'Motivo', 'pintura', 'den_ini', 'den_fin', 'nomina', 'area', 'timestamp'], 'required'],
-            [['fecha', 'timestamp'], 'safe'],
+            [['fecha', 'turno', 'Motivo', 'pintura', 'den_ini', 'den_fin', 'nomina', 'area'], 'required'],
+            [['fecha', ], 'safe'],
             [['turno', 'Motivo', 'pintura', 'serie', 'comentarios', 'nomina', 'area', 'base'], 'string'],
             [['den_ini', 'den_fin', 'pin_nueva', 'pin_recicl', 'alcohol', 'base_cant'], 'number']
         ];
@@ -70,7 +70,7 @@ class PinturaControl extends \yii\db\ActiveRecord
             'area' => 'Area',
             'base' => 'Base',
             'base_cant' => 'Base Cant',
-            'timestamp' => 'Timestamp',
+           
         ];
     }
 }

@@ -129,7 +129,7 @@ if($IdArea == 4){
                 <th style="max-width: 50px">{{programacion.SemanaActual}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PLB == 0 ? '' : programacion.PLB}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.CTB == 0 ? '' : programacion.CTB}}</th>
-                <th style="max-width: 50px" class="info">{{programacion.PCC  == 0 ? '' :  programacion.PCC}}</th>
+                <th style="max-width: 50px" class="info">{{programacion.PCC == 0 ? '' : programacion.PCC}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PMB == 0 ? '' : programacion.PMB}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.PTB == 0 ? '' : programacion.PTB}}</th>
                 <th style="max-width: 50px" class="info">{{programacion.TRB == 0 ? '' : programacion.TRB}}</th>

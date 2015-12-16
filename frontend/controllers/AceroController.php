@@ -14,6 +14,11 @@ class AceroController extends ProduccionController
     }
     
     function actionSaveProduccion() {
+        
+    }
+    
+    public function actionSemanal(){
+        return $this->Semanal(1,2);
     }
     
 }

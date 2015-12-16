@@ -7,9 +7,11 @@ use Yii;
 /**
  * This is the model class for table "Inventarios".
  *
- * @property integer $IdInventarios
+ * @property integer $IdInventario
  * @property string $Fecha
  * @property integer $IdEmpleado
+ * @property integer $IdEstatusInventario
+ * @property integer $IdSubProceso
  *
  * @property InventarioMovimientos[] $inventarioMovimientos
  */
@@ -29,9 +31,9 @@ class Inventarios extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Fecha', 'IdEmpleado'], 'required'],
+            [['Fecha', 'IdEmpleado', 'IdSubProceso'], 'required'],
             [['Fecha'], 'safe'],
-            [['IdEmpleado'], 'integer']
+            [['IdEmpleado', 'IdEstatusInventario', 'IdSubProceso'], 'integer']
         ];
     }
 
@@ -41,9 +43,11 @@ class Inventarios extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'IdInventarios' => 'Id Inventarios',
+            'IdInventario' => 'Id Inventario',
             'Fecha' => 'Fecha',
             'IdEmpleado' => 'Id Empleado',
+            'IdEstatusInventario' => 'Id Estatus Inventario',
+            'IdSubProceso' => 'Id Sub Proceso',
         ];
     }
 
@@ -52,6 +56,6 @@ class Inventarios extends \yii\db\ActiveRecord
      */
     public function getInventarioMovimientos()
     {
-        return $this->hasMany(InventarioMovimientos::className(), ['IdInventario' => 'IdInventarios']);
+        return $this->hasMany(InventarioMovimientos::className(), ['IdInventario' => 'IdInventario']);
     }
 }

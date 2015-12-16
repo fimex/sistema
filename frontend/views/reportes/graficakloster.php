@@ -20,7 +20,7 @@ use common\models\Grid;
 
 
 
-<embed id= "rep" width="1000" height="768" src="<?= $url ?>">
+<embed id= "rep" width="90%" height="768" src="<?= $url ?>">
 
 
 <script>

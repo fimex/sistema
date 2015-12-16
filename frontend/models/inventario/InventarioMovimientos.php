@@ -72,7 +72,7 @@ class InventarioMovimientos extends \yii\db\ActiveRecord
      */
     public function getIdInventario()
     {
-        return $this->hasOne(Inventarios::className(), ['IdInventarios' => 'IdInventario']);
+        return $this->hasOne(Inventarios::className(), ['IdInventario' => 'IdInventario']);
     }
 
     /**

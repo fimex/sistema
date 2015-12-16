@@ -55,8 +55,8 @@
                 <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in programacionAceros">
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
-                    <th>{{detalle.Programadas - detalle.OkMoldesMoldeo | currency:"":1}}</th>
-                    <th ng-if="IdSubProceso !== 17">{{detalle.OkMoldesMoldeo - detalle.OkMoldesCerrados | currency:"":1}}</th>
+                    <th>{{detalle.Programadas - detalle.OkMoldesMoldeoSemana | currency:"":1}}</th>
+                    <th ng-if="IdSubProceso !== 17">{{detalle.OkMoldesMoldeoSemana - detalle.OkMoldesCerradosSemana | currency:"":1}}</th>
                     <td class="col-md-3">{{detalle.Producto}}</td>
                     <th>{{detalle.Aleacion}}</th>
                     <th ng-class="{'danger':!detalle.SerieInicio && detalle.LlevaSerie}">{{detalle.SerieInicio || '--'}}</th>
@@ -71,7 +71,8 @@
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </button>
                     </th>
-                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie) && IdSubProceso !== 17">{{detalle.OkCiclosMoldeo}}</th>
+                    <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie) && IdSubProceso == 17">{{detalle.OkMoldesMoldeo}}</th>
                     <!--<th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{ IdAreaAct != 2 ? detalle.OKMoldeo  : (IdAreaAct == 3 ? (detalle.OKVarel - detalle.RECVarel) : detalle.OKEspecial ) }}</th>-->
                     <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                         <button type="button" ng-show="IdSubProceso == 6" ng-click="ModelMoldeo($index,3); MostrarSeries(detalle.IdProducto,<?= $IdSubProceso; ?>);" class="btn btn-danger btn-sm">

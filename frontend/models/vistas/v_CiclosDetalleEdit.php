@@ -7,6 +7,7 @@ use Yii;
 /**
  * This is the model class for table "v_CiclosDetalleEdit".
  *
+ * @property string $numeroRegistroConsultado
  * @property integer $IdProduccion
  * @property string $Fecha
  * @property integer $IdArea
@@ -24,7 +25,9 @@ use Yii;
  * @property string $Identificador
  * @property integer $IdConfiguracionSerie
  * @property string $parteSerie
- * @property integer $serie
+ * @property string $Serie
+ * @property string $FechaHora
+ * @property string $LlevaSerie
  */
 class v_CiclosDetalleEdit extends \yii\db\ActiveRecord
 {
@@ -42,10 +45,10 @@ class v_CiclosDetalleEdit extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdProduccion', 'Fecha', 'IdArea', 'IdSubProceso', 'IdAreaAct', 'IdProduccionDetalle', 'IdProduccionCiclos', 'IdProductos', 'IdProduccionCiclosDetalle', 'Identificador', 'parteSerie'], 'required'],
-            [['IdProduccion', 'IdArea', 'IdSubProceso', 'IdAreaAct', 'IdProduccionDetalle', 'IdProduccionCiclos', 'Linea', 'IdProductos', 'IdProduccionCiclosDetalle', 'IdParteMolde', 'IdConfiguracionSerie', 'serie'], 'integer'],
-            [['Fecha'], 'safe'],
-            [['estatus', 'tipo', 'Identificacion', 'Identificador', 'parteSerie'], 'string']
+            [['numeroRegistroConsultado', 'IdProduccion', 'IdArea', 'IdSubProceso', 'IdAreaAct', 'IdProduccionDetalle', 'IdProduccionCiclos', 'Linea', 'IdProductos', 'IdProduccionCiclosDetalle', 'IdParteMolde', 'IdConfiguracionSerie'], 'integer'],
+            [['IdProduccion', 'Fecha', 'IdArea', 'IdSubProceso', 'IdAreaAct', 'IdProduccionDetalle', 'IdProduccionCiclos', 'IdProductos', 'IdProduccionCiclosDetalle'], 'required'],
+            [['Fecha', 'FechaHora'], 'safe'],
+            [['estatus', 'tipo', 'Identificacion', 'Identificador', 'parteSerie', 'Serie', 'LlevaSerie'], 'string']
         ];
     }
 
@@ -55,6 +58,7 @@ class v_CiclosDetalleEdit extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
+            'numeroRegistroConsultado' => 'Numero Registro Consultado',
             'IdProduccion' => 'Id Produccion',
             'Fecha' => 'Fecha',
             'IdArea' => 'Id Area',
@@ -72,7 +76,9 @@ class v_CiclosDetalleEdit extends \yii\db\ActiveRecord
             'Identificador' => 'Identificador',
             'IdConfiguracionSerie' => 'Id Configuracion Serie',
             'parteSerie' => 'Parte Serie',
-            'serie' => 'Serie',
+            'Serie' => 'Serie',
+            'FechaHora' => 'Fecha Hora',
+            'LlevaSerie' => 'Lleva Serie',
         ];
     }
 }

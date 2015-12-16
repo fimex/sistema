@@ -349,7 +349,7 @@ $this->title = $title;
         </div>
     </div>
     <div class="row"><hr /></div>
-    <?php if($IdSubProceso == 14){?>
+       <?php if($IdSubProceso == 14){?>
         <div class="row">
             <div class="col-md-12">
                 <div class="row" style="width:100%;">
@@ -396,12 +396,22 @@ $this->title = $title;
     else{?>
     <div class="row">
         <div class="col-md-9">
-            <div class="row">
+            <div class="row" style="width:150%">
                 <?php if($IdSubProceso == 7):?> 
-                    <?= $this->render('FormProduccionDetalleAceroMoldeoVarel',[
-                        'IdSubProceso'=>$IdSubProceso,
-                        'IdAreaAct' => $IdAreaAct,
-                    ]);?>
+                    <div class="col-md-8">
+                            <?= $this->render('FormProduccionDetalleAceroMoldeoVarel',[
+                                'IdSubProceso'=>$IdSubProceso,
+                                'IdAreaAct' => $IdAreaAct,
+                            ]);?>
+                    </div>
+                    <div class="col-md-3">
+                        <?= $this->render('FormComponentes',[
+                            'IdSubProceso'=>$IdSubProceso,
+                            'IdAreaAct' => $IdAreaAct,
+                        ]);?>
+                    </div>
+            </div>
+            <div class="row">
                 <?php elseif($IdSubProceso == 6):?>
                     <?= $this->render('FormProduccionDetalleAceroMoldeoKlooster',[
                         'IdSubProceso'=>$IdSubProceso,

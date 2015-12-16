@@ -61,7 +61,7 @@ class PinturaController extends Controller
     public function actionCreate()
     {
         $model = new PinturaControl();
-        $model->timestamp = date('Y-m-d h:i:s');
+        // $model->timestamp = date('Y-m-d h:i:s');
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id_pintura]);
         } 

@@ -1,7 +1,7 @@
 <style type="text/css">
     .third-elm{
         color:red;
-    }
+    } 
 </style>
 <div class="panel panel-primary">
     <!-- Default panel contents -->
@@ -67,17 +67,26 @@
                     <button ng-show="!detalle.MoldeCompleto" type="button" ng-click="saveDetalleAcero($index,1);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
+					<button ng-show="!detalle.MoldeCompleto" type="button" ng-click="undoCiclos($index,'OK');" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </button>
                 </th>
                 <th ng-init=" resumen('OkCiclosMoldeo',detalle.OkCiclosMoldeo)"  ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.OkCiclosMoldeo}}</th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">
                     <button type="button" ng-click="activaBtnCerrado(17);ModelMoldeo($index,3);" class="btn btn-danger btn-sm">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
+					 <button type="button" ng-click="undoCiclos($index,'Rechazo');" class="btn btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                    </button>
                 </th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
                 <th>
                     <button type="button" ng-click="activaBtnCerrado(15);ModelMoldeo($index,10);" class="btn btn-info btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+					<button type="button" ng-click="undoCiclos($index,'Repo');" class="btn btn-info btn-sm">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th ng-init="resumen('RepCiclosMoldeo',detalle.RepCiclosMoldeo) ">{{detalle.RepCiclosMoldeo}}</th>

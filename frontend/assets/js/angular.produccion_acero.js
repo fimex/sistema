@@ -604,7 +604,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
 
     $scope.saveReposicion = function(index,tipo){   
-
+		 if( !controlClick('Componentes',index) ) exit;
         $scope.index = index;
         $scope.estatus = tipo;
         $scope.Reposicion = $scope.estatus == 10 ? "SI" : "NO";
@@ -660,9 +660,21 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         }); 
 
     };
+	
+	$scope.controlClick = function(arr,index){
+        $scope[arr][index]['active'] = $scope[arr][index]['active'] == undefined ? true : $scope[arr][index]['active'];
+
+        if($scope[arr][index]['active'] == false){
+            console.log('entro y no hizo nada');
+            return false;
+        }
+        
+        $scope[arr][index]['active'] = false;
+        return true;
+    };
     
     $scope.saveDetalleAcero = function(index,tipo){      
-               
+               if( !$scope.controlClick('programacionAceros',index) ) exit;
         $scope.index = index;
         $scope.estatus = tipo;
         console.log($scope.index);
@@ -1471,9 +1483,10 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         $scope.showModal3 = !$scope.showModal3;
 		$scope.ciclos =[];
 		$scope.ciclosdetalle =[];
-        $scope.loadCiclos();
+        $scope.loadCliclosDetalle();
     };
 	
+	// no se ocupa todo esta en Load ciclos detalle
 	$scope.loadCiclos = function(){
 		
 		 return $http.get('loadciclo',{params:{
@@ -1494,7 +1507,10 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.loadCliclosDetalle = function(){
 		console.log( "Entro detalle");
 		return $http.get('load-ciclo-detalle',{params:{
-                IdProduccionCiclos: $scope.ciclos[$scope.indexDetalleCiclo].IdProduccionCiclos
+                IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+				Fecha: $scope.Fecha,
             }}).success(function(data){
             $scope.ciclosdetalle = [];
             $scope.ciclosdetalle = data;
@@ -1513,10 +1529,19 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
             return $http.get('delete-ciclos-detalle',{params:
 			
 			{
-                IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
-                IdProductos: $scope.ciclosdetalle[index].IdProductos,
-                IdSubProceso: $scope.ciclosdetalle[index].IdSubProceso,
-                serie: $scope.ciclosdetalle[index].serie,
+                // IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
+                // IdProductos: $scope.ciclosdetalle[index].IdProductos,
+                // IdSubProceso: $scope.ciclosdetalle[index].IdSubProceso,
+                // serie: $scope.ciclosdetalle[index].serie,
+				
+				IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+               // Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+               // Anio: $scope.programacionAceros[$scope.indexCiclo].Anio,
+                //Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+				IdSubProceso:$scope.IdSubProceso,
+				Fecha: $scope.Fecha,
             }
 			
 			}).success(function(data) {
@@ -1551,6 +1576,37 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         });
         }
     };
+	
+	$scope.undoCiclos = function(index,estatus){
+		
+		 if($scope.confirm()){
+			
+            
+            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('delete-ciclos-detalle',{params:
+			{
+                // IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
+				// IdProduccionCiclos: $scope.ciclos[index].IdProduccionCiclos,
+                
+				Fecha: $scope.Fecha,
+				IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+                serie: $scope.programacionAceros[$scope.indexCiclo].SerieInicio,
+				IdSubProceso:$scope.IdSubProceso,
+				Estatus: estatus,
+            }
+			
+			}).success(function(data) {
+               // $scope.loadCliclosDetalle();
+			   $scope.loadProgramaciones(1);
+            }).error(function(){
+          
+			});
+        }
+		
+		
+	}
 	
 	 $scope.selectCiclo = function(index){
         if($scope.indexCiclo != null){

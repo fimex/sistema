@@ -44,6 +44,20 @@ class InventarioController extends \yii\web\Controller
         $model->save();
     }
     
+    function actionGetExistencia($data){
+        $model = Existencias::find()->where($data)->one();
+        if(is_null($model)){
+            $model = new Existencias();
+            
+            $model->load(['Existencias' => $data]);
+            $model->Cantidad = 0;
+            $model->save();
+
+            $model = Existencias::find()->where($data)->one();
+        }
+        return $model;
+    }
+    
     function actionGetInventario($data){
         $model = Inventarios::find()->where($data)->one();
         if(is_null($model)){
@@ -67,6 +81,7 @@ class InventarioController extends \yii\web\Controller
             $model->load(['InventarioMovimientos' => $data]);
             $model->Tipo = 'E';
             $model->save();
+            //var_dump($data);exit;
             $model = Inventarios::find()->where($data)->one();
         }
         
@@ -80,8 +95,8 @@ class InventarioController extends \yii\web\Controller
         $model->save();
     }
     
-    function actionAfectar($data){
-        $encabezado = Inventarios::find()->where($data)->one();
+    function actionAfectar($IdInventario){
+        $encabezado = Inventarios::findOne($IdInventario);
         $encabezado->IdEstatusInventario = 3;
         
         $partidas = InventarioMovimientos::find()->where([
@@ -89,14 +104,17 @@ class InventarioController extends \yii\web\Controller
         ])->asArray()->all();
         
         foreach($partidas as $partida){
-            $model = InventarioMovimientos::findOne();
-            $existencia = Existencias::find()->where([
+            $model = InventarioMovimientos::findOne($partida['IdInventarioMovimiento']);
+            $existencia = $this->actionGetExistencia([
+                'IdSubProceso' => $encabezado->IdSubProceso,
                 'IdCentroTrabajo' => $model->IdCentroTrabajo,
-                'IdProducto' => $model->IdProducto,
-            ])->one();
+                'IdProducto' => $model->IdProducto
+            ]);
             
-            $existencia->cantidad += $model->cantidad;
-            $model->Existencia = $existencia->cantidad;
+            //var_dump($existencia);exit;
+            
+            $existencia->Cantidad += $model->Cantidad;
+            $model->Existencia = $existencia->Cantidad;
             
             $existencia->update();
             $model->update();
@@ -116,7 +134,7 @@ class InventarioController extends \yii\web\Controller
                 'Campo' => $campo,
                 'ValorNuevo' => $valorNuevo,
                 'ValorAnterior' => $valorAnterior,
-                'IP' => getHostByName(getHostName()),
+                'IP' => $_SERVER['REMOTE_ADDR'],
                 'IdUsuario' => Yii::$app->user->identity->username
             ]
         ];

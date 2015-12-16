@@ -158,7 +158,8 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
         return $http.get('data-semanal',{params:{
             semana1:$scope.semanaActual,
             IdArea:$scope.IdArea,
-            IdProceso:$scope.IdProceso
+            IdProceso:$scope.IdProceso,
+            Estatus:$scope.Estatus
         }}).success(function(data){
             $scope.programaciones = [];
             $scope.programaciones = data.rows;

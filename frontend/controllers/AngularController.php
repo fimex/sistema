@@ -62,22 +62,19 @@ class AngularController extends \yii\web\Controller
         return $this->CapturaProduccion(2,3);
     }
     
-	 public function actionAlmasac()
-    {
+    public function actionAlmasac(){
         return $this->CapturaProduccion(2,2);
     }
 	
-    public function actionRebabeo()
-    {
+    public function actionRebabeo(){
         return $this->CapturaProduccion(3,3);
     }
-	public function actionPintadoac()
-    {
+    
+    public function actionPintadoac(){
         return $this->CapturaProduccion(4,2);
     }
     
-    public function actionVaciado()
-    {
+    public function actionVaciado(){
         return $this->CapturaProduccion(10,3);
     }
 
@@ -111,7 +108,7 @@ class AngularController extends \yii\web\Controller
         return $this->CapturaProduccion(8,2);
     }
     
-	 public function actionPintadoalm()
+    public function actionPintadoalm()
     {
         return $this->CapturaProduccion(4,2);
     }

@@ -60,7 +60,7 @@ $this->title = $title;
     }
 </style>
 <h4 style="margin-top:0;"><?=$title?></h4>
-<div ng-controller="Programacion" ng-init="IdProceso=<?=$IdProceso?>; IdArea=<?=$IdArea?>; TipoUsuario=<?=$TipoUsuario?>; loadSemanas();filtro.Estatus='Abierto';filtro.orden2 = '!P-';">
+<div ng-controller="Programacion" ng-init="IdProceso=<?=$IdProceso?>; IdArea=<?=$IdArea?>; TipoUsuario=<?=$TipoUsuario?>;Estatus='Abierto';filtro.orden2 = '!P-';loadSemanas();">
     <input type="week" ng-model="semanaActual" ng-change="loadSemanas();" format-date />
     <button class="btn btn-success" ng-click="loadSemanas();">Actualizar</button>
     <?php if($IdProceso == 1):?>
@@ -68,7 +68,7 @@ $this->title = $title;
     <?php endif;?>
     <button class="btn btn-primary" ng-model="filtro.orden2" ng-click="filtro.orden2 = filtro.orden2 == '!P-' ? '' : '!P-'"><span ng-if="filtro.orden2 == '!P-'">Mostrar Pruebas</span><span ng-if="filtro.orden2 != '!P-'">Ocultar Pruebas</span></button>
     <button class="btn btn-success" ng-click="cerrarPedido();">Cerrar Pedido</button>
-    Mostrar Pedidos: <select  ng-model="filtro.Estatus">
+    Mostrar Pedidos: <select  ng-model="Estatus" ng-change="loadSemanas();">
         <option value="">Todos</option>
         <option value="Abierto">Abiertos</option>
         <option value="Cerrado">Cerrados</option>
