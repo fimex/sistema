@@ -247,7 +247,7 @@ app.controller('Programacion', function($scope, $filter, ngTableParams, $http, $
             $scope.programaciones = data.rows;
             $scope.diaActual = $scope.diaActual === undefined ? 1 : $scope.diaActual;
 
-        if(tarimas == true){
+            if(tarimas == true){
                 $scope.loadTarimas();
             }
             

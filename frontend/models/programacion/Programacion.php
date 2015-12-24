@@ -134,11 +134,11 @@ class Programacion extends \yii\db\ActiveRecord
         //obtengo datos desde un f_GetProgramaciones mediante un SELECT
         $command = \Yii::$app->db;
         
+        $where = $Estatus !== '' ? "WHERE Estatus = '$Estatus'" : "";//"WHERE IdAreaAct = 4";
+        
         if($IdArea == 2){
-            $where = "";//"WHERE IdAreaAct IN(1,2,3)";
             $from = "f_GetProgramacionesAcero";
         }else{
-            $where = $Estatus !== '' ? "WHERE Estatus = '$Estatus'" : "";//"WHERE IdAreaAct = 4";
             $from = "f_GetProgramacionesAcero";
             
             $sql = "UPDATE dbo.Programaciones SET

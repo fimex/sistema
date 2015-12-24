@@ -108,7 +108,7 @@
                     <th><?= ($key['TDISPO'] == 0 ? 0 : round(($key['TDISPO']/$key['TTOT'])*100))."%"?></th>
                     <th><?= $key['PESPERADO']?></th>
                     <th><?= $key['PREAL']?></th>
-                    <th><?= ($key['PREAL'] == 0 ? 0 : round(($key['PREAL']/$key['PESPERADO'])*100))."%"?></th>
+                    <th><?= ($key['PREAL'] == 0 && $key['PESPERADO'] == 0? 0 : round(($key['PREAL']/$key['PESPERADO'])*100))."%"?></th>
                     <th ng-init="recha<?=$tota17?> = '<?= $key["Rechazadas"]?>'">{{recha<?=$tota17?>}}</th>
                     <th ng-init="OK<?=$tota17?> = <?=$key["OK"]?>">{{OK<?=$tota17?>}}</th>
                     <th ng-init="Cali<?=$tota17?> = <?= round($key["CALIDAD"])?>">{{Cali<?=$tota17?>}}%</th>

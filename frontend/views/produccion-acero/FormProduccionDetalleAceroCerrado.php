@@ -34,7 +34,7 @@
                     <th class="width-40">Ok</th>
                     <th class="width-30">Rech</th>
                 </tr> 
-                <tr ng-class="{'info': indexCiclo == $index}" ng-init="resetResumen()" ng-repeat="detalle in programacionAceros" ng-mousedown="selectCiclo($index);">
+                <tr ng-init="sumaResumen()" ng-class="{'info': indexCiclo == $index}" ng-init="resetResumen()" ng-repeat="detalle in programacionAceros" ng-mousedown="selectCiclo($index);">
                     <th>{{detalle.Prioridad}}</th>
                     <th>{{detalle.Programadas}}</th>
                     <th>

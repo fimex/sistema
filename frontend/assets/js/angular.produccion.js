@@ -496,6 +496,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
         }}).success(function(data) {
             $scope.programaciones = [];
             $scope.programaciones = data;
+            console.log(data)
             if(timeout == true){
                 $timeout(function() {$scope.loadProgramacion(true);}, 50000);
             }
@@ -761,43 +762,49 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
     };
     
     $scope.addAlmasDetalle = function() {
-        if($scope.produccion.IdProduccion != null){
-            $scope.inserted = {
-                Fecha: $scope.produccion.Fecha,
-                IdAlmaProduccionDetalle: null,
-                IdProduccion:$scope.produccion.IdProduccion,
-                IdProgramacionAlma:$scope.programaciones[$scope.indexProgramacion].IdProgramacionAlma,
-                Inicio:'',
-                Fin:'',
-                Programadas: $scope.programaciones[$scope.indexProgramacion].Programadas,
-                Hechas: 0,
-                Rechazadas: 0,
-                IdAlmaTipo:$scope.programaciones[$scope.indexProgramacion].IdAlmaTipo,
-                IdProducto:$scope.programaciones[$scope.indexProgramacion].IdProducto,
-                PiezasCaja: $scope.programaciones[$scope.indexProgramacion].PiezasCaja,
-                PiezasMolde: $scope.programaciones[$scope.indexProgramacion].PiezasMolde,
-                PiezasHora: $scope.programaciones[$scope.indexProgramacion].PiezasHora,
-                idAlmaTipo: {Descripcion:$scope.programaciones[$scope.indexProgramacion].Alma},
-                idProducto: {Identificacion:$scope.programaciones[$scope.indexProgramacion].Producto},
-            };
-            $scope.detalles.push($scope.inserted);
-            //$scope.saveAlmasDetalle($scope.detalles.length - 1);
+        if($scope.programaciones[$scope.indexProgramacion] != undefined){
+            if($scope.produccion.IdProduccion != null){
+                $scope.inserted = {
+                    Fecha: $scope.produccion.Fecha,
+                    IdAlmaProduccionDetalle: null,
+                    IdProduccion:$scope.produccion.IdProduccion,
+                    IdProgramacionAlma:$scope.programaciones[$scope.indexProgramacion].IdProgramacionAlma,
+                    Inicio:'',
+                    Fin:'',
+                    Programadas: $scope.programaciones[$scope.indexProgramacion].Programadas,
+                    Hechas: 0,
+                    Rechazadas: 0,
+                    IdAlmaTipo:$scope.programaciones[$scope.indexProgramacion].IdAlmaTipo,
+                    IdProducto:$scope.programaciones[$scope.indexProgramacion].IdProducto,
+                    PiezasCaja: $scope.programaciones[$scope.indexProgramacion].PiezasCaja,
+                    PiezasMolde: $scope.programaciones[$scope.indexProgramacion].PiezasMolde,
+                    PiezasHora: $scope.programaciones[$scope.indexProgramacion].PiezasHora,
+                    idAlmaTipo: {Descripcion:$scope.programaciones[$scope.indexProgramacion].Alma},
+                    idProducto: {Identificacion:$scope.programaciones[$scope.indexProgramacion].Producto},
+                };
+                $scope.detalles.push($scope.inserted);
+                //$scope.saveAlmasDetalle($scope.detalles.length - 1);
+            }
         }else{
-            alert('Favor de seleccionar programacion');
+            $scope.addAlert('Favor de seleccionar programacion');
         }
     };
     
     $scope.saveAlmasDetalle = function(index){
         if($scope.controlClick('detalles',index)){
-            console.log($scope.detalles[index]);
+            //console.log($scope.detalles[index]);
             $scope.detalles[index].Fecha = $scope.produccion.Fecha;
-            return $http.get('save-almas-detalle',{params:$scope.detalles[index]}).success(function(data) {
+            return $http.get('save-almas-detalle',{
+                params:$scope.detalles[index]
+            })
+            .success(function(data) {
                 if(data == false){
                     alert('Error en el sistema: favor de notificar al area de sistemas Ext. 225')
                 }else{
                     $scope.detalles[index] = data;
                 }
-                console.log($scope.detalles[index]);
+                $scope.loadProgramacion();
+                //console.log($scope.detalles[index]);
             }).error(function(){$scope.detalles[index]['active'] = undefined});
         }
     };
@@ -856,7 +863,7 @@ app.controller('Produccion', function($scope, $filter, $modal, $http, $log, $tim
             };
             $scope.almasRechazos.push($scope.inserted);
         }else{
-            $scope.addAlert('Primero debe guardar la produccion para poder generar rechazos','danger');
+            $scope.addAlert('Primero debe guardar la produccion para poder generar rechazos','warning');
         }
     };
     

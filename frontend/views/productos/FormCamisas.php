@@ -17,6 +17,7 @@
                             <option ng-repeat="camisaTipo in CamisasTipo" ng-selected="camisa.IdCamisaTipo == camisaTipo.IdCamisaTipo" value="{{camisaTipo.IdCamisaTipo}}">{{camisaTipo.Descripcion}} - {{camisaTipo.Tamano}}</option>
                     </select></td>
                     <td><input class="form-control" ng-change="saveDatos('camisas',$index);" ng-model-options="{updateOn: 'blur'}" ng-model="camisa.Cantidad" /></td>
+                    <td><textarea class="form-control" ng-change="saveDatos('camisas',$index);" ng-model-options="{updateOn: 'blur'}" ng-model="camisa.Observaciones"> <textarea/></td>
                 </tr>
             </tbody>
         </table>

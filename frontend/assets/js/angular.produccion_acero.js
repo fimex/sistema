@@ -54,17 +54,17 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	
 	
 	$scope.resumen= function($campo,$valor){
-		switch($campo){
-			case'OkCiclosMoldeo' : $scope.OkCiclosMoldeo += $valor; break;
-			case'RecCiclosMoldeo' : $scope.RecCiclosMoldeo += $valor; break;
-			case'RepCiclosMoldeo' : $scope.RepCiclosMoldeo += $valor; break;
-			case'OkMoldesMoldeo' : $scope.OkMoldesMoldeo += $valor; break;
-			case'RecMoldesMoldeo' : $scope.RecMoldesMoldeo += $valor; break;
-			case'OkMoldesCerrados' : $scope.OkMoldesCerrados += $valor; break;
-			case'OkMoldesVaciados' : $scope.OkMoldesVaciados += $valor; break;
-			case'RecMoldesVaciados' : $scope.RecMoldesVaciados += $valor; break;
+		// switch($campo){
+			// case'OkCiclosMoldeo' : $scope.OkCiclosMoldeo += $valor; break;
+			// case'RecCiclosMoldeo' : $scope.RecCiclosMoldeo += $valor; break;
+			// case'RepCiclosMoldeo' : $scope.RepCiclosMoldeo += $valor; break;
+			// case'OkMoldesMoldeo' : $scope.OkMoldesMoldeo += $valor; break;
+			// case'RecMoldesMoldeo' : $scope.RecMoldesMoldeo += $valor; break;
+			// case'OkMoldesCerrados' : $scope.OkMoldesCerrados += $valor; break;
+			// case'OkMoldesVaciados' : $scope.OkMoldesVaciados += $valor; break;
+			// case'RecMoldesVaciados' : $scope.RecMoldesVaciados += $valor; break;
 			
-		}
+		// }
 		
 	}
 	$scope.resetResumen = function(){
@@ -77,6 +77,32 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 		$scope.RecMoldesCerrado=0;
 		$scope.OkMoldesVaciados=0;
 		$scope.RecMoldesVaciados=0;
+		
+	}
+	
+	$scope.resumenCorrido = 0;
+	$scope.sumaResumen = function(){
+		
+		if ($scope.resumenCorrido == 1){
+					$scope.resetResumen();
+					$scope.resumenCorrido = 0;
+		}
+		
+		$scope.programacionAceros.forEach(
+			function(row){
+				// console.log(row);
+					$scope.OkCiclosMoldeo+=row.OkCiclosMoldeo;
+					$scope.RecCiclosMoldeo+=row.RecCiclosMoldeo;
+					$scope.RepCiclosMoldeo+=row.RepCiclosMoldeo;
+					$scope.OkMoldesMoldeo+=row.OkMoldesMoldeo;
+					$scope.RecMoldesMoldeo+=row.RecMoldesMoldeo;
+					$scope.OkMoldesCerrados+=row.OkMoldesCerrados;
+					$scope.RecMoldesCerrado+=row.RecMoldesCerrado;
+					$scope.OkMoldesVaciados+=row.OkMoldesVaciados;
+					$scope.RecMoldesVaciados+=row.RecMoldesVaciados;
+						$scope.resumenCorrido = 1;
+			}
+		)
 		
 	}
 	
@@ -195,7 +221,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     }
 
     $scope.loadProgramaciones = function(refresh){
-		$scope.resetResumen
+            $scope.resetResumen
         if($scope.IdSubProceso == 14){
             tipo = refresh == true ? 0 : 1;
             return $http.get('get-cantidad',{params:{
@@ -258,7 +284,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     $scope.capturaFecha = function(){
         $scope.datoCaptura = "Si";
-    }
+    };
     
     $scope.loadDivFlotante = function(){
         //if($scope.datoCaptura == "Si")
@@ -266,7 +292,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         //else
             //document.getElementById("msgError").innerHTML = "Es necesario selecionar una fecha de moldeo";
 
-    }
+    };
 
     $scope.loadPartesMolde = function(){
         return $http.get('partes-molde',{params:{
@@ -674,7 +700,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
     };
     
     $scope.saveDetalleAcero = function(index,tipo){      
-               if( !$scope.controlClick('programacionAceros',index) ) exit;
+               if( !$scope.controlClick('programacionAceros',index) ) return;
         $scope.index = index;
         $scope.estatus = tipo;
         console.log($scope.index);
@@ -1479,138 +1505,130 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
 	$scope.indexCiclo = 0;
 	$scope.indexDetalleCiclo = 0;
 	
-	$scope.buscar3 = function(){
+    $scope.buscar3 = function(){
         $scope.showModal3 = !$scope.showModal3;
-		$scope.ciclos =[];
-		$scope.ciclosdetalle =[];
+        $scope.ciclos =[];
+        $scope.ciclosdetalle =[];
         $scope.loadCliclosDetalle();
     };
 	
 	// no se ocupa todo esta en Load ciclos detalle
-	$scope.loadCiclos = function(){
-		
-		 return $http.get('loadciclo',{params:{
-                IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
-                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
-                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
-               // Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
-               // Anio: $scope.programacionAceros[$scope.indexCiclo].Anio,
-                //Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
-				IdSubProceso:$scope.IdSubProceso,
-				Fecha: $scope.Fecha,
-            }}).success(function(data){
-            $scope.ciclos = [];
-            $scope.ciclos = data;
-        });
-		
-	}
-	$scope.loadCliclosDetalle = function(){
-		console.log( "Entro detalle");
-		return $http.get('load-ciclo-detalle',{params:{
-                IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
-                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
-                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
-				Fecha: $scope.Fecha,
-            }}).success(function(data){
+    $scope.loadCiclos = function(){
+
+             return $http.get('loadciclo',{params:{
+            IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+            IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+            IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+           // Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+           // Anio: $scope.programacionAceros[$scope.indexCiclo].Anio,
+            //Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
+                            IdSubProceso:$scope.IdSubProceso,
+                            Fecha: $scope.Fecha,
+        }}).success(function(data){
+        $scope.ciclos = [];
+        $scope.ciclos = data;
+    });
+
+    };
+
+    $scope.loadCliclosDetalle = function(){
+        console.log( "Entro detalle");
+        return $http.get('load-ciclo-detalle',{params:{
+            IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+            IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+            IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+            Fecha: $scope.Fecha,
+        }}).success(function(data){
             $scope.ciclosdetalle = [];
             $scope.ciclosdetalle = data;
         });
-		
-	}
-	
-	
-	$scope.deleteCiclosDetalle = function(index){
-		if ($scope.ciclosdetalle[index].serie != null ) alert("tiene serie"); 
-		
+    };
+
+
+    $scope.deleteCiclosDetalle = function(index){
+        if ($scope.ciclosdetalle[index].serie != null ) alert("tiene serie"); 
+
         if($scope.confirm()){
-			
-            
-            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-ciclos-detalle',{params:
-			
-			{
-                // IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
-                // IdProductos: $scope.ciclosdetalle[index].IdProductos,
-                // IdSubProceso: $scope.ciclosdetalle[index].IdSubProceso,
-                // serie: $scope.ciclosdetalle[index].serie,
-				
-				IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+        //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+            return $http.get('delete-ciclos-detalle',{params:{
+                IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
                 IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
                 IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
-               // Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
-               // Anio: $scope.programacionAceros[$scope.indexCiclo].Anio,
-                //Semana: $scope.programacionAceros[$scope.indexCiclo].Semana,
-				IdSubProceso:$scope.IdSubProceso,
-				Fecha: $scope.Fecha,
-            }
-			
-			}).success(function(data) {
-               $scope.loadCliclosDetalle();
+                IdSubProceso:$scope.IdSubProceso,
+                Fecha: $scope.Fecha
+            }}).success(function(data) {
+                $scope.loadCliclosDetalle();
             }).error(function(){
-          
-        });
+
+            });
         }
     };
-	
-	$scope.deleteCiclos = function(index){
-		
-		
+
+    $scope.deleteCiclos = function(index){
         if($scope.confirm()){
-			
-            
             //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-ciclos',{params:
-			
-			{
+            console.log($scope.ciclos,index);
+            return $http.get('delete-ciclos',{params:{
                 IdProduccionCiclos: $scope.ciclos[index].IdProduccionCiclos,
                 IdProductos: $scope.ciclos[index].IdProductos,
                 IdSubProceso: $scope.ciclos[index].IdSubProceso,
                 serie: $scope.ciclos[index].serie,
-				
-            }
-			
-			}).success(function(data) {
+            }}).success(function(data) {
                $scope.loadCliclosDetalle();
             }).error(function(){
-          
-        });
+
+            });
         }
     };
 	
-	$scope.undoCiclos = function(index,estatus){
-		
-		 if($scope.confirm()){
-			
-            
-            //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
-            return $http.get('delete-ciclos-detalle',{params:
-			{
-                // IdProduccionCiclosDetalle: $scope.ciclosdetalle[index].IdProduccionCiclosDetalle,
-				// IdProduccionCiclos: $scope.ciclos[index].IdProduccionCiclos,
-                
-				Fecha: $scope.Fecha,
-				IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
-                IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
-                IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
-                serie: $scope.programacionAceros[$scope.indexCiclo].SerieInicio,
-				IdSubProceso:$scope.IdSubProceso,
-				Estatus: estatus,
+    $scope.undoCiclos = function(index,estatus){
+        if($scope.confirm()){
+
+              if (estatus == 'OK'){
+                    //$scope.detalles[index].IdProduccionDetalle = parseInt($scope.detalles[index].IdProduccionDetalle);
+                    return $http.get('delete-ciclos-detalle',{params:{
+                        Fecha: $scope.Fecha,
+                        IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                        IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                        IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+                        serie: $scope.programacionAceros[$scope.indexCiclo].SerieInicio,
+                        IdSubProceso:$scope.IdSubProceso,
+                        Estatus: estatus
+                    }}).success(function(data) {
+                       // $scope.loadCliclosDetalle();
+                        $scope.loadProgramaciones(1);
+                    }).error(function(){
+                  
+                    });
+            }   
+
+            if ( 
+                (estatus == 'Repo' || estatus == 'Rechazo') && 
+                ($scope.IdSubProceso == 7||$scope.IdSubProceso == 6) 
+                )
+            {
+
+                return $http.get('delete-ciclos-detalle2',{params:{
+                    Fecha: $scope.Fecha,
+                    IdArea: $scope.programacionAceros[$scope.indexCiclo].IdArea,
+                    IdAreaAct: $scope.programacionAceros[$scope.indexCiclo].IdAreaAct,
+                    IdProductos: $scope.programacionAceros[$scope.indexCiclo].IdProducto,
+                    serie: $scope.programacionAceros[$scope.indexCiclo].SerieInicio,
+                    IdSubProceso:$scope.IdSubProceso,
+                    Estatus: estatus
+                }}).success(function(data) {
+                   // $scope.loadCliclosDetalle();
+                    $scope.loadProgramaciones(1);
+                }).error(function(){
+              
+                });
+
             }
-			
-			}).success(function(data) {
-               // $scope.loadCliclosDetalle();
-			   $scope.loadProgramaciones(1);
-            }).error(function(){
-          
-			});
         }
-		
-		
-	}
+    };
 	
-	 $scope.selectCiclo = function(index){
+    $scope.selectCiclo = function(index){
         if($scope.indexCiclo != null){
-           			
             $scope.indexCiclo = null;
         }
         $scope.indexCiclo = index;
@@ -1630,7 +1648,7 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
        
     //#################  DATOS DE ESTATUS MONITOREO  ###################
     $scope.loadDatosEstatusMonitoreo = function(){
-        console.log("dd "+$scope.semanaActual);
+        //console.log("dd "+$scope.semanaActual);
 
         return $http.get('datos-estatus-monitoreo',{params:{
                 Semana: $scope.semanaActual,
@@ -1650,21 +1668,23 @@ app.controller('ProduccionAceros', function ($scope, $filter, $modal, $http, $lo
         });
     }
 
-    $scope.MostrarEstatus = function(monitoreo,tipo){
+    $scope.MostrarEstatus = function(monitoreo,tipo,IdProgramacionSemana,IdProducto){
         return $http.get('tipo-monitoreo',{params:{
             IdTipoMonitoreo: monitoreo,
             Tipo: tipo,
         }}).success(function(data){
             $scope.tipomonitoreo = [];
             $scope.tipomonitoreo = data;
-            $scope.ResumenMonitoreo(monitoreo,tipo);
+            $scope.ResumenMonitoreo(monitoreo,tipo,IdProgramacionSemana,IdProducto);
         });
     }
 
-    $scope.ResumenMonitoreo = function(monitoreo,tipo){
+    $scope.ResumenMonitoreo = function(monitoreo,tipo,IdProgramacionSemana,IdProducto){
         return $http.get('resumen-monitoreo',{params:{
             IdTipoMonitoreo: monitoreo,
             Tipo: tipo,
+            IdProducto: IdProducto,
+            //IdProgramacionSemana: IdProgramacionSemana,
         }}).success(function(data){
             $scope.resumenMonitoreo = [];
             $scope.resumenMonitoreo = data;
@@ -1964,6 +1984,18 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         });
 
     };
+	
+	
+    $scope.deleteTiempoAnalisis = function(index){
+        if($scope.confirm()){
+            var dat = $scope.tiempoanalisis[index];
+            
+            return $http.get('delete-tiempo-analisis',{params:dat}).success(function(data) {
+                $scope.tiempoanalisis.splice(index,1);
+            });
+        }
+    };
+	
 
     $scope.addTiempoAnalisis = function() {
         if($scope.produccion.IdProduccion != null){
@@ -2066,7 +2098,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
                 Temperatura: 0,
                 Temperatura2: 0,
                 IdEmpleado: $scope.produccion.IdEmpleado,
-                Moldes: 0,
+                Moldes: 0
             };
             $scope.temperaturas.push($scope.inserted);
         }
@@ -2151,10 +2183,10 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         });
     };
 
-	$scope.saveProduccionObs = function (){
+    $scope.saveProduccionObs = function (){
         return $http.get('save-produccion-obs',{params:{
             IdProduccion: $scope.produccion.IdProduccion,
-            Observaciones:$scope.produccion.Observaciones,
+            Observaciones:$scope.produccion.Observaciones
         }})
     
     };
@@ -2165,12 +2197,7 @@ app.controller('ProduccionAceros2', function ($scope, $filter, $modal, $http, $l
         Lingotes = $scope.produccion.lances.Lingotes == null ? null : $scope.produccion.lances.Lingotes;
         Probetas = $scope.produccion.lances.Probetas == null ? null : $scope.produccion.lances.Probetas;
 
-        return $http.get('update-lances',{params:{
-            IdLance:$scope.produccion.lances.IdLance,
-            Kellblocks:Kellblocks,
-            Lingotes:Lingotes,
-            Probetas:Probetas,            
-        }})
+        return $http.get('update-lances',{params:$scope.produccion.lances})
         .success(function(data) {
             $scope.countProduccionesAceros($scope.IdSubProceso,$scope.IdArea);
         });

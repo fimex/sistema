@@ -36,14 +36,14 @@ use Yii;
  * @property integer $Anio
  * @property integer $Semana
  */
-class VProgramacionesSemanas extends \yii\db\ActiveRecord
+class VProgramacionesSemana extends \yii\db\ActiveRecord
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'v_programacionesSemanas';
+        return 'v_ProgramacionesSemana';
     }
 
     /**

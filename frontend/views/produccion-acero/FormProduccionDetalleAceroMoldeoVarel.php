@@ -44,7 +44,7 @@
                 <th class="width-40">Ok</th>
                 <th class="width-30">Rech</th>
             </tr> 
-            <tr ng-class="{'info': indexCiclo == $index}" ng-repeat="detalle in programacionAceros"  ng-mousedown="selectCiclo($index);" >
+            <tr ng-init="sumaResumen()"  ng-class="{'info': indexCiclo == $index}" ng-repeat="detalle in programacionAceros"  ng-mousedown="selectCiclo($index);" >
                 <th>{{detalle.Prioridad}}</th>
                 <th>{{detalle.Programadas}}</th>
                 <th><span>{{detalle.FaltanLlenadasV | currency:"":1}} </span></th>
@@ -77,7 +77,7 @@
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
 					 <button type="button" ng-click="undoCiclos($index,'Rechazo');" class="btn btn-danger btn-sm">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th ng-show="!(!detalle.SerieInicio && detalle.LlevaSerie)">{{detalle.RecCiclosMoldeo}}</th>
@@ -86,7 +86,7 @@
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
 					<button type="button" ng-click="undoCiclos($index,'Repo');" class="btn btn-info btn-sm">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th ng-init="resumen('RepCiclosMoldeo',detalle.RepCiclosMoldeo) ">{{detalle.RepCiclosMoldeo}}</th>

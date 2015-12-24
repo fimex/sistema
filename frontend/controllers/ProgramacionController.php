@@ -24,6 +24,7 @@ use common\models\datos\Programaciones;
 use common\models\datos\Areas;
 use common\models\dux\Productos;
 use common\models\dux\Aleaciones;
+use frontend\models\produccion\VMonitoreos;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -426,6 +427,73 @@ class ProgramacionController extends Controller
         $model = new Programacion();
         return date('d-m-Y h:i',strtotime($model->getActualizacion()[0]['FechaInicio']));
     }
+
+    public function actionEstatusProducto($IdProducto){
+            $command = \Yii::$app->db;
+            $result =$command->createCommand("
+                SELECT
+                    dbo.v_Monitoreos.IdTipoMonitoreo,
+                    dbo.v_Monitoreos.IdProducto,
+                    dbo.v_Monitoreos.Concepto,
+                    dbo.v_Monitoreos.Tipo,
+                    dbo.v_Monitoreos.Fecha,
+                    (CASE WHEN Concepto = 'Desarrollo' AND Tipo = 1 THEN Descripcion END) AS EstatusDesarrollo,
+                    (CASE WHEN Concepto = 'Almas' AND Tipo = 1 THEN Descripcion END) AS EstatusAlmas,
+                    (CASE WHEN Concepto = 'Modelo' AND Tipo = 1 THEN Descripcion END) AS EstatusModelo,
+                    (CASE WHEN Concepto = 'Cajas Almas' AND Tipo = 1 THEN Descripcion END) AS EstatusCajas
+                FROM
+                    dbo.v_Monitoreos 
+                WHERE IdProducto = ".$IdProducto."
+                ORDER BY Fecha DESC
+            ")->queryAll();
+
+            $Estatus = array();
+            $Estatus['EstatusDesarrollo'] = "";
+            $Estatus['EstatusAlmas'] = "";
+            $Estatus['EstatusModelos'] = "";
+            $Estatus['EstatusCajas'] = "";
+            $Estatus['ColorProducto'] = "";
+            $desarrollo = 1;
+            $modelos = 1;
+            $almas = 1;
+            $cajas = 1;
+            foreach ($result as &$value) {
+                switch(true) {
+                    case ($value['Concepto'] == 'Desarrollo') && ($desarrollo == 1):
+                        $Estatus['EstatusDesarrollo'] = $value['EstatusDesarrollo'];
+                        $desarrollo = 2;
+                        break;
+                    case ($value['Concepto'] == 'Almas') && ($almas == 1):
+                        $Estatus['EstatusAlmas'] = $value['EstatusAlmas'];
+                        $almas = 2;
+                        break;
+                    case ($value['Concepto'] == 'Modelo') && ($modelos == 1):
+                        $Estatus['EstatusModelos'] = $value['EstatusModelo'];
+                        $modelos = 2;
+                        break;
+                    case ($value['Concepto'] == 'Cajas Almas') && ($cajas == 1):
+                        $Estatus['EstatusCajas'] = $value['EstatusCajas'];
+                        $cajas = 2;
+                        break;
+                }
+            }
+
+            //[statusModelos]="Detenido" O [statuscajas]="Detenido" O [desarrollo]="Desarrollo" 
+            if ($Estatus['EstatusModelos'] == "Detenido" || $Estatus['EstatusCajas'] == "Detenido" || $Estatus['EstatusDesarrollo'] == "Desarrollo") {
+                $Estatus['ColorProducto'] = "#ed1c24";
+            }
+            //[statusModelos]="Listo" Y [statuscajas]="Listo" Y [StatusAlmas]="Incompletas"
+            if ($Estatus['EstatusModelos'] == "Listo" && $Estatus['EstatusCajas'] == "Listo" && $Estatus['EstatusAlmas'] == "Incompletas") {
+                $Estatus['ColorProducto'] = "#FFC20E";
+            }
+
+            //       [statusModelos] = "Listo" Y [statuscajas]="Listo" Y [StatusAlmas]="Listo" Y [desarrollo]="Liberado"                                              O [statusModelos]="Listo" Y [statuscajas]="Listo" Y [StatusAlmas]="Listo" Y [desarrollo]="Proceso"                                                    O [statusModelos]="Listo" Y  [statuscajas]="Listo" Y [StatusAlmas]="Listo" Y [desarrollo]="Prueba"
+            if (($Estatus['EstatusModelos'] == "Listo" && $Estatus['EstatusCajas'] == "Listo" && $Estatus['EstatusAlmas'] == "Listo" && $Estatus['EstatusDesarrollo'] == "Liberado") || ($Estatus['EstatusModelos'] == "Listo" && $Estatus['EstatusCajas'] == "Listo" && $Estatus['EstatusAlmas'] == "Listo" && $Estatus['EstatusDesarrollo'] == "Proceso") || ($Estatus['EstatusModelos'] == "Listo" && $Estatus['EstatusCajas'] == "Listo" && $Estatus['EstatusAlmas'] == "Listo" && $Estatus['EstatusDesarrollo'] == "Prueba") ) {
+                $Estatus['ColorProducto'] = "#A7DA4E";
+            }
+
+            return $Estatus['ColorProducto'];
+    }
     
     public function actionDataSemanal(){
         $IdArea = $_REQUEST['IdArea'];
@@ -440,6 +508,9 @@ class ProgramacionController extends Controller
         
         //var_dump($dataProvider->allModels);exit;
         foreach ($dataProvider->allModels as &$value) {
+
+            $value['ColorProducto'] = $this->actionEstatusProducto($value['IdProducto']);
+
             $value['Orden2'] = $value['OrdenCompra'];
             $value['FechaEnvio'] = $value['FechaEnvio'] == '' ? $value['FechaEnvio'] : date(DATE_ISO8601,  strtotime($value['FechaEnvio']));
             
@@ -822,7 +893,7 @@ class ProgramacionController extends Controller
     
     public function ExplosionValvulas($producto){
         
-        $explosion = ProductosEnsamble::find()->select('')->where('IdProducto = '.$producto.' AND SeCompra = 0')->asArray()->all();
+        $explosion = ProductosEnsamble::find()->select('IdComponente AS IdProducto, IdComponente')->where('IdProducto = '.$producto.' AND SeCompra = 0')->asArray()->all();
 
         foreach ($explosion as $key){
             $prod = Productos::findOne($key['IdComponente']);

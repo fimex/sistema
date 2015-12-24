@@ -4,6 +4,7 @@
 use yii\helpers\Html;
 use yii\bootstrap\Modal;
 use yii\helpers\URL;
+use yii\grid\GridView;
 
 $this->title = $title;
 ?>
@@ -76,7 +77,7 @@ $this->title = $title;
     </div>
     <div class="row"><hr /></div>
     <div class="row">
-        <div class="col-md-14" >
+        <div class="col-md-20" >
             <?= $this->render('FormMonitoreo');?>
         </div>
     </div>

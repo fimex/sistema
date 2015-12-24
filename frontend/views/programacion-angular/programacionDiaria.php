@@ -279,16 +279,16 @@ $this->title = $title;
                 </tr>
                 <tr>
                     <th>TON PRG</th>
-                    <th>{{sumatoria(resumenes,'TonPrgK')}}</th>
-                    <th>{{sumatoria(resumenes,'TonPrgV') | currency:'':0}}</th>
-                    <th>{{sumatoria(resumenes,'TonPrgE') | currency:'':0}}</th>
+                    <th>{{sumatoria(resumenes,'TonPrgK') | currency:'':2}}</th>
+                    <th>{{sumatoria(resumenes,'TonPrgV') | currency:'':2}}</th>
+                    <th>{{sumatoria(resumenes,'TonPrgE') | currency:'':2}}</th>
                     
                 </tr>
                 <tr>
                     <th>TON VAC</th>
-                    <th>{{sumatoria(resumenes,'TonVacK')}}</th>
-                    <th>{{sumatoria(resumenes,'TonVacV') | currency:'':0}}</th>
-                    <th>{{sumatoria(resumenes,'TonVacE') | currency:'':0}}</th>
+                    <th>{{sumatoria(resumenes,'TonVacK') | currency:'':2}}</th>
+                    <th>{{sumatoria(resumenes,'TonVacV') | currency:'':2}}</th>
+                    <th>{{sumatoria(resumenes,'TonVacE') | currency:'':2}}</th>
                     
                 </tr>
                 <tr>
@@ -320,15 +320,15 @@ $this->title = $title;
                 </tr>
                 <tr>
                     <th>TON PRG</th>
-                    <th>{{resumen.TonPrgK}}</th>
-                    <th>{{resumen.TonPrgV}}</th>
-                    <th>{{resumen.TonPrgE}}</th>
+                    <th>{{resumen.TonPrgK | currency:'':2}}</th>
+                    <th>{{resumen.TonPrgV | currency:'':2}}</th>
+                    <th>{{resumen.TonPrgE | currency:'':2}}</th>
                 </tr>
                 <tr>
                     <th>TON VAC</th>
-                    <th>{{resumen.TonVacK}}</th>
-                    <th>{{resumen.TonVacV}}</th>
-                    <th>{{resumen.TonVacE}}</th>
+                    <th>{{resumen.TonVacK | currency:'':2}}</th>
+                    <th>{{resumen.TonVacV | currency:'':2}}</th>
+                    <th>{{resumen.TonVacE | currency:'':2}}</th>
                 </tr>
                 <tr>
                     <th>CICLOS</th>

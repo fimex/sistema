@@ -2,16 +2,36 @@
     .third-elm{
         color:red;  
     }
+
 </style>
 <div class="panel panel-primary">
     <!-- Default panel contents -->
     <div class="panel-heading" style="height:30px;" >Captura de produccion</div>
     <div id="detalle" style="height: 600px; overflow:auto" >
-        <table ng-table class="table table-condensed table-striped table-bordered">
-            <tr style="color:#FFF; text-align: center;">
-                <th class="width-100" colspan="8"></th>
+        <table fixed-table-headers="semanal" cell-fixed="semanal" class="table table-striped table-bordered table-hover">
+            <tr style="color:#000" align="center">
+                <th class="width-100" rowspan="2" style="background:#aaaaaa"></th>
+                <th rowspan="2" style="background:#aaaaaa">
+                    <div>Cliente</div>
+                    <input class="form-control" ng-model="filtro.cliente" />
+                </th>
+                <th rowspan="2" style="background:#aaaaaa">
+                    <div>Aleacion</div>
+                    <input class="form-control" ng-model="filtro.aleacion" />
+                </th>
+                <th rowspan="2" style="background:#aaaaaa">
+                    <div>Codigo</div>
+                    <input class="form-control" ng-model="filtro.CodigoCliente" />
+                </th>
+                <th rowspan="2" style="background:#aaaaaa">
+                    <div>Producto</div>
+                    <input class="form-control" ng-model="filtro.producto" />
+                </th>
+                <th class="width-100" colspan="3" rowspan="1" style="background:#aaaaaa"></th>
                 <th rowspan="{{monitoreos.length + 2}}"></th>
-                <th bgcolor="6F3198" class="width-40" height="25" colspan="3">Desarrollo</th>
+                <th bgcolor="6F3198" class="width-40" height="25" colspan="3">
+                    Desarrollo
+                </th>
                 <th rowspan="{{monitoreos.length + 2}}"></th>
                 <th bgcolor="FF5050" class="width-40" colspan="3">Almas</th>
                 <th rowspan="{{monitoreos.length + 2}}"></th>
@@ -24,12 +44,12 @@
                 <th bgcolor="0072BC" class="width-40" colspan="3">Cajas Almas</th>
             </tr>
             <tr>
-                <th class="width-10">Pr</th>
+                <!--<th class="width-10">Pr</th>
                 <th class="width-40">Cliente</th>
                 <th class="width-20">Aleacion</th>
                 <th class="width-20">Código Cliente</th>
-                <th class="width-50">No Parte</th>
-                <th class="width-80">Descripción</th>
+                <th class="width-50">No Parte</th>-->
+                <th class="width-280">Descripción</th>
                 <th class="width-10">Area</th>
                 <th class="width-10">Prg</th>
                 <!--<th class="width-10">H K</th>-->
@@ -61,49 +81,53 @@
                 <th class="width-10"></th>
                 <th class="width-10">Posicion</th>
             </tr> 
-            <tr ng-class="{'info': indexDetalle == $index}" ng-repeat="detalle in monitoreos">
+            <tr ng-repeat="detalle in monitoreos | filter:{
+                Cliente:filtro.cliente,
+                Aleacion: filtro.aleacion,
+                CodigoCliente: filtro.CodigoCliente,
+                Producto:filtro.producto} | orderBy:arr">
                 <th>{{detalle.Prioridad}}</th>
                 <th>{{detalle.Cliente}}</th>
                 <th>{{detalle.Aleacion}}</th>
                 <th>{{detalle.CodigoCliente}}</th>
-                <th>{{detalle.Producto}}</th>
-                <th>{{detalle.Descripcion}}</th>
+                <th style="background:{{detalle.ColorProducto}}">{{detalle.Producto}}</th>
+                <th style="min-width:200px;">{{detalle.Descripcion}}</th>
 
                 <th>{{detalle.AreaActual}}</th>
                 <th>{{detalle.Programadas}}</th>
                 <!--<th>{{detalle.Programadas}}</th>-->
 
                 <!--Desarrollo-->
-                <th>{{detalle.EstatusDesarrollo}}</th>
+                <th style="background:{{detalle.ColorDesarrollo}}" >{{detalle.EstatusDesarrollo}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(2,1); ModalEstatus($index,1,2);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(2,1,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,1,2);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
-                <th>{{detalle.ComentDesarrollo}}</th>
+                <th style="font-size:11px;width:200px" >{{detalle.ComentDesarrollo}}</th>
 
                 <!--Almas-->
-                <th>{{detalle.EstatusAlmas}}</th>
+                <th style="background:{{detalle.ColorAlmas}}">{{detalle.EstatusAlmas}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(3,1); ModalEstatus($index,2);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(3,1,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,2);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th>{{detalle.ComentAlmas}}</th>
 
                 <!--Modelos Estatus-->
-                <th>{{detalle.EstatusModelos}}</th>
+                <th style="background:{{detalle.ColorModelos}}">{{detalle.EstatusModelos}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(1,1); ModalEstatus($index,3);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(1,1,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,3);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
                 <th>{{detalle.ComentModelos}}</th>
 
                 <!--Almas Cajas Estatus-->
-                <th>{{detalle.EstatusCajas}}</th>
+                <th style="background:{{detalle.ColorCajas}}">{{detalle.EstatusCajas}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(4,1); ModalEstatus($index,4);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(4,1,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,4);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
@@ -112,7 +136,7 @@
                 <!--Modelos Ubicacion-->
                 <th>{{detalle.UbicModelos}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(1,2); ModalEstatus($index,5);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(1,2,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,5);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>
@@ -121,7 +145,7 @@
                 <!--Almas Cajas Ubicacion-->
                 <th>{{detalle.UbicCajas}}</th>
                 <th>
-                    <button type="button" ng-click="MostrarEstatus(4,2); ModalEstatus($index,6);" class="btn btn-success btn-sm">
+                    <button type="button" ng-click="MostrarEstatus(4,2,detalle.IdProgramacionSemana,detalle.IdProducto); ModalEstatus($index,6);" class="btn btn-success btn-sm">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                 </th>

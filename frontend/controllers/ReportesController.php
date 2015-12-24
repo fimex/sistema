@@ -9,6 +9,7 @@ use frontend\models\produccion\ProduccionesDefecto;
 use frontend\models\produccion\Producciones;
 use frontend\models\produccion\MaterialesVaciado;
 use frontend\models\vistas\VCamisasAcero;
+use common\models\vistas\VCamisas;
 use common\models\vistas\VTiemposMuertos;
 use common\models\catalogos\Materiales;
 use common\models\catalogos\Maquinas;
@@ -17,7 +18,11 @@ use common\models\datos\Cajas;
 use common\models\catalogos\Areas;
 use frontend\models\programacion\VProgramaciones;
 use frontend\models\vistas\VCamisasDia;
+use frontend\models\vistas\VCamisasDiaAcero;
+use frontend\models\vistas\VFiltros;
 use frontend\models\vistas\VFiltrosDia;
+use frontend\models\vistas\VFiltrosDiaAcero;
+use frontend\models\vistas\VFiltrosAcero;
 use frontend\models\vistas\VMetalDia;
 use common\models\catalogos\Turnos;
 
@@ -195,12 +200,36 @@ class ReportesController extends Controller
             'IdArea' => 2
         ]);
     }
+    
+    public function actionCamisasBronce(){
+        return $this->render('index',[
+            'vista' => 'Camisas',
+            'IdSubProceso' => 6,
+            'IdArea' => 3
+        ]);
+    }
+    
+    public function actionCamisasProducto(){
+        return $this->render('index',[
+            'vista' => 'CamisasProducto',
+            'IdSubProceso' => 6,
+            'IdArea' => 2
+        ]);
+    }
 
     public function actionCamisasDia(){
         return $this->render('index',[
             'vista' => 'CamisasDia',
             'IdSubProceso' => 6,
             'IdArea' => 2
+        ]);
+    }
+    
+    public function actionCamisasDiaBronce(){
+        return $this->render('index',[
+            'vista' => 'CamisasDia',
+            'IdSubProceso' => 6,
+            'IdArea' => 3
         ]);
     }
     
@@ -273,6 +302,7 @@ class ReportesController extends Controller
             'serie' => $serie
             ]);
     }
+    
     public function actionAlmas()
     {
         return $this->render('index',[
@@ -281,8 +311,7 @@ class ReportesController extends Controller
         ]);
     }
     
-    public function actionAlmasCatalogo()
-    {
+    public function actionAlmasCatalogo(){
         return $this->render('index',[
             'vista' => 'almasCatalogo',
             'IdSubProceso' => 2,
@@ -290,8 +319,7 @@ class ReportesController extends Controller
         ]);
     }
 
-	 public function actionAlmasCatalogoac()
-    {
+    public function actionAlmasCatalogoac(){
         return $this->render('index',[
             'vista' => 'almasCatalogo',
             'IdSubProceso' => 2,
@@ -353,6 +381,11 @@ class ReportesController extends Controller
 		return $this->render('GraficaKloster');      
     }
 
+	public function actionProduccionSemanalAcero(){
+        
+		return $this->render('ProduccionSemanalAcero');      
+    }
+	
     public function actionPromolSemana(){
 
         if (isset($_REQUEST["Semanaini"]) ){
@@ -664,7 +697,15 @@ class ReportesController extends Controller
     public function actionDataFiltros(){
         
         $semanas = $this->LoadSemana(!isset($_GET['semana']) ? '' : $_GET['semana']);
-        $filtros = \common\models\vistas\VFiltros::find()->distinct()->select("Descripcion,IdFiltroTipo")->where([
+        
+        if($_GET['IdArea'] === '2'){
+            $area = new VFiltrosAcero();
+        }else{
+            $area = new VFiltros();
+        }
+        
+        //var_dump($semanas);
+        $filtros = $area->find()->distinct()->select("Descripcion,IdFiltroTipo,CantidadPorPaquete,ExistenciaDolares,ExistenciaPesos")->where([
             'IdArea' => $_GET['IdArea']
         ])->asArray()->all();
         //$filtros = \common\models\catalogos\FiltrosTipo::find()->where("IdFiltroTipo <> 1")->with('filtros')->asArray()->all();
@@ -673,15 +714,17 @@ class ReportesController extends Controller
             $x=1;
             $filtro['total'] = 0;
             foreach ($semanas as $semana){
-                $filtro['semanas']["semana$x"] = \common\models\vistas\VFiltros::find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
+                
+                $filtro['semanas']["semana$x"] = $area->find()->select("sum(Requeridas) AS Requeridas")->where([
                     'Anio' => $semana['year'],
                     'Semana' => $semana['week'],
                     'IdFiltroTipo' => $filtro['IdFiltroTipo']
-                ])->asArray()->one();
+                ])
+                ->asArray()
+                ->one();
+                
                 $filtro['semanas']["semana$x"]['semana'] = $semana['week'];
                 $filtro['total'] += $filtro['semanas']["semana$x"]['Requeridas'];
-                $filtro['ExistenciaDolares'] = $filtro['semanas']["semana$x"]['ExistenciaDolares']*1;
-                $filtro['ExistenciaPesos'] = $filtro['semanas']["semana$x"]['ExistenciaPesos']*1;
                 $x++;
             }
         }
@@ -691,9 +734,15 @@ class ReportesController extends Controller
 
 
     public function actionDataFiltrosDia(){
-        
         $dias = $this->LoadDias(!isset($_GET['semana']) ? '' : $_GET['semana']);
-        $filtros = VFiltrosDia::find()->distinct()->select("Descripcion,IdFiltroTipo")->where([
+        
+        if($_GET['IdArea'] === '2'){
+            $area = new VFiltrosDiaAcero();
+        }else{
+            $area = new VFiltrosDia();
+        }
+        
+        $filtros = $area->find()->distinct()->select("Descripcion,IdFiltroTipo,CantidadPorPaquete,ExistenciaDolares,ExistenciaPesos")->where([
             'IdArea' => $_GET['IdArea']
         ])->asArray()->all();
         //$filtros = \common\models\catalogos\FiltrosTipo::find()->where("IdFiltroTipo <> 1")->with('filtros')->asArray()->all();
@@ -702,7 +751,7 @@ class ReportesController extends Controller
             $x=1;
             $filtro['total'] = 0;
             foreach ($dias as $dia){
-                $filtro['dias']["dia$x"] = VFiltrosDia::find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
+                $filtro['dias']["dia$x"] = $area->find()->select("sum(Requeridas) AS Requeridas")->where([
                     'Anio' => date('Y',strtotime($dia)),
                     'Dia' => $dia,
                     'IdFiltroTipo' => $filtro['IdFiltroTipo']
@@ -710,8 +759,6 @@ class ReportesController extends Controller
                 //$filtro['dias']["dias$x"]['dia'] = $semana['week'];
                 $filtro['dias']["dia$x"]['dia'] = $dia;
                 $filtro['total'] += $filtro['dias']["dia$x"]['Requeridas'];
-                $filtro['ExistenciaDolares'] = $filtro['dias']["dia$x"]['ExistenciaDolares']*1;
-                $filtro['ExistenciaPesos'] = $filtro['dias']["dia$x"]['ExistenciaPesos']*1;
                 $x++;
             }
         }
@@ -722,16 +769,23 @@ class ReportesController extends Controller
     public function actionDataCamisas(){
         
         $semanas = $this->LoadSemana(!isset($_GET['semana']) ? '' : $_GET['semana']);
+        if($_GET['IdArea'] === '2'){
+            $area = new VCamisasAcero();
+        }else{
+            $area = new VCamisas();
+        }
+    
         $camisas = \common\models\catalogos\CamisasTipo::find()->where("IdCamisaTipo <> 1")->with('camisas')->asArray()->all();
         
         foreach ($camisas as &$camisa) {
             $x=1;
             $camisa['total'] = 0;
             foreach ($semanas as $semana){
-                $camisa['semanas']["semana$x"] = \common\models\vistas\VCamisas::find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
+                $camisa['semanas']["semana$x"] = $area->find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
                     'Anio' => $semana['year'],
                     'Semana' => $semana['week'],
-                    'IdCamisaTipo' => $camisa['IdCamisaTipo']
+                    'IdCamisaTipo' => $camisa['IdCamisaTipo'],
+                    'IdArea' => $_GET['IdArea']
                 ])->asArray()->one();
                 $camisa['semanas']["semana$x"]['semana'] = $semana['week'];
                 $camisa['total'] += $camisa['semanas']["semana$x"]['Requeridas'];
@@ -743,26 +797,76 @@ class ReportesController extends Controller
 
         return json_encode($camisas);
     }
+    public function actionDataCamisasProducto(){
+        
+        $semanas = $this->LoadSemana(!isset($_GET['semana']) ? '' : $_GET['semana']);
+        
+        if($_GET['IdArea'] === '2'){
+            $area = new VCamisasAcero();
+        }else{
+            $area = new VCamisas();
+        }
+        
+        $camisas = $area->find()
+            ->where([
+                'Anio' => date('Y',  strtotime($_GET['semana'])),
+                'Semana' => date('W',  strtotime($_GET['semana'])),
+            ])
+            ->asArray()
+            ->all();
+        
+        foreach ($camisas as $camisa) {
+            if($camisa['Requeridas'] !== null){
+                $datos[$camisa['IdProducto']]['Producto'] = $camisa['Producto'];
+                $datos[$camisa['IdProducto']]['Camisas'][] = [
+                    'Descripcion' => $camisa['Descripcion'],
+                    'Tamano' => $camisa['Tamano'],
+                    'Requeridas' => $camisa['Requeridas'],
+                    'Observaciones' => $camisa['Observaciones']
+                ];
+            }
+        }
+
+        return json_encode($datos);
+    }
 
     public function actionDataCamisasDia(){
         
         $dias = $this->LoadDias(!isset($_GET['semana']) ? '' : $_GET['semana']);
-        $camisas = \common\models\catalogos\CamisasTipo::find()->where("IdCamisaTipo <> 1")->with('camisas')->asArray()->all();
-       
+        
+        if($_GET['IdArea'] === '2'){
+            $semana = new VCamisasAcero();
+            $area = new VCamisasDiaAcero();
+        }else{
+            $semana = new VCamisas();
+            $area = new VCamisasDia();
+        }
+        
+        $camisas = $semana->find()
+            ->select("IdCamisaTipo, Tamano, Descripcion, sum(Requeridas) AS total, ExistenciaDolares, ExistenciaPesos, DUX_CodigoPesos, DUX_CodigoDolares")
+            ->where([
+                'Anio' => date('Y',strtotime($_GET['semana'])),
+                'Semana' => date('W',strtotime($_GET['semana'])),
+                'IdArea' => $_GET['IdArea']
+            ])
+            ->groupBy('IdCamisaTipo, Tamano, Descripcion, ExistenciaPesos, ExistenciaDolares, DUX_CodigoPesos, DUX_CodigoDolares')
+            ->asArray()->all();
+        
+        //var_dump($camisas);exit;
+        
         foreach ($camisas as &$camisa) {
             $x=1;
-            $camisa['total'] = 0;
             foreach ($dias as $dia){
                //echo date('Y',strtotime($dia));
-                $camisa['dias']["dia$x"] = VCamisasDia::find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
+                $camisa['dias']["dia$x"] = $area->find()->select("sum(Requeridas) AS Requeridas, avg(ExistenciaDolares) AS ExistenciaDolares, avg(ExistenciaPesos) AS ExistenciaPesos")->where([
                     'Anio' => date('Y',strtotime($dia)),
                     'Dia' => $dia,
                     'IdCamisaTipo' => $camisa['IdCamisaTipo']
-                ])->asArray()->one(); 
+                ])->asArray()->one();
+                
+                //var_dump($camisa['dias']);
+                
                 $camisa['dias']["dia$x"]['dia'] = $dia;
-                $camisa['total'] += $camisa['dias']["dia$x"]['Requeridas'];
-                $camisa['ExistenciaDolares'] = $camisa['dias']["dia$x"]['ExistenciaDolares']*1;
-                $camisa['ExistenciaPesos'] = $camisa['dias']["dia$x"]['ExistenciaPesos']*1;
                 $x++;
             }
         }

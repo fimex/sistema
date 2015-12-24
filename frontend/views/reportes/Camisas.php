@@ -1,9 +1,10 @@
-<div ng-controller="Pruebas" ng-init="load('data-camisas',{semana:semanaActual})"></div>
-<b style="font-size: 14pt;"></b><input type="week" ng-model="semanaActual" /><button class="btn" ng-click="load('data-camisas',{semana:semanaActual})">Ver</button>
+<div ng-controller="Pruebas" ng-init="load('data-camisas',{semana:semanaActual,IdArea:<?=$IdArea;?>})"></div>
+<b style="font-size: 14pt;"></b><input type="week" ng-model="semanaActual" /><button class="btn" ng-click="load('data-camisas',{semana:semanaActual,IdArea:<?=$IdArea;?>})">Ver</button>
 
 <table class="table table-bordered">
     <thead>
         <tr>
+            <th rowspan="2">Codigo Dux</th>
             <th rowspan="2">Marca</th>
             <th rowspan="2">Tamaño</th>
             <th rowspan="2">Total</th>
@@ -20,6 +21,7 @@
     </thead>
     <tbody>
         <tr ng-repeat="dat in data">
+            <td>{{dat.DUX_CodigoPesos}}</td>
             <td>{{dat.Descripcion}}</td>
             <td>{{dat.Tamano}}</td>
             <td>{{dat.total}}</td>

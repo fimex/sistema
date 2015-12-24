@@ -14,11 +14,13 @@ use frontend\models\programacion\Programacion;
 use frontend\models\produccion\Producciones;
 use frontend\models\programacion\ProgramacionesDia;
 use frontend\models\produccion\MantenimientoHornos;
-
 use frontend\models\produccion\VCapturaExceleada;
 use frontend\models\programacion\VProgramacionesDia;
 use frontend\models\programacion\VProgramacionesAlmaDia;
 use frontend\models\programacion\VAlmasRebabeo;
+use frontend\models\calidad\ProgramacionesAlmaSemanaUltimo;
+use frontend\models\programacion\ProgramacionesAlmaDia;
+
 use common\models\vistas\VAleaciones;
 use common\models\catalogos\VDefectos;
 use common\models\catalogos\VProduccion2;
@@ -146,12 +148,11 @@ class AngularController extends \yii\web\Controller
             'IdArea'=> $IdArea,
             'IdEmpleado' => $IdEmpleado == ' ' ? Yii::$app->user->getIdentity()->getAttributes()['IdEmpleado'] : $IdEmpleado,
         ]);
-    }  
+    }
 
     public function CapturaTMA($subProceso)
     {
         $this->layout = 'produccion';
-        
         return $this->render('CapturaTMAcero', [
             'title' => 'Captura de Tiempos Muertos',
             'IdSubProceso'=> $subProceso,
@@ -741,7 +742,7 @@ class AngularController extends \yii\web\Controller
         $model = new AlmasProduccionDetalle();
         $IdDetalle = 'AlmasProduccionDetalle';
         if(!isset($_REQUEST['IdAlmaProduccionDetalle'])){
-        // var_dump($_REQUEST);exit;
+            // var_dump($_REQUEST);exit;
             $model->load([
                 "$IdDetalle"=>$_REQUEST
             ]);
@@ -770,7 +771,18 @@ class AngularController extends \yii\web\Controller
         $model['Fin'] = date('H:i',strtotime($model['Fin']));
         
         //$this->actualizaHechas($model);
-        
+        ///Actualizar las hechas en la programacion
+        $IdProgramacionAlma = $_GET['IdProgramacionAlma'];
+        $Hechas = $_GET['Hechas'];   
+        $modelo = ProgramacionesAlmaSemanaUltimo::find()->select('IdProgramacionAlmaSemana')->where(
+            "IdProgramacionAlma = ".$IdProgramacionAlma
+            )->asArray()->one();
+        $IdProgramacionAlmaSemana = $modelo['IdProgramacionAlmaSemana'];
+
+        $mod = new ProgramacionesAlmaDia();
+        $mod = $mod::find()->where("IdProgramacionAlmaSemana=".$IdProgramacionAlmaSemana." AND Dia = '".$_GET['Fecha']."'")->one();
+        $mod->Hechas = $Hechas;
+        $mod->update();
         return json_encode(
             $model
         );

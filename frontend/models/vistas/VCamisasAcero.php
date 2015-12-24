@@ -5,22 +5,25 @@ namespace frontend\models\vistas;
 use Yii;
 
 /**
- * This is the model class for table "v_CamisasAcero".
+ * This is the model class for table "v_camisasAcero".
  *
- * @property integer $Cant_Camisas
- * @property integer $Cam_hechas
- * @property integer $IdCamisa
- * @property integer $IdProducto
- * @property integer $IdCamisaTipo
- * @property string $Tamaño
- * @property string $Descripcion
- * @property integer $Cantidad
+ * @property integer $IdProductoCasting
+ * @property string $ProductoCasting
+ * @property integer $Anio
+ * @property integer $Semana
  * @property integer $Programadas
+ * @property integer $Llenadas
+ * @property string $Descripcion
  * @property integer $CantidadPorPaquete
  * @property string $DUX_CodigoPesos
  * @property string $DUX_CodigoDolares
- * @property integer $Hechas
- * @property integer $Semana
+ * @property integer $Cantidad
+ * @property string $ExistenciaPesos
+ * @property string $ExistenciaDolares
+ * @property integer $IdCamisaTipo
+ * @property string $Tamano
+ * @property string $TiempoDesmoldeo
+ * @property integer $Requeridas
  */
 class VCamisasAcero extends \yii\db\ActiveRecord
 {
@@ -29,7 +32,7 @@ class VCamisasAcero extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'v_CamisasAcero';
+        return 'v_camisasAcero';
     }
 
     /**
@@ -38,9 +41,10 @@ class VCamisasAcero extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Cant_Camisas', 'Cam_hechas', 'IdCamisa', 'IdProducto', 'IdCamisaTipo', 'Cantidad', 'Programadas', 'CantidadPorPaquete', 'Hechas', 'Semana'], 'integer'],
-            [['IdCamisa', 'IdProducto', 'IdCamisaTipo', 'Cantidad'], 'required'],
-            [['Tamaño', 'Descripcion', 'DUX_CodigoPesos', 'DUX_CodigoDolares'], 'string']
+            [['IdProductoCasting', 'Anio', 'Semana', 'Programadas', 'Llenadas', 'CantidadPorPaquete', 'Cantidad', 'IdCamisaTipo', 'Requeridas'], 'integer'],
+            [['ProductoCasting', 'Descripcion', 'DUX_CodigoPesos', 'DUX_CodigoDolares', 'Tamano'], 'string'],
+            [['Anio', 'Semana', 'Descripcion', 'CantidadPorPaquete', 'Cantidad', 'IdCamisaTipo'], 'required'],
+            [['ExistenciaPesos', 'ExistenciaDolares', 'TiempoDesmoldeo'], 'number']
         ];
     }
 
@@ -50,25 +54,23 @@ class VCamisasAcero extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'Cant_Camisas' => 'Cant  Camisas',
-            'Cam_hechas' => 'Cam Hechas',
-            'IdCamisa' => 'Id Camisa',
-            'IdProducto' => 'Id Producto',
-            'IdCamisaTipo' => 'Id Camisa Tipo',
-            'Tamaño' => 'Tamaño',
-            'Descripcion' => 'Descripcion',
-            'Cantidad' => 'Cantidad',
+            'IdProductoCasting' => 'Id Producto Casting',
+            'ProductoCasting' => 'Producto Casting',
+            'Anio' => 'Anio',
+            'Semana' => 'Semana',
             'Programadas' => 'Programadas',
+            'Llenadas' => 'Llenadas',
+            'Descripcion' => 'Descripcion',
             'CantidadPorPaquete' => 'Cantidad Por Paquete',
             'DUX_CodigoPesos' => 'Dux  Codigo Pesos',
             'DUX_CodigoDolares' => 'Dux  Codigo Dolares',
-            'Hechas' => 'Hechas',
-            'Semana' => 'Semana',
+            'Cantidad' => 'Cantidad',
+            'ExistenciaPesos' => 'Existencia Pesos',
+            'ExistenciaDolares' => 'Existencia Dolares',
+            'IdCamisaTipo' => 'Id Camisa Tipo',
+            'Tamano' => 'Tamano',
+            'TiempoDesmoldeo' => 'Tiempo Desmoldeo',
+            'Requeridas' => 'Requeridas',
         ];
-    }
-    
-    public function getCamisasXtam($cant){
-        $command = \Yii::$app->db;
-        $result = $command->createCommand("SELECT * FROM v_CamisasAcero")->queryAll();
     }
 }

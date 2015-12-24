@@ -24,8 +24,8 @@
             <td>{{dat.total}}</td>
             <td>{{dat.CantidadPorPaquete}}</td>
             <td>{{((dat.total - dat.ExistenciaPesos - dat.ExistenciaDolares) / dat.CantidadPorPaquete) | currency:"":2}}</td>
-            <td>{{dat.ExistenciaPesos}}</td>
-            <td>{{dat.ExistenciaDolares}}</td>
+            <td>{{dat.ExistenciaPesos || 0}}</td>
+            <td>{{dat.ExistenciaDolares || 0}}</td>
             <td ng-repeat="dia in dat.dias">{{dia.Requeridas}}</td>
         </tr>
     </tbody>
